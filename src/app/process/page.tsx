@@ -1,0 +1,287 @@
+import { Metadata } from "next";
+import {
+  MessageSquare,
+  Search,
+  FileText,
+  Send,
+  Scale,
+  Award,
+  Globe,
+  ArrowDown,
+  Clock,
+  DollarSign,
+} from "lucide-react";
+import Container from "@/components/ui/Container";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+
+export const metadata: Metadata = {
+  title: "How It Works | Alexander IP Consulting",
+  description:
+    "From initial idea to granted patent. A clear, structured process with expert guidance at every step. See the typical client journey and timeline.",
+};
+
+const journey1Steps = [
+  {
+    icon: MessageSquare,
+    title: "Enquiry",
+    description:
+      "You reach out with a brief description of your invention. I respond within 24\u201348 hours with initial thoughts and recommended next steps.",
+    timeline: "Day 1",
+    cost: "Free",
+  },
+  {
+    icon: Search,
+    title: "Patent Search",
+    description:
+      "A thorough investigation of existing patents and prior art to assess your invention's patentability. You receive a detailed report with my honest assessment.",
+    timeline: "21 days",
+    cost: "From $335",
+  },
+  {
+    icon: FileText,
+    title: "Patent Drafting",
+    description:
+      "Full preparation of your patent application: background, summary, detailed description, claims, abstract, and coordination of drawings.",
+    timeline: "45 days",
+    cost: "From $995",
+  },
+  {
+    icon: Send,
+    title: "Filing",
+    description:
+      "Your application is filed with the patent office (USPTO, UKIPO, EPO, or other). You receive a filing receipt and your 'patent pending' status begins.",
+    timeline: "1\u20132 days after approval",
+    cost: "From $250 + govt fees",
+  },
+  {
+    icon: Scale,
+    title: "Prosecution",
+    description:
+      "If the patent examiner raises objections (which is normal), I analyse them, develop a strategy, and draft a formal response to overcome them.",
+    timeline: "12\u201324 months after filing",
+    cost: "From $450",
+  },
+  {
+    icon: Award,
+    title: "Grant",
+    description:
+      "Your patent is granted, giving you legal protection for your invention. This typically takes 2\u20134 years from the original filing date.",
+    timeline: "2\u20134 years total",
+    cost: "Grant fees apply",
+  },
+];
+
+const journey2Steps = [
+  {
+    icon: MessageSquare,
+    title: "Enquiry",
+    description:
+      "Share your office action or existing application details. I'll review and advise on the best approach.",
+    timeline: "Day 1",
+  },
+  {
+    icon: Search,
+    title: "Review & Strategy (Part A)",
+    description:
+      "Detailed analysis of all examiner objections, prior art review, and a proposed response strategy for your approval.",
+    timeline: "7\u201314 days",
+  },
+  {
+    icon: FileText,
+    title: "Formal Response (Part B)",
+    description:
+      "Drafting of the official response document with legal arguments, claim amendments, and supporting evidence.",
+    timeline: "7\u201314 days",
+  },
+  {
+    icon: Award,
+    title: "Grant",
+    description:
+      "With the right response strategy, many patents that receive initial rejections go on to be granted.",
+    timeline: "3\u201312 months",
+  },
+];
+
+const journey3Steps = [
+  {
+    icon: Send,
+    title: "US Priority Filing",
+    description: "File first in the US to establish your priority date.",
+    timeline: "Month 0",
+  },
+  {
+    icon: Globe,
+    title: "PCT Application",
+    description:
+      "Within 12 months, file a PCT international application for global 'patent pending' status.",
+    timeline: "Month 12",
+  },
+  {
+    icon: FileText,
+    title: "National Phase Entry",
+    description:
+      "At 30 months, choose which countries to enter and file in each selected jurisdiction.",
+    timeline: "Month 30",
+  },
+  {
+    icon: Award,
+    title: "Multiple Grants",
+    description:
+      "Prosecute to grant in each country, building worldwide patent protection.",
+    timeline: "Years 2\u20135",
+  },
+];
+
+interface TimelineProps {
+  steps: {
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    timeline: string;
+    cost?: string;
+  }[];
+}
+
+function Timeline({ steps }: TimelineProps) {
+  return (
+    <div className="space-y-0">
+      {steps.map((step, i) => (
+        <div key={step.title} className="relative flex gap-6">
+          {/* Line */}
+          <div className="flex flex-col items-center">
+            <div
+              className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 z-10 shadow-md ${
+                i === steps.length - 1
+                  ? "bg-teal text-white"
+                  : "bg-navy text-teal"
+              }`}
+            >
+              <step.icon className="w-5 h-5" />
+            </div>
+            {i < steps.length - 1 && (
+              <div className="w-px h-full bg-slate-200 min-h-[2rem]" />
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="pb-10">
+            <div className="flex items-center gap-3 mb-1">
+              <h3 className="font-semibold text-navy text-lg">{step.title}</h3>
+              <div className="flex items-center gap-1 text-xs text-slate-500 bg-slate-100 rounded-full px-2.5 py-0.5">
+                <Clock className="w-3 h-3" />
+                {step.timeline}
+              </div>
+              {step.cost && (
+                <div className="flex items-center gap-1 text-xs text-teal-dark bg-teal/10 rounded-full px-2.5 py-0.5">
+                  <DollarSign className="w-3 h-3" />
+                  {step.cost}
+                </div>
+              )}
+            </div>
+            <p className="text-slate-600 leading-relaxed">{step.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ProcessPage() {
+  return (
+    <>
+      {/* Hero */}
+      <section className="py-16 lg:py-20 bg-gradient-to-b from-slate-50 to-white">
+        <Container size="narrow">
+          <div className="text-center">
+            <Badge className="mb-6">How It Works</Badge>
+            <h1 className="text-4xl sm:text-5xl font-bold text-navy mb-4">
+              Your Patent Journey
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              A clear, structured process with expert guidance at every step.
+              Here&apos;s what a typical engagement looks like, from initial
+              enquiry to granted patent.
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* Journey 1: New Invention */}
+      <section className="py-16 bg-white">
+        <Container size="narrow">
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold text-navy mb-2">
+              Journey 1: New Invention
+            </h2>
+            <p className="text-slate-600">
+              The most common path — taking a new idea from concept to granted
+              patent.
+            </p>
+          </div>
+          <Timeline steps={journey1Steps} />
+        </Container>
+      </section>
+
+      {/* Journey 2: Existing Application */}
+      <section className="py-16 bg-slate-50">
+        <Container size="narrow">
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold text-navy mb-2">
+              Journey 2: Existing Application
+            </h2>
+            <p className="text-slate-600">
+              Already have a pending application with an office action? I can
+              help get it to grant.
+            </p>
+          </div>
+          <Timeline steps={journey2Steps} />
+        </Container>
+      </section>
+
+      {/* Journey 3: International */}
+      <section className="py-16 bg-white">
+        <Container size="narrow">
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold text-navy mb-2">
+              Journey 3: International Protection
+            </h2>
+            <p className="text-slate-600">
+              Extending your patent protection globally through the PCT route.
+            </p>
+          </div>
+          <Timeline steps={journey3Steps} />
+        </Container>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16 bg-gradient-to-br from-navy to-navy-light">
+        <Container>
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Which Journey Are You On?
+            </h2>
+            <p className="text-slate-300 mb-8 max-w-lg mx-auto">
+              Whether you&apos;re starting from scratch or need help with an
+              existing application, get in touch and I&apos;ll advise on the
+              best path forward.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button href="/contact" size="lg">
+                Start Your Enquiry
+              </Button>
+              <Button
+                href="/services/consultation"
+                variant="outline"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10 hover:text-white"
+              >
+                Book a Consultation
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </section>
+    </>
+  );
+}

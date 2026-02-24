@@ -1,0 +1,148 @@
+import Link from "next/link";
+import Image from "next/image";
+import { Mail, MapPin, ExternalLink } from "lucide-react";
+import Container from "@/components/ui/Container";
+
+const footerLinks = {
+  services: [
+    { label: "Patent Consultation", href: "/services/consultation" },
+    { label: "Patent Search", href: "/services/patent-search" },
+    { label: "Patent Drafting", href: "/services/patent-drafting" },
+    { label: "Patent Prosecution", href: "/services/patent-prosecution" },
+    { label: "International Filing", href: "/services/international-filing" },
+    { label: "IP Valuation", href: "/services/ip-valuation" },
+  ],
+  company: [
+    { label: "About", href: "/about" },
+    { label: "Process", href: "/process" },
+    { label: "FAQ", href: "/faq" },
+    { label: "Blog", href: "/blog" },
+    { label: "Contact", href: "/contact" },
+  ],
+  legal: [
+    { label: "Privacy Policy", href: "/legal/privacy" },
+    { label: "Terms of Engagement", href: "/legal/terms" },
+  ],
+};
+
+export default function Footer() {
+  return (
+    <footer className="bg-navy text-white">
+      <Container className="py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Brand */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Image
+                src="/images/logo-white.svg"
+                alt="Alexander IP"
+                width={180}
+                height={32}
+                className="h-8 w-auto"
+              />
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed mb-4">
+              Expert patent drafting, prosecution, and IP strategy. Top-tier
+              training, accessible pricing.
+            </p>
+            <div className="space-y-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span>Bristol, United Kingdom</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 flex-shrink-0" />
+                <a
+                  href="mailto:hello@alexander-ip.com"
+                  className="hover:text-teal transition-colors"
+                >
+                  hello@alexander-ip.com
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Services */}
+          <div>
+            <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-300 mb-4">
+              Services
+            </h3>
+            <ul className="space-y-2">
+              {footerLinks.services.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 hover:text-teal transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-300 mb-4">
+              Company
+            </h3>
+            <ul className="space-y-2">
+              {footerLinks.company.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 hover:text-teal transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal & External */}
+          <div>
+            <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-300 mb-4">
+              Legal
+            </h3>
+            <ul className="space-y-2">
+              {footerLinks.legal.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 hover:text-teal transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-300 mt-6 mb-4">
+              Also On
+            </h3>
+            <a
+              href="https://www.fiverr.com/alexander_ip"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-teal transition-colors"
+            >
+              Fiverr (800+ Reviews)
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-slate-700 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            &copy; {new Date().getFullYear()} Alexander IPC Ltd. Company No.
+            16080164. All rights reserved.
+          </p>
+          <p className="text-xs text-slate-600">
+            4 Victoria Square, Bristol, England, BS8 4EU
+          </p>
+        </div>
+      </Container>
+    </footer>
+  );
+}

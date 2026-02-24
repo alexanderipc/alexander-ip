@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <circle cx="100" cy="100" r="90" stroke="#1a2744" stroke-width="6" fill="none" opacity="0.15"/>
+  <circle cx="100" cy="100" r="80" stroke="#1a2744" stroke-width="3" fill="none" opacity="0.15"/>
+  <text x="100" y="90" text-anchor="middle" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="800" fill="#1a2744" opacity="0.12" letter-spacing="6">
+    PATENTED
+  </text>
+  <line x1="30" y1="110" x2="170" y2="110" stroke="#1a2744" stroke-width="2" opacity="0.1"/>
+  <text x="100" y="130" text-anchor="middle" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1a2744" opacity="0.1" letter-spacing="2">
+    ALEXANDER IP
+  </text>
+</svg>
