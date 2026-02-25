@@ -46,8 +46,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const baseUrl =
+    // Ensure base URL always has a protocol
+    let baseUrl =
       process.env.NEXT_PUBLIC_BASE_URL || "https://alexander-ip.com";
+    if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+      baseUrl = `https://${baseUrl}`;
+    }
+    // Remove trailing slash
+    baseUrl = baseUrl.replace(/\/+$/, "");
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -78,12 +84,22 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Stripe checkout error:", error);
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to create checkout session";
-    return NextResponse.json({ error: message }, { status: 500 });
+
+    // Extract detailed Stripe error info
+    let message = "Failed to create checkout session";
+    let code = "unknown";
+    if (error instanceof Stripe.errors.StripeError) {
+      message = error.message;
+      code = error.code || error.type || "stripe_error";
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return NextResponse.json(
+      { error: message, code },
+      { status: 500 }
+    );
   }
 }

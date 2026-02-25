@@ -44,10 +44,16 @@ export default function CheckoutButton({
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || "Something went wrong. Please try again.");
+        console.error("Checkout error:", data);
+        alert(
+          data.error
+            ? `Checkout error: ${data.error}${data.code ? ` (${data.code})` : ""}`
+            : "Something went wrong. Please try again."
+        );
         setLoading(false);
       }
-    } catch {
+    } catch (err) {
+      console.error("Checkout fetch error:", err);
       alert("Something went wrong. Please try again.");
       setLoading(false);
     }
