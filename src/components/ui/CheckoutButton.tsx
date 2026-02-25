@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 
 interface CheckoutButtonProps {
   service?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   size?: "sm" | "md" | "lg";
   className?: string;
+  /** Label prefix shown before the price, e.g. "Book & Pay" */
+  label?: string;
 }
 
 export default function CheckoutButton({
@@ -16,8 +18,22 @@ export default function CheckoutButton({
   children,
   size = "lg",
   className,
+  label = "Book & Pay",
 }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [priceDisplay, setPriceDisplay] = useState<string | null>(null);
+
+  // Fetch localized price on mount
+  useEffect(() => {
+    fetch(`/api/checkout?service=${service}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.display) setPriceDisplay(data.display);
+      })
+      .catch(() => {
+        // Fallback — don't show price if fetch fails
+      });
+  }, [service]);
 
   async function handleCheckout() {
     setLoading(true);
@@ -42,6 +58,14 @@ export default function CheckoutButton({
     }
   }
 
+  // If explicit children are provided, use them (backward-compatible)
+  // Otherwise, build a label from the localized price
+  const buttonContent = children ?? (
+    <>
+      {label} — {priceDisplay || "…"}
+    </>
+  );
+
   return (
     <Button
       onClick={handleCheckout}
@@ -52,10 +76,10 @@ export default function CheckoutButton({
       {loading ? (
         <>
           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          Redirecting to payment...
+          Redirecting to payment…
         </>
       ) : (
-        children
+        buttonContent
       )}
     </Button>
   );

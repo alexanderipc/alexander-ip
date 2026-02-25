@@ -30,9 +30,7 @@ export default function ConsultationPage() {
               {service.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <CheckoutButton service="consultation" size="lg">
-                Book &amp; Pay &mdash; {service.startingPrice}
-              </CheckoutButton>
+              <CheckoutButton service="consultation" size="lg" label="Book & Pay" />
               <Button href="/contact" variant="outline" size="lg">
                 Enquire First
               </Button>
@@ -222,9 +220,7 @@ export default function ConsultationPage() {
               Book a consultation and get expert advice tailored to your
               specific situation. Full refund if I can&apos;t provide value.
             </p>
-            <CheckoutButton service="consultation" size="lg">
-              Book &amp; Pay &mdash; {service.startingPrice}
-            </CheckoutButton>
+            <CheckoutButton service="consultation" size="lg" label="Book & Pay" />
           </div>
         </Container>
       </section>
