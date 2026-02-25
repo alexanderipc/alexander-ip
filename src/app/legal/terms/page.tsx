@@ -99,10 +99,10 @@ export default function TermsPage() {
           <p>
             For questions about these terms, please contact:{" "}
             <a
-              href="mailto:hello@alexander-ip.com"
+              href="mailto:alexanderip.contact@gmail.com"
               className="text-blue hover:text-blue-dark"
             >
-              hello@alexander-ip.com
+              alexanderip.contact@gmail.com
             </a>
           </p>
         </div>

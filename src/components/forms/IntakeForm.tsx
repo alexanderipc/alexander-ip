@@ -231,8 +231,8 @@ export default function IntakeForm() {
       {status === "error" && (
         <p className="text-red-600 text-sm">
           Something went wrong. Please try again or email{" "}
-          <a href="mailto:hello@alexander-ip.com" className="underline">
-            hello@alexander-ip.com
+          <a href="mailto:alexanderip.contact@gmail.com" className="underline">
+            alexanderip.contact@gmail.com
           </a>{" "}
           directly.
         </p>

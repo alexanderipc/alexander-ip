@@ -10,7 +10,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
-import VideoEmbed from "@/components/ui/VideoEmbed";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 

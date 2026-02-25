@@ -4,7 +4,6 @@ import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import VideoEmbed from "@/components/ui/VideoEmbed";
 import Accordion from "@/components/ui/Accordion";
 import { getServiceBySlug } from "@/data/services";
 
@@ -21,25 +20,19 @@ export default function ConsultationPage() {
       {/* Hero */}
       <section className="py-16 lg:py-24 bg-gradient-to-b from-slate-50 to-white">
         <Container>
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <Badge className="mb-6">Consultation</Badge>
-              <h1 className="text-4xl sm:text-5xl font-bold text-navy leading-tight mb-6">
-                {service.title}
-              </h1>
-              <p className="text-lg text-slate-600 leading-relaxed mb-8">
-                {service.description}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button href="/contact" size="lg">
-                  Book a Consultation &mdash; {service.startingPrice}
-                </Button>
-              </div>
+          <div className="max-w-3xl">
+            <Badge className="mb-6">Consultation</Badge>
+            <h1 className="text-4xl sm:text-5xl font-bold text-navy leading-tight mb-6">
+              {service.title}
+            </h1>
+            <p className="text-lg text-slate-600 leading-relaxed mb-8">
+              {service.description}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button href="/contact" size="lg">
+                Book a Consultation &mdash; {service.startingPrice}
+              </Button>
             </div>
-            <VideoEmbed
-              title="About Consultations"
-              subtitle="Service overview video coming soon"
-            />
           </div>
         </Container>
       </section>

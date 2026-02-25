@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Button from "@/components/ui/Button";
-import VideoEmbed from "@/components/ui/VideoEmbed";
 import Container from "@/components/ui/Container";
 
 export default function Hero() {

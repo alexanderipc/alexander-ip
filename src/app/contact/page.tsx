@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { Mail, MapPin, Clock, Shield } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
-import VideoEmbed from "@/components/ui/VideoEmbed";
 import IntakeForm from "@/components/forms/IntakeForm";
 
 export const metadata: Metadata = {
@@ -34,11 +33,6 @@ export default function ContactPage() {
 
             {/* Right: Info */}
             <div className="space-y-8 lg:pl-8">
-              <VideoEmbed
-                title="What to Expect"
-                subtitle="Alexander explains the enquiry process"
-              />
-
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -61,10 +55,10 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-navy">Email</h3>
                     <a
-                      href="mailto:hello@alexander-ip.com"
+                      href="mailto:alexanderip.contact@gmail.com"
                       className="text-sm text-blue hover:text-blue-dark"
                     >
-                      hello@alexander-ip.com
+                      alexanderip.contact@gmail.com
                     </a>
                   </div>
                 </div>

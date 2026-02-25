@@ -82,10 +82,10 @@ export default function PrivacyPage() {
             right to access, rectify, erase, or restrict processing of your
             personal data. To exercise these rights, please contact us at{" "}
             <a
-              href="mailto:hello@alexander-ip.com"
+              href="mailto:alexanderip.contact@gmail.com"
               className="text-blue hover:text-blue-dark"
             >
-              hello@alexander-ip.com
+              alexanderip.contact@gmail.com
             </a>
             .
           </p>
@@ -103,10 +103,10 @@ export default function PrivacyPage() {
           <p>
             For any privacy-related questions, please contact:{" "}
             <a
-              href="mailto:hello@alexander-ip.com"
+              href="mailto:alexanderip.contact@gmail.com"
               className="text-blue hover:text-blue-dark"
             >
-              hello@alexander-ip.com
+              alexanderip.contact@gmail.com
             </a>
           </p>
         </div>

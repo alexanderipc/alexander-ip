@@ -44,7 +44,7 @@ Sent from alexander-ip.com contact form
     // const resend = new Resend(process.env.RESEND_API_KEY);
     // await resend.emails.send({
     //   from: 'Alexander IP Website <noreply@alexander-ip.com>',
-    //   to: 'hello@alexander-ip.com',
+    //   to: 'alexanderip.contact@gmail.com',
     //   replyTo: email,
     //   subject: `New Enquiry: ${service} — ${name}`,
     //   text: emailBody,
