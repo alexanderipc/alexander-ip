@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 
 export default function Hero() {
   return (
@@ -38,7 +39,7 @@ export default function Hero() {
               starting at{" "}
               <span className="font-semibold text-navy">$995</span> for full patent
               drafting, or{" "}
-              <span className="font-semibold text-navy">$125</span> for an expert
+              <span className="font-semibold text-navy"><LocalizedPrice service="consultation" fallback="$125" /></span> for an expert
               consultation.
             </p>
 

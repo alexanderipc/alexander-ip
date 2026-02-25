@@ -15,6 +15,7 @@ import Container from "@/components/ui/Container";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import { services, rushSurcharges } from "@/data/services";
 
 export const metadata: Metadata = {
@@ -111,7 +112,11 @@ export default function ServicesPage() {
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                       <div>
                         <span className="text-blue font-bold text-lg">
-                          {service.startingPrice}
+                          {service.slug === "consultation" ? (
+                            <LocalizedPrice service="consultation" fallback={service.startingPrice} />
+                          ) : (
+                            service.startingPrice
+                          )}
                         </span>
                         <span className="text-slate-400 text-sm ml-1">
                           starting

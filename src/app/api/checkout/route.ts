@@ -99,7 +99,6 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_BASE_URL || "https://alexander-ip.com";
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
@@ -109,6 +108,7 @@ export async function POST(request: NextRequest) {
               description: config.description,
             },
             unit_amount: price.amount,
+            tax_behavior: "exclusive",
           },
           quantity: 1,
         },

@@ -1,5 +1,6 @@
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 
 export default function CTASection() {
   return (
@@ -19,7 +20,7 @@ export default function CTASection() {
               Start Your Enquiry
             </Button>
             <Button href="/services/consultation" variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 hover:text-white">
-              Book a Consultation ($125)
+              Book a Consultation (<LocalizedPrice service="consultation" fallback="$125" />)
             </Button>
           </div>
         </div>

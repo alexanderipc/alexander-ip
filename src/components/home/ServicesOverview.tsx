@@ -10,6 +10,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Card from "@/components/ui/Card";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 
 const serviceCards = [
   {
@@ -87,7 +88,13 @@ export default function ServicesOverview() {
                   {service.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-blue font-bold">{service.price}</span>
+                  <span className="text-blue font-bold">
+                    {service.href === "/services/consultation" ? (
+                      <>From <LocalizedPrice service="consultation" fallback="$125" /></>
+                    ) : (
+                      service.price
+                    )}
+                  </span>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue group-hover:translate-x-1 transition-all" />
                 </div>
               </Card>

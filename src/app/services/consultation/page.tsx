@@ -4,6 +4,7 @@ import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import CheckoutButton from "@/components/ui/CheckoutButton";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
 import { getServiceBySlug } from "@/data/services";
@@ -178,8 +179,9 @@ export default function ConsultationPage() {
                   {tier.description}
                 </p>
                 <div className="text-4xl font-bold text-navy">
-                  {tier.price}
+                  <LocalizedPrice service="consultation" fallback={tier.price} />
                 </div>
+                <p className="text-xs text-slate-400 mt-1">+ VAT where applicable</p>
               </div>
               <div className="space-y-3 mb-8">
                 {tier.features.map((feature) => (
@@ -189,9 +191,7 @@ export default function ConsultationPage() {
                   </div>
                 ))}
               </div>
-              <Button href="/contact" size="lg" className="w-full">
-                Book a Consultation
-              </Button>
+              <CheckoutButton service="consultation" size="lg" label="Book & Pay" />
             </Card>
           ))}
         </Container>
