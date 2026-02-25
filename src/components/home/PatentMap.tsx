@@ -33,8 +33,8 @@ interface Jurisdiction {
   countryCodes: string[];
 }
 
-function espacenetUrl(pubNumber: string) {
-  return `https://worldwide.espacenet.com/patent/search/family/${pubNumber}`;
+function patentUrl(pubNumber: string) {
+  return `https://patents.google.com/patent/${pubNumber}`;
 }
 
 const jurisdictions: Jurisdiction[] = [
@@ -45,15 +45,15 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1540a8",
     countryCodes: ["840"],
     patents: [
-      { number: "US12318654B2", label: "US 12,318,654 B2", url: espacenetUrl("US12318654B2") },
-      { number: "US12277273B2", label: "US 12,277,273 B2", url: espacenetUrl("US12277273B2") },
-      { number: "US11937591B1", label: "US 11,937,591 B1", url: espacenetUrl("US11937591B1") },
-      { number: "US11839788B2", label: "US 11,839,788 B2", url: espacenetUrl("US11839788B2") },
-      { number: "US11836570B1", label: "US 11,836,570 B1", url: espacenetUrl("US11836570B1") },
-      { number: "US11833384B2", label: "US 11,833,384 B2", url: espacenetUrl("US11833384B2") },
-      { number: "US11483078B1", label: "US 11,483,078 B1", url: espacenetUrl("US11483078B1") },
-      { number: "US20220136940A1", label: "US 2022/0136940 A1", url: espacenetUrl("US20220136940A1") },
-      { number: "US20230197215A1", label: "US 2023/0197215 A1", url: espacenetUrl("US20230197215A1") },
+      { number: "US12318654B2", label: "US 12,318,654 B2", url: patentUrl("US12318654B2") },
+      { number: "US12277273B2", label: "US 12,277,273 B2", url: patentUrl("US12277273B2") },
+      { number: "US11937591B1", label: "US 11,937,591 B1", url: patentUrl("US11937591B1") },
+      { number: "US11839788B2", label: "US 11,839,788 B2", url: patentUrl("US11839788B2") },
+      { number: "US11836570B1", label: "US 11,836,570 B1", url: patentUrl("US11836570B1") },
+      { number: "US11833384B2", label: "US 11,833,384 B2", url: patentUrl("US11833384B2") },
+      { number: "US11483078B1", label: "US 11,483,078 B1", url: patentUrl("US11483078B1") },
+      { number: "US20220136940A1", label: "US 2022/0136940 A1", url: patentUrl("US20220136940A1") },
+      { number: "US20230197215A1", label: "US 2023/0197215 A1", url: patentUrl("US20230197215A1") },
     ],
   },
   {
@@ -63,7 +63,7 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#0a2d66",
     countryCodes: ["826"],
     patents: [
-      { number: "GB2623310B", label: "GB 2,623,310 B", url: espacenetUrl("GB2623310B") },
+      { number: "GB2623310B", label: "GB 2,623,310 B", url: patentUrl("GB2623310B") },
     ],
   },
   {
@@ -106,7 +106,7 @@ const jurisdictions: Jurisdiction[] = [
       "792", // Turkey
     ],
     patents: [
-      { number: "EP4576048B1", label: "EP 4,576,048 B1", url: espacenetUrl("EP4576048B1") },
+      { number: "EP4576048B1", label: "EP 4,576,048 B1", url: patentUrl("EP4576048B1") },
     ],
   },
   {
@@ -116,8 +116,8 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1a56db",
     countryCodes: [], // PCT covers everything — handled specially
     patents: [
-      { number: "WO2022049262A2", label: "WO 2022/049262 A2", url: espacenetUrl("WO2022049262A2") },
-      { number: "WO2023152460A1", label: "WO 2023/152460 A1", url: espacenetUrl("WO2023152460A1") },
+      { number: "WO2022049262A2", label: "WO 2022/049262 A2", url: patentUrl("WO2022049262A2") },
+      { number: "WO2023152460A1", label: "WO 2023/152460 A1", url: patentUrl("WO2023152460A1") },
     ],
   },
 ];
@@ -183,14 +183,14 @@ function PatentMap() {
     <section className="py-20 bg-white">
       <Container>
         <div className="text-center mb-12">
-          <Badge className="mb-4">Proven Track Record</Badge>
+          <Badge className="mb-4">Selected Examples</Badge>
           <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">
             Patents Granted Worldwide
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            From initial drafting through to grant &mdash; a selection of
-            patents I&apos;ve taken through the full lifecycle. Hover over a
-            highlighted region to see publications.
+            A small selection of patents I&apos;ve drafted and prosecuted
+            through to grant across multiple jurisdictions. Hover over a
+            highlighted region to browse publications.
           </p>
         </div>
 
@@ -240,9 +240,6 @@ function PatentMap() {
                           onMouseEnter={() => {
                             if (j) setActiveJurisdiction(j.id);
                           }}
-                          onMouseLeave={() => {
-                            setActiveJurisdiction(null);
-                          }}
                           onClick={() => {
                             if (j) {
                               setActiveJurisdiction(
@@ -276,7 +273,6 @@ function PatentMap() {
                           : "bg-white border-slate-200 hover:border-blue/30 hover:bg-slate-50"
                       }`}
                       onMouseEnter={() => setActiveJurisdiction(j.id)}
-                      onMouseLeave={() => setActiveJurisdiction(null)}
                       onClick={() =>
                         setActiveJurisdiction(isActive ? null : j.id)
                       }
@@ -329,15 +325,15 @@ function PatentMap() {
 
               {!activeData && (
                 <p className="text-xs text-slate-400 px-4 pt-2 text-center lg:text-left">
-                  Hover or tap a highlighted region to view patents on Espacenet
+                  Hover or tap a region to view selected publications
                 </p>
               )}
             </div>
           </div>
 
           <p className="text-center text-sm text-slate-400 mt-8">
-            Showing a selection of patents drafted and prosecuted through to
-            grant &middot; Full portfolio available on request
+            Selected examples only &mdash; full portfolio and client
+            references available on request
           </p>
         </div>
       </Container>
