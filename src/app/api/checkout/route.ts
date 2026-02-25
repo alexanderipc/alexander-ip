@@ -15,9 +15,9 @@ interface CurrencyPrice {
 
 const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
   consultation: {
-    GBP: { currency: "gbp", amount: 10000, symbol: "£", display: "£100" },
+    GBP: { currency: "gbp", amount: 9500, symbol: "£", display: "£95" },
     USD: { currency: "usd", amount: 12500, symbol: "$", display: "$125" },
-    EUR: { currency: "eur", amount: 11500, symbol: "€", display: "€115" },
+    EUR: { currency: "eur", amount: 12000, symbol: "€", display: "€120" },
   },
 };
 
