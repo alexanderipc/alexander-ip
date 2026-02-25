@@ -14,6 +14,9 @@ const serviceConfig: Record<string, { name: string; description: string }> = {
   },
 };
 
+/* Hardcoded base URL — avoids any env var issues */
+const BASE_URL = "https://alexander-ip.com";
+
 export async function POST(request: NextRequest) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -46,14 +49,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure base URL always has a protocol
-    let baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL || "https://alexander-ip.com";
-    if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
-      baseUrl = `https://${baseUrl}`;
-    }
-    // Remove trailing slash
-    baseUrl = baseUrl.replace(/\/+$/, "");
+    const successUrl = `${BASE_URL}/booking/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${BASE_URL}/booking/cancelled`;
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -70,8 +67,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${baseUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/booking/cancelled`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       customer_creation: "always",
       billing_address_collection: "required",
       metadata: {
@@ -90,15 +87,17 @@ export async function POST(request: NextRequest) {
     // Extract detailed Stripe error info
     let message = "Failed to create checkout session";
     let code = "unknown";
+    let param = "";
     if (error instanceof Stripe.errors.StripeError) {
       message = error.message;
       code = error.code || error.type || "stripe_error";
+      param = (error as Stripe.errors.StripeInvalidRequestError).param || "";
     } else if (error instanceof Error) {
       message = error.message;
     }
 
     return NextResponse.json(
-      { error: message, code },
+      { error: message, code, param },
       { status: 500 }
     );
   }
