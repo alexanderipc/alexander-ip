@@ -16,7 +16,7 @@ import Button from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "About Alexander Rowley | Alexander IP Consulting",
   description:
-    "MSc Physics, trained at Kilburn & Strode LLP (Legal 500). 5+ years independent practice, hundreds of patents granted. Learn about the expert behind Alexander IP.",
+    "MSc Physics, trained at Kilburn & Strode LLP (Legal 500). 10 years in the patent industry, patents granted across US, UK, and Europe. Learn about the expert behind Alexander IP.",
 };
 
 const credentials = [
@@ -44,9 +44,9 @@ const credentials = [
 
 const stats = [
   { icon: Star, value: "800+", label: "Five-Star Reviews" },
-  { icon: Award, value: "Hundreds", label: "Patents Granted" },
-  { icon: Globe, value: "6+", label: "Jurisdictions" },
-  { icon: Clock, value: "5+", label: "Years Practice" },
+  { icon: Award, value: "US, UK & EU", label: "Patents to Grant" },
+  { icon: Globe, value: "140+", label: "Jurisdictions via PCT" },
+  { icon: Clock, value: "10", label: "Years in the Industry" },
 ];
 
 const techAreas = [
@@ -181,9 +181,9 @@ export default function AboutPage() {
               quality of drafting, starting from $995.
             </p>
             <p>
-              Five years later, the practice has served hundreds of clients
-              across all major international jurisdictions, with demand
-              consistently growing. In 2024, I incorporated as{" "}
+              Since then, the practice has served clients across all major
+              international jurisdictions, with demand consistently growing
+              year on year. In 2024, I incorporated as{" "}
               <strong>Alexander IPC Ltd</strong>, formalising what had already
               become a trusted name in accessible patent services. I&apos;m based
               in Bristol, UK, and work with inventors and startups worldwide.
@@ -212,11 +212,12 @@ export default function AboutPage() {
               the substance has.
             </p>
             <p>
-              Since then, I&apos;ve drafted and prosecuted hundreds of patent
+              Since then, I&apos;ve drafted and prosecuted patent
               applications across the US, UK, Europe, and other major
-              jurisdictions. I&apos;ve worked with individual inventors,
-              startups, and established businesses. Over five years of
-              independent practice, I&apos;ve accumulated more than 800
+              jurisdictions &mdash; taking them from initial drafting through
+              to grant. I&apos;ve worked with individual inventors,
+              startups, and established businesses. Over a decade in the
+              industry, I&apos;ve accumulated more than 800
               five-star reviews from clients who chose to come back, and to
               refer others.
             </p>

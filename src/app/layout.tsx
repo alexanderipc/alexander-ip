@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title:
     "Alexander IP Consulting — Patent Protection Without the Corporate Price Tag",
   description:
-    "Expert patent drafting, prosecution, and IP strategy. Top-tier training from Legal 500 firms, accessible pricing. Hundreds of patents granted across US, UK, Europe, and international jurisdictions.",
+    "Expert patent drafting, prosecution, and IP strategy. Top-tier training from Legal 500 firms, accessible pricing. Patents granted across the US, UK, Europe, and 140+ jurisdictions via PCT.",
   metadataBase: new URL("https://alexander-ip.com"),
   openGraph: {
     title: "Alexander IP Consulting",

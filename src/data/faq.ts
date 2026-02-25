@@ -81,7 +81,7 @@ export const faqItems: FAQItem[] = [
   {
     question: "Why aren't you a registered patent attorney?",
     answer:
-      "I have the full training and track record of a qualified patent attorney. I trained at Kilburn & Strode LLP — a top-tier Legal 500 firm — and passed the pre-qualification exams. The 2020 exam cancellations due to COVID and a subsequent move into independent practice meant formal qualification wasn't completed. In practical terms, this hasn't been an obstacle. I've secured hundreds of patents to grant across multiple jurisdictions over 5+ years of independent practice. The work speaks for itself, and I'm always happy to walk through my track record with anyone who wants to understand my background.",
+      "I have the full training and track record of a qualified patent attorney. I trained at Kilburn & Strode LLP — a top-tier Legal 500 firm — and passed the pre-qualification exams. The 2020 exam cancellations due to COVID and a subsequent move into independent practice meant formal qualification wasn't completed. In practical terms, this hasn't been an obstacle. Over a decade in the industry, I've taken patents from drafting through to grant across the US, UK, and Europe, working across 140+ jurisdictions via PCT. The work speaks for itself, and I'm always happy to walk through my track record with anyone who wants to understand my background.",
     category: "About",
   },
   {

@@ -17,7 +17,7 @@ export default function Hero() {
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-blue/10 text-blue-dark rounded-full px-4 py-1.5 text-sm font-medium mb-6">
               <span className="w-2 h-2 bg-blue rounded-full" />
-              Trained at a top Legal 500 firm &middot; 800+ five-star reviews &middot; Hundreds of patents granted worldwide
+              Trained at a top Legal 500 firm &middot; 800+ five-star reviews &middot; Patents granted across the US, UK &amp; Europe
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-navy leading-[1.1] mb-6">
@@ -43,8 +43,8 @@ export default function Hero() {
             </p>
 
             <p className="text-base text-slate-500 leading-relaxed mb-8 max-w-xl">
-              No jargon. No surprises. Just clear, thorough patent work backed by
-              hundreds of successful grants across the US, UK, Europe, and beyond.
+              No jargon. No surprises. Just clear, thorough patent work &mdash;
+              drafted and prosecuted through to grant across the US, UK, Europe, and beyond.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">

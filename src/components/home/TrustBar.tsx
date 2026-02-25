@@ -9,18 +9,18 @@ const stats = [
   },
   {
     icon: Award,
-    value: "Hundreds",
-    label: "Patents Granted",
+    value: "US, UK & EU",
+    label: "Patents to Grant",
   },
   {
     icon: Globe,
-    value: "6+",
-    label: "Jurisdictions Covered",
+    value: "140+",
+    label: "Jurisdictions via PCT",
   },
   {
     icon: Clock,
-    value: "5+",
-    label: "Years of Practice",
+    value: "10",
+    label: "Years in the Industry",
   },
 ];
 
