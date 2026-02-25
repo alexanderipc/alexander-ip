@@ -5,9 +5,15 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import { getServiceBySlug } from "@/data/services";
 
 const service = getServiceBySlug("patent-prosecution")!;
+
+const prosecutionTierRange: Record<string, [number, number]> = {
+  "Part A: Review & Strategy": [950, 1150],
+  "Part B: Formal Response": [300, 550],
+};
 
 export const metadata: Metadata = {
   title: `${service.title} | Alexander IP Consulting`,
@@ -115,7 +121,11 @@ export default function PatentProsecutionPage() {
                 </div>
 
                 <div className="text-3xl font-bold text-navy mb-6">
-                  {tier.price}
+                  {prosecutionTierRange[tier.name] ? (
+                    <LocalizedPrice range={prosecutionTierRange[tier.name]} fallback={tier.price} />
+                  ) : (
+                    tier.price
+                  )}
                 </div>
 
                 <div className="space-y-3 mb-8 flex-1">
@@ -153,7 +163,7 @@ export default function PatentProsecutionPage() {
               <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                 <div className="flex-1">
                   <p className="font-semibold text-navy">
-                    Combined Total: $1,250 &ndash; $1,700
+                    Combined Total: <LocalizedPrice range={[1250, 1700]} fallback="$1,250–$1,700" />
                   </p>
                   <p className="text-sm text-slate-600">
                     Part A + Part B together, depending on complexity.

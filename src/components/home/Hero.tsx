@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 
 export default function Hero() {
   return (
@@ -31,11 +32,12 @@ export default function Hero() {
             </h1>
 
             <p className="text-lg text-slate-600 leading-relaxed mb-4 max-w-xl">
-              <span className="font-semibold text-navy">Most traditional firms charge
-              $8,000&ndash;$15,000</span> for a single US utility patent application.
+              <span className="font-semibold text-navy">Most traditional firms charge{" "}
+              <LocalizedPrice range={[8000, 15000]} fallback="$8,000–$15,000" /></span>{" "}
+              for a single US utility patent application.
               With me, a typical patent package &mdash; including search, drafting,
               illustrations, and filing &mdash; costs{" "}
-              <span className="font-semibold text-navy">$1,500&ndash;$2,500</span>{" "}
+              <span className="font-semibold text-navy"><LocalizedPrice range={[1500, 2500]} fallback="$1,500–$2,500" /></span>{" "}
               depending on complexity. Same calibre of work, trained at a leading
               Legal&nbsp;500 firm.
             </p>

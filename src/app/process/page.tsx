@@ -14,6 +14,7 @@ import {
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 
 export const metadata: Metadata = {
   title: "How It Works | Alexander IP Consulting",
@@ -36,7 +37,7 @@ const journey1Steps = [
     description:
       "Before investing in a full application, find out if your invention is novel enough. I search existing patents and prior art, then give you an honest assessment of where you stand.",
     timeline: "21 days",
-    cost: "From $335",
+    costUsd: 335,
   },
   {
     icon: FileText,
@@ -44,7 +45,7 @@ const journey1Steps = [
     description:
       "I prepare the full patent application — background, summary, detailed description, claims, abstract, and drawings — and file it with the patent office on your behalf.",
     timeline: "45 days",
-    cost: "From $995",
+    costUsd: 995,
   },
   {
     icon: Send,
@@ -52,7 +53,7 @@ const journey1Steps = [
     description:
       "Your application is filed with the patent office (USPTO, UKIPO, EPO, or other). You receive a filing receipt and your 'patent pending' status begins.",
     timeline: "1\u20132 days after approval",
-    cost: "From $250 + govt fees",
+    costUsd: 250, costSuffix: "+ govt fees",
   },
   {
     icon: Scale,
@@ -60,7 +61,7 @@ const journey1Steps = [
     description:
       "When the patent office responds (they almost always do), I handle the back-and-forth to get your patent granted. I analyse the objections, develop a strategy, and draft a formal response.",
     timeline: "12\u201324 months after filing",
-    cost: "From $450",
+    costUsd: 450,
   },
   {
     icon: Award,
@@ -140,6 +141,8 @@ interface TimelineProps {
     description: string;
     timeline: string;
     cost?: string;
+    costUsd?: number;
+    costSuffix?: string;
   }[];
 }
 
@@ -172,10 +175,14 @@ function Timeline({ steps }: TimelineProps) {
                 <Clock className="w-3 h-3" />
                 {step.timeline}
               </div>
-              {step.cost && (
+              {(step.cost || step.costUsd) && (
                 <div className="flex items-center gap-1 text-xs text-blue-dark bg-blue/10 rounded-full px-2.5 py-0.5">
                   <DollarSign className="w-3 h-3" />
-                  {step.cost}
+                  {step.costUsd ? (
+                    <>From <LocalizedPrice amount={step.costUsd} fallback={`$${step.costUsd}`} />{step.costSuffix ? ` ${step.costSuffix}` : ""}</>
+                  ) : (
+                    step.cost
+                  )}
                 </div>
               )}
             </div>

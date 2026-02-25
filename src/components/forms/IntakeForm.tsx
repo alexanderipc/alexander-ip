@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, Loader2, CheckCircle2 } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { getCurrencyFromBrowserLocale, convertPrice } from "@/lib/pricing";
 
-const serviceOptions = [
-  "Patent Consultation ($125)",
-  "Patent Search ($335+)",
-  "Patent Drafting ($995+)",
-  "Patent Prosecution / Office Action ($450+)",
-  "International Filing / PCT ($600+)",
-  "IP Valuation ($2,250+)",
-  "Other / Not sure",
+const serviceOptionsBase = [
+  { label: "Patent Consultation", usd: 125 },
+  { label: "Patent Search", usd: 335 },
+  { label: "Patent Drafting", usd: 995 },
+  { label: "Patent Prosecution / Office Action", usd: 450 },
+  { label: "International Filing / PCT", usd: 600 },
+  { label: "IP Valuation", usd: 2250 },
 ];
 
 const referralOptions = [
@@ -32,6 +32,28 @@ const timelineOptions = [
 
 export default function IntakeForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [serviceOptions, setServiceOptions] = useState<string[]>([]);
+  const [budgetText, setBudgetText] = useState(
+    "I understand that services start from $125 for consultations and typical patent drafting packages range from $995\u2013$2,370."
+  );
+
+  useEffect(() => {
+    const currency = getCurrencyFromBrowserLocale();
+
+    // Build localised dropdown labels
+    const options = serviceOptionsBase.map(
+      (s) => `${s.label} (from ${convertPrice(s.usd, currency)})`
+    );
+    setServiceOptions(options);
+
+    // Build localised consent text
+    const consultPrice = convertPrice(125, currency);
+    const draftLow = convertPrice(995, currency);
+    const draftHigh = convertPrice(2370, currency);
+    setBudgetText(
+      `I understand that services start from ${consultPrice} for consultations and typical patent drafting packages range from ${draftLow}\u2013${draftHigh}.`
+    );
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -201,8 +223,7 @@ export default function IntakeForm() {
           className="mt-1 w-4 h-4 text-blue border-slate-300 rounded focus:ring-blue"
         />
         <label htmlFor="budget" className="text-sm text-slate-600">
-          I understand that services start from $125 for consultations and
-          typical patent drafting packages range from $995&ndash;$2,370.
+          {budgetText}
         </label>
       </div>
 

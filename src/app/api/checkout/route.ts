@@ -6,10 +6,6 @@ import {
   DEFAULT_CURRENCY,
 } from "@/lib/pricing";
 
-/* ──────────────────────────────────────────────────────────
-   Service config
-   ────────────────────────────────────────────────────────── */
-
 const serviceConfig: Record<string, { name: string; description: string }> = {
   consultation: {
     name: "Patent Consultation",
@@ -18,24 +14,16 @@ const serviceConfig: Record<string, { name: string; description: string }> = {
   },
 };
 
-/* ──────────────────────────────────────────────────────────
-   Checkout API
-   ────────────────────────────────────────────────────────── */
-
 export async function POST(request: NextRequest) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
-        {
-          error:
-            "Stripe is not configured. Please set STRIPE_SECRET_KEY in environment variables.",
-        },
+        { error: "Stripe is not configured." },
         { status: 500 }
       );
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
     const { service = "consultation" } = await request.json();
 
     const config = serviceConfig[service];
@@ -46,7 +34,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Detect country from Vercel geo headers
     const country = request.headers.get("x-vercel-ip-country");
     const currencyKey = getCurrencyForCountry(country);
     const prices = currencyPrices[service];
@@ -62,7 +49,7 @@ export async function POST(request: NextRequest) {
     const baseUrl =
       process.env.NEXT_PUBLIC_BASE_URL || "https://alexander-ip.com";
 
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    const session = await stripe.checkout.sessions.create({
       line_items: [
         {
           price_data: {
@@ -72,7 +59,6 @@ export async function POST(request: NextRequest) {
               description: config.description,
             },
             unit_amount: price.amount,
-            tax_behavior: "exclusive",
           },
           quantity: 1,
         },
@@ -82,7 +68,6 @@ export async function POST(request: NextRequest) {
       cancel_url: `${baseUrl}/booking/cancelled`,
       customer_creation: "always",
       billing_address_collection: "required",
-      automatic_tax: { enabled: true },
       metadata: {
         service,
         source: "alexander-ip.com",
@@ -90,9 +75,7 @@ export async function POST(request: NextRequest) {
         currency: price.currency,
       },
       allow_promotion_codes: true,
-    };
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {

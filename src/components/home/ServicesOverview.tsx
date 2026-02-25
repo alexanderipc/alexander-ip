@@ -17,14 +17,14 @@ const serviceCards = [
     icon: MessageSquare,
     title: "Consultation",
     description: "Not sure where to start? I'll assess your idea, explain what patent protection involves, and help you decide if it makes sense to proceed.",
-    price: "From $125",
+    usdAmount: 125,
     href: "/services/consultation",
   },
   {
     icon: Search,
     title: "Patent Search",
     description: "A thorough search of existing patents and publications to see what's already out there — so you know what you're up against before investing in a full application.",
-    price: "From $335",
+    usdAmount: 335,
     href: "/services/patent-search",
   },
   {
@@ -32,7 +32,7 @@ const serviceCards = [
     title: "Patent Drafting",
     description:
       "A complete patent application, drafted to maximise your protection and ready for filing in any major jurisdiction.",
-    price: "From $995",
+    usdAmount: 995,
     href: "/services/patent-drafting",
   },
   {
@@ -40,14 +40,14 @@ const serviceCards = [
     title: "Prosecution",
     description:
       "When the patent office pushes back, I prepare strategic responses to objections and rejections to get your patent granted.",
-    price: "From $450",
+    usdAmount: 450,
     href: "/services/patent-prosecution",
   },
   {
     icon: Globe,
     title: "International Filing",
     description: "PCT applications and national phase entries to extend your protection to other countries — I'll help you decide where it's worth filing.",
-    price: "From $600",
+    usdAmount: 600,
     href: "/services/international-filing",
   },
   {
@@ -55,7 +55,7 @@ const serviceCards = [
     title: "IP Valuation",
     description:
       "A formal valuation of your patent portfolio — useful for investment rounds, licensing negotiations, or strategic planning.",
-    price: "From $2,250",
+    usdAmount: 2250,
     href: "/services/ip-valuation",
   },
 ];
@@ -89,11 +89,7 @@ export default function ServicesOverview() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-blue font-bold">
-                    {service.href === "/services/consultation" ? (
-                      <>From <LocalizedPrice service="consultation" fallback="$125" /></>
-                    ) : (
-                      service.price
-                    )}
+                    <LocalizedPrice amount={service.usdAmount} prefix="From" fallback={`From $${service.usdAmount.toLocaleString()}`} />
                   </span>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue group-hover:translate-x-1 transition-all" />
                 </div>

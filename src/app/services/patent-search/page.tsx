@@ -5,9 +5,16 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import { getServiceBySlug } from "@/data/services";
 
 const service = getServiceBySlug("patent-search")!;
+
+const searchTierUsd: Record<string, number> = {
+  Basic: 335,
+  Standard: 375,
+  Premium: 485,
+};
 
 export const metadata: Metadata = {
   title: `${service.title} | Alexander IP Consulting`,
@@ -155,7 +162,7 @@ export default function PatentSearchPage() {
                     {tier.description}
                   </p>
                   <div className="text-4xl font-bold text-navy">
-                    {tier.price}
+                    <LocalizedPrice amount={searchTierUsd[tier.name]} fallback={tier.price} />
                   </div>
                   <p className="text-sm text-slate-400 mt-2">
                     {service.delivery} delivery

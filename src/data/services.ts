@@ -257,7 +257,7 @@ export const services: Service[] = [
       {
         question: "What about rush delivery?",
         answer:
-          "Rush options are available: 30 days (+$200), 21 days (+$400), 14 days (+$700), or 7 days (+100% of base price). You must specify a target date — 'ASAP' is not accepted.",
+          "Rush options are available at 30, 21, 14, or 7-day timelines with increasing surcharges. The 7-day option is +100% of the base price. See the rush delivery table on this page for exact pricing. You must specify a target date — 'ASAP' is not accepted.",
       },
     ],
   },

@@ -5,9 +5,16 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import { getServiceBySlug } from "@/data/services";
 
 const service = getServiceBySlug("ip-valuation")!;
+
+const valuationTierUsd: Record<string, number> = {
+  Basic: 2250,
+  "Mid-Tier": 3500,
+  Full: 4750,
+};
 
 export const metadata: Metadata = {
   title: `${service.title} | Alexander IP Consulting`,
@@ -127,7 +134,7 @@ export default function IPValuationPage() {
                     {tier.description}
                   </p>
                   <div className="text-4xl font-bold text-navy">
-                    {tier.price}
+                    <LocalizedPrice amount={valuationTierUsd[tier.name]} fallback={tier.price} />
                   </div>
                   <div className="flex items-center justify-center gap-1 text-sm text-slate-400 mt-2">
                     <Clock className="w-3.5 h-3.5" />

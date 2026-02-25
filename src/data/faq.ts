@@ -45,7 +45,7 @@ export const faqItems: FAQItem[] = [
   {
     question: "How much does a patent cost?",
     answer:
-      "My drafting fees range from $995 for straightforward inventions, $1,195 for mid-complexity, and $1,395 for complex ones. Those are my professional fees — the government filing fees are separate and paid by you directly to the patent office (roughly $400 for a USPTO micro entity filing, or about \u00a3325 for the UKIPO). If you want the full package — search, drafting, drawings, and filing support — that runs from $1,970 to $2,370 depending on complexity. I'm upfront about pricing because I think the patent industry has a transparency problem. You should know what you're paying before you commit.",
+      "My drafting fees are tiered by complexity — straightforward mechanical inventions at the lowest tier, mid-complexity for electronics, and the highest tier for software, AI, or advanced systems. Full package pricing (search + drafting + drawings + filing) is also available. Government filing fees are separate and paid by you directly to the patent office. You can see exact pricing on my services pages — everything is transparent and published upfront, because I think the patent industry has a pricing transparency problem. You should know what you're paying before you commit.",
     category: "Pricing",
   },
   {

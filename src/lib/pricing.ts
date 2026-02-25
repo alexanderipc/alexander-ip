@@ -1,15 +1,15 @@
 /* ──────────────────────────────────────────────────────────
-   Shared pricing data & locale detection
-   Used by both the checkout API (server) and LocalizedPrice (client)
+   Shared pricing & currency conversion
    ────────────────────────────────────────────────────────── */
 
 export interface CurrencyPrice {
   currency: string;
   amount: number; // in smallest unit (cents / pence)
   symbol: string;
-  display: string; // human-readable e.g. "$125"
+  display: string;
 }
 
+/* Fixed consultation prices (used by Stripe checkout) */
 export const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
   consultation: {
     GBP: { currency: "gbp", amount: 9500, symbol: "£", display: "£95" },
@@ -20,23 +20,27 @@ export const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
 
 export const DEFAULT_CURRENCY = "USD";
 
-// Map ISO 3166-1 alpha-2 country codes → currency
+/* ── Exchange rates (update periodically) ───────────────── */
+const rates: Record<string, number> = {
+  GBP: 0.74,
+  EUR: 0.96,
+  USD: 1,
+};
+
+const symbols: Record<string, string> = {
+  GBP: "£",
+  EUR: "€",
+  USD: "$",
+};
+
+/* ── Country → currency mapping ─────────────────────────── */
 const countryCurrencyMap: Record<string, string> = {
-  // GBP
   GB: "GBP",
-  // EUR (Eurozone + common EU)
   AT: "EUR", BE: "EUR", CY: "EUR", EE: "EUR", FI: "EUR",
   FR: "EUR", DE: "EUR", GR: "EUR", IE: "EUR", IT: "EUR",
   LV: "EUR", LT: "EUR", LU: "EUR", MT: "EUR", NL: "EUR",
   PT: "EUR", SK: "EUR", SI: "EUR", ES: "EUR", HR: "EUR",
-  // USD (US and territories)
   US: "USD", PR: "USD", GU: "USD", VI: "USD", AS: "USD",
-};
-
-// Map browser locale region codes → currency
-// navigator.language returns e.g. "en-GB", "de-DE", "en-US"
-const localeRegionMap: Record<string, string> = {
-  ...countryCurrencyMap,
 };
 
 export function getCurrencyForCountry(countryCode: string | null): string {
@@ -44,33 +48,27 @@ export function getCurrencyForCountry(countryCode: string | null): string {
   return countryCurrencyMap[countryCode.toUpperCase()] || DEFAULT_CURRENCY;
 }
 
-/**
- * Detect currency from browser locale (client-side only).
- * Uses navigator.language and Intl to determine the user's region.
- */
+/* ── Browser locale detection (client-side) ─────────────── */
 export function getCurrencyFromBrowserLocale(): string {
   if (typeof navigator === "undefined") return DEFAULT_CURRENCY;
 
-  // Try navigator.language first — e.g. "en-GB", "de-DE"
   const lang = navigator.language || "";
   const parts = lang.split("-");
   if (parts.length >= 2) {
     const region = parts[parts.length - 1].toUpperCase();
-    const currency = localeRegionMap[region];
+    const currency = countryCurrencyMap[region];
     if (currency) return currency;
   }
 
-  // Try Intl timezone as backup — e.g. "Europe/London" → GB
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    if (tz.startsWith("Europe/London") || tz.startsWith("GB")) return "GBP";
+    if (tz.startsWith("Europe/London") || tz === "GB") return "GBP";
     if (
       tz.startsWith("Europe/") &&
       !tz.startsWith("Europe/London") &&
       !tz.startsWith("Europe/Istanbul")
-    ) {
+    )
       return "EUR";
-    }
     if (tz.startsWith("America/")) return "USD";
   } catch {
     // Intl not available
@@ -79,11 +77,40 @@ export function getCurrencyFromBrowserLocale(): string {
   return DEFAULT_CURRENCY;
 }
 
-/** Get the display price for a service in a given currency */
-export function getDisplayPrice(
-  service: string,
-  currencyKey: string
+/* ── Universal price conversion ─────────────────────────── */
+
+/** Round to a "clean" number in the target currency */
+function roundToNice(amount: number): number {
+  if (amount < 100) return Math.round(amount / 5) * 5;
+  if (amount < 1000) return Math.round(amount / 5) * 5;
+  if (amount < 5000) return Math.round(amount / 25) * 25;
+  return Math.round(amount / 500) * 500;
+}
+
+/** Convert a USD dollar amount to localised display string */
+export function convertPrice(usdAmount: number, currency: string): string {
+  const rate = rates[currency] || 1;
+  const symbol = symbols[currency] || "$";
+  const converted = usdAmount * rate;
+  const rounded = currency === "USD" ? usdAmount : roundToNice(converted);
+  return `${symbol}${rounded.toLocaleString("en-US")}`;
+}
+
+/** Convert a USD range to localised display string */
+export function convertRange(
+  usdFrom: number,
+  usdTo: number,
+  currency: string
 ): string {
+  const rate = rates[currency] || 1;
+  const symbol = symbols[currency] || "$";
+  const from = currency === "USD" ? usdFrom : roundToNice(usdFrom * rate);
+  const to = currency === "USD" ? usdTo : roundToNice(usdTo * rate);
+  return `${symbol}${from.toLocaleString("en-US")}\u2013${symbol}${to.toLocaleString("en-US")}`;
+}
+
+/** Get the pre-set display price for a checkout service */
+export function getDisplayPrice(service: string, currencyKey: string): string {
   const prices = currencyPrices[service];
   const price = prices?.[currencyKey] || prices?.[DEFAULT_CURRENCY];
   return price?.display || "$125";

@@ -33,24 +33,23 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   TrendingUp,
 };
 
+/** USD starting prices by slug (used for LocalizedPrice conversion) */
+const startingPriceUsd: Record<string, number> = {
+  consultation: 125,
+  "patent-search": 335,
+  "patent-drafting": 995,
+  "patent-prosecution": 450,
+  "international-filing": 600,
+  "ip-valuation": 2250,
+};
+
 const draftingTiers = [
-  {
-    name: "Simple Invention",
-    price: "$995",
-    description: "Mechanical inventions with few moving parts",
-  },
-  {
-    name: "Mid-Tier Invention",
-    price: "$1,195",
-    description: "Electrical systems, moderate complexity",
-    popular: true,
-  },
-  {
-    name: "Complex Invention",
-    price: "$1,395",
-    description: "Software, AI, biochemistry, advanced systems",
-  },
+  { name: "Simple Invention", usd: 995, description: "Mechanical inventions with few moving parts" },
+  { name: "Mid-Tier Invention", usd: 1195, description: "Electrical systems, moderate complexity", popular: true },
+  { name: "Complex Invention", usd: 1395, description: "Software, AI, biochemistry, advanced systems" },
 ];
+
+const rushUsd: Record<number, number> = { 30: 200, 21: 400, 14: 700 };
 
 export default function ServicesPage() {
   return (
@@ -91,6 +90,7 @@ export default function ServicesPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => {
               const IconComponent = iconMap[service.icon];
+              const usd = startingPriceUsd[service.slug];
               return (
                 <Link
                   key={service.slug}
@@ -112,11 +112,7 @@ export default function ServicesPage() {
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                       <div>
                         <span className="text-blue font-bold text-lg">
-                          {service.slug === "consultation" ? (
-                            <LocalizedPrice service="consultation" fallback={service.startingPrice} />
-                          ) : (
-                            service.startingPrice
-                          )}
+                          <LocalizedPrice amount={usd} fallback={service.startingPrice} />
                         </span>
                         <span className="text-slate-400 text-sm ml-1">
                           starting
@@ -180,7 +176,7 @@ export default function ServicesPage() {
                   {tier.description}
                 </p>
                 <div className="text-3xl font-bold text-navy mb-6">
-                  {tier.price}
+                  <LocalizedPrice amount={tier.usd} fallback={`$${tier.usd.toLocaleString()}`} />
                 </div>
                 <Button
                   href="/services/patent-drafting"
@@ -243,7 +239,11 @@ export default function ServicesPage() {
                         {rush.days} days
                       </td>
                       <td className="py-3 px-4 text-right font-semibold text-navy">
-                        {rush.surcharge}
+                        {rushUsd[rush.days] ? (
+                          <><span>+</span><LocalizedPrice amount={rushUsd[rush.days]} fallback={rush.surcharge} /></>
+                        ) : (
+                          rush.surcharge
+                        )}
                       </td>
                     </tr>
                   ))}

@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Image from "next/image";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import {
   GraduationCap,
   Building2,
@@ -176,9 +177,11 @@ export default function AboutPage() {
               offices, the partner profit margins, the layers of administration
               &mdash; I could offer the same calibre of work at a fraction of
               the price. At a traditional patent firm, a single US utility
-              patent application typically costs $8,000&ndash;$15,000 in
-              attorney fees alone. My clients get the same depth of analysis and
-              quality of drafting, starting from $995.
+              patent application typically costs{" "}
+              <LocalizedPrice range={[8000, 15000]} fallback="$8,000–$15,000" />{" "}
+              in attorney fees alone. My clients get the same depth of analysis
+              and quality of drafting, starting from{" "}
+              <LocalizedPrice amount={995} fallback="$995" />.
             </p>
             <p>
               Since then, the practice has served clients across all major

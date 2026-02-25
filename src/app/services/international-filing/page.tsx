@@ -5,9 +5,15 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import { getServiceBySlug } from "@/data/services";
 
 const service = getServiceBySlug("international-filing")!;
+
+const filingTierRange: Record<string, [number, number] | null> = {
+  "PCT Filing": [600, 950],
+  "National Phase Entry": null, // "Varies by jurisdiction" — no conversion
+};
 
 export const metadata: Metadata = {
   title: `${service.title} | Alexander IP Consulting`,
@@ -187,7 +193,11 @@ export default function InternationalFilingPage() {
                     {tier.description}
                   </p>
                   <div className="text-3xl font-bold text-navy">
-                    {tier.price}
+                    {filingTierRange[tier.name] ? (
+                      <LocalizedPrice range={filingTierRange[tier.name]!} fallback={tier.price} />
+                    ) : (
+                      tier.price
+                    )}
                   </div>
                 </div>
                 <div className="space-y-3 mb-8 flex-1">

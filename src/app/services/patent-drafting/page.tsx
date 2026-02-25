@@ -5,6 +5,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import { getServiceBySlug, rushSurcharges } from "@/data/services";
 
 const service = getServiceBySlug("patent-drafting")!;
@@ -17,36 +18,51 @@ export const metadata: Metadata = {
 const fullPackages = [
   {
     name: "Simple Full Package",
-    price: "$1,970",
+    usd: 1970,
     items: [
-      "Patent search ($375)",
-      "Simple drafting ($995)",
-      "Illustrations — created ($350)",
-      "Filing / submission ($250)",
+      { label: "Patent search", usd: 375 },
+      { label: "Simple drafting", usd: 995 },
+      { label: "Illustrations — created", usd: 350 },
+      { label: "Filing / submission", usd: 250 },
     ],
   },
   {
     name: "Mid-Tier Full Package",
-    price: "$2,170",
+    usd: 2170,
     items: [
-      "Patent search ($375)",
-      "Mid-tier drafting ($1,195)",
-      "Illustrations — created ($350)",
-      "Filing / submission ($250)",
+      { label: "Patent search", usd: 375 },
+      { label: "Mid-tier drafting", usd: 1195 },
+      { label: "Illustrations — created", usd: 350 },
+      { label: "Filing / submission", usd: 250 },
     ],
     popular: true,
   },
   {
     name: "Complex Full Package",
-    price: "$2,370",
+    usd: 2370,
     items: [
-      "Patent search ($375)",
-      "Complex drafting ($1,395)",
-      "Illustrations — created ($350)",
-      "Filing / submission ($250)",
+      { label: "Patent search", usd: 375 },
+      { label: "Complex drafting", usd: 1395 },
+      { label: "Illustrations — created", usd: 350 },
+      { label: "Filing / submission", usd: 250 },
     ],
   },
 ];
+
+const draftingTierUsd: Record<string, number> = {
+  "Simple Invention": 995,
+  "Mid-Tier Invention": 1195,
+  "Complex Invention": 1395,
+};
+
+const extraUsd: Record<string, number> = {
+  "Patent Search": 375,
+  "Patent Illustrations (created by Alexander)": 350,
+  "Patent Illustrations (client-provided, formatted)": 50,
+  "Patent Filing / Submission": 250,
+};
+
+const rushUsd: Record<number, number> = { 30: 200, 21: 400, 14: 700 };
 
 export default function PatentDraftingPage() {
   return (
@@ -160,7 +176,7 @@ export default function PatentDraftingPage() {
                     {tier.description}
                   </p>
                   <div className="text-4xl font-bold text-navy">
-                    {tier.price}
+                    <LocalizedPrice amount={draftingTierUsd[tier.name]} fallback={tier.price} />
                   </div>
                   <div className="flex items-center justify-center gap-1 text-sm text-slate-400 mt-2">
                     <Clock className="w-3.5 h-3.5" />
@@ -224,7 +240,7 @@ export default function PatentDraftingPage() {
                     )}
                   </div>
                   <div className="text-lg font-bold text-blue mt-2 sm:mt-0 sm:ml-6">
-                    {extra.price}
+                    <LocalizedPrice amount={extraUsd[extra.name]} fallback={extra.price} />
                   </div>
                 </div>
               ))}
@@ -232,9 +248,8 @@ export default function PatentDraftingPage() {
           </Card>
 
           <p className="text-center text-sm text-slate-500 mt-6">
-            Government patent office fees (e.g., ~$400 USPTO micro entity,
-            ~&pound;325 UKIPO) are paid by you directly to the patent office and
-            are not included above.
+            Government patent office fees are paid by you directly to the patent
+            office and are not included above.
           </p>
         </Container>
       </section>
@@ -273,14 +288,16 @@ export default function PatentDraftingPage() {
                     {pkg.name}
                   </h3>
                   <div className="text-4xl font-bold text-navy">
-                    {pkg.price}
+                    <LocalizedPrice amount={pkg.usd} fallback={`$${pkg.usd.toLocaleString()}`} />
                   </div>
                 </div>
                 <div className="space-y-3 mb-8 flex-1">
                   {pkg.items.map((item) => (
-                    <div key={item} className="flex items-start gap-3">
+                    <div key={item.label} className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-600 text-sm">{item}</span>
+                      <span className="text-slate-600 text-sm">
+                        {item.label} (<LocalizedPrice amount={item.usd} fallback={`$${item.usd.toLocaleString()}`} />)
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -344,7 +361,11 @@ export default function PatentDraftingPage() {
                         {rush.days} days
                       </td>
                       <td className="py-3 px-4 text-right font-semibold text-navy">
-                        {rush.surcharge}
+                        {rushUsd[rush.days] ? (
+                          <>+<LocalizedPrice amount={rushUsd[rush.days]} fallback={rush.surcharge} /></>
+                        ) : (
+                          rush.surcharge
+                        )}
                       </td>
                     </tr>
                   ))}
