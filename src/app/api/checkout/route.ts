@@ -1,46 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-
-/* ──────────────────────────────────────────────────────────
-   Multi-currency pricing
-   Prices are rounded to the nearest 5 in each currency
-   ────────────────────────────────────────────────────────── */
-
-interface CurrencyPrice {
-  currency: string;
-  amount: number; // in smallest unit (cents / pence)
-  symbol: string;
-  display: string; // human-readable e.g. "$125"
-}
-
-const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
-  consultation: {
-    GBP: { currency: "gbp", amount: 9500, symbol: "£", display: "£95" },
-    USD: { currency: "usd", amount: 12500, symbol: "$", display: "$125" },
-    EUR: { currency: "eur", amount: 12000, symbol: "€", display: "€120" },
-  },
-};
-
-// Fallback currency for unknown regions
-const DEFAULT_CURRENCY = "USD";
-
-// Map ISO 3166-1 alpha-2 country codes → currency
-const countryCurrencyMap: Record<string, string> = {
-  // GBP
-  GB: "GBP",
-  // EUR (Eurozone + common EU)
-  AT: "EUR", BE: "EUR", CY: "EUR", EE: "EUR", FI: "EUR",
-  FR: "EUR", DE: "EUR", GR: "EUR", IE: "EUR", IT: "EUR",
-  LV: "EUR", LT: "EUR", LU: "EUR", MT: "EUR", NL: "EUR",
-  PT: "EUR", SK: "EUR", SI: "EUR", ES: "EUR", HR: "EUR",
-  // USD (US and territories)
-  US: "USD", PR: "USD", GU: "USD", VI: "USD", AS: "USD",
-};
-
-function getCurrencyForCountry(countryCode: string | null): string {
-  if (!countryCode) return DEFAULT_CURRENCY;
-  return countryCurrencyMap[countryCode.toUpperCase()] || DEFAULT_CURRENCY;
-}
+import {
+  currencyPrices,
+  getCurrencyForCountry,
+  DEFAULT_CURRENCY,
+} from "@/lib/pricing";
 
 /* ──────────────────────────────────────────────────────────
    Service config
@@ -139,26 +103,4 @@ export async function POST(request: NextRequest) {
         : "Failed to create checkout session";
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-/* ──────────────────────────────────────────────────────────
-   GET endpoint — returns the localised price for the visitor
-   Used by the frontend to display the correct currency
-   ────────────────────────────────────────────────────────── */
-
-export async function GET(request: NextRequest) {
-  const service =
-    request.nextUrl.searchParams.get("service") || "consultation";
-  const country = request.headers.get("x-vercel-ip-country");
-  const currencyKey = getCurrencyForCountry(country);
-  const prices = currencyPrices[service];
-  const price = prices?.[currencyKey] || prices?.[DEFAULT_CURRENCY];
-
-  return NextResponse.json({
-    currency: price?.currency || "usd",
-    display: price?.display || "$125",
-    symbol: price?.symbol || "$",
-    amount: price?.amount || 12500,
-    country: country || "unknown",
-  });
 }

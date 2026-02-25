@@ -110,6 +110,22 @@ const jurisdictions: Jurisdiction[] = [
     ],
   },
   {
+    id: "ca",
+    name: "Canada",
+    color: "#1a56db",
+    hoverColor: "#1540a8",
+    countryCodes: ["124"],
+    patents: [],
+  },
+  {
+    id: "au",
+    name: "Australia",
+    color: "#1a56db",
+    hoverColor: "#1540a8",
+    countryCodes: ["036"],
+    patents: [],
+  },
+  {
     id: "pct",
     name: "PCT International",
     color: "#4b83e8",
@@ -287,6 +303,7 @@ function PatentMap() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5 ml-5">
+                        {j.patents.length === 0 && "Patents granted"}
                         {grantCount > 0 && `${grantCount} granted`}
                         {grantCount > 0 && pubCount > 0 && " · "}
                         {pubCount > 0 && `${pubCount} published`}
@@ -294,6 +311,7 @@ function PatentMap() {
                     </button>
 
                     {/* Expandable patent list */}
+                    {j.patents.length > 0 && (
                     <div
                       className={`overflow-hidden transition-all duration-300 ${
                         isActive
@@ -319,6 +337,7 @@ function PatentMap() {
                         </ul>
                       </div>
                     </div>
+                    )}
                   </div>
                 );
               })}

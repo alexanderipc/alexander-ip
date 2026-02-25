@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { getCurrencyFromBrowserLocale, getDisplayPrice } from "@/lib/pricing";
 
 interface CheckoutButtonProps {
   service?: string;
@@ -23,16 +24,10 @@ export default function CheckoutButton({
   const [loading, setLoading] = useState(false);
   const [priceDisplay, setPriceDisplay] = useState<string | null>(null);
 
-  // Fetch localized price on mount
+  // Detect localised price instantly from browser locale
   useEffect(() => {
-    fetch(`/api/checkout?service=${service}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.display) setPriceDisplay(data.display);
-      })
-      .catch(() => {
-        // Fallback — don't show price if fetch fails
-      });
+    const currency = getCurrencyFromBrowserLocale();
+    setPriceDisplay(getDisplayPrice(service, currency));
   }, [service]);
 
   async function handleCheckout() {
@@ -59,7 +54,6 @@ export default function CheckoutButton({
   }
 
   // If explicit children are provided, use them (backward-compatible)
-  // Otherwise, build a label from the localized price
   const buttonContent = children ?? (
     <>
       {label} — {priceDisplay || "…"}

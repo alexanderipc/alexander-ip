@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
-import LocalizedPrice from "@/components/ui/LocalizedPrice";
 
 export default function Hero() {
   return (
@@ -18,7 +17,7 @@ export default function Hero() {
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-blue/10 text-blue-dark rounded-full px-4 py-1.5 text-sm font-medium mb-6">
               <span className="w-2 h-2 bg-blue rounded-full" />
-              Trained at a top Legal 500 firm &middot; 800+ five-star reviews &middot; Patents granted across the US, UK &amp; Europe
+              Trained at a top Legal 500 firm &middot; 800+ five-star reviews &middot; Patents granted across the US, UK, Europe, Canada &amp; Australia
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-navy leading-[1.1] mb-6">
@@ -32,20 +31,19 @@ export default function Hero() {
             </h1>
 
             <p className="text-lg text-slate-600 leading-relaxed mb-4 max-w-xl">
-              Traditional patent firms charge{" "}
-              <span className="font-semibold text-navy">$8,000&ndash;$15,000</span>{" "}
-              for a single US utility patent application. You get the same calibre
-              of work &mdash; from someone trained at a leading Legal 500 firm &mdash;
-              starting at{" "}
-              <span className="font-semibold text-navy">$995</span> for full patent
-              drafting, or{" "}
-              <span className="font-semibold text-navy"><LocalizedPrice service="consultation" fallback="$125" /></span> for an expert
-              consultation.
+              <span className="font-semibold text-navy">Most traditional firms charge
+              $8,000&ndash;$15,000</span> for a single US utility patent application.
+              With me, a typical patent package &mdash; including search, drafting,
+              illustrations, and filing &mdash; costs{" "}
+              <span className="font-semibold text-navy">$1,500&ndash;$2,500</span>{" "}
+              depending on complexity. Same calibre of work, trained at a leading
+              Legal&nbsp;500 firm.
             </p>
 
             <p className="text-base text-slate-500 leading-relaxed mb-8 max-w-xl">
-              No jargon. No surprises. Just clear, thorough patent work &mdash;
-              drafted and prosecuted through to grant across the US, UK, Europe, and beyond.
+              Every service has a clear, fixed fee calculated using a transparent
+              pricing formula &mdash; so you always know exactly what you&apos;re
+              paying before you commit. No jargon, no hourly billing, no surprises.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">

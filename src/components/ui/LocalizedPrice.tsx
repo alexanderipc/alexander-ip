@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  getCurrencyFromBrowserLocale,
+  getDisplayPrice,
+} from "@/lib/pricing";
 
 interface LocalizedPriceProps {
   service?: string;
@@ -16,14 +20,10 @@ export default function LocalizedPrice({
   const [display, setDisplay] = useState(fallback);
 
   useEffect(() => {
-    fetch(`/api/checkout?service=${service}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.display) setDisplay(data.display);
-      })
-      .catch(() => {
-        // Keep fallback
-      });
+    // Detect currency instantly from browser locale — no network round-trip
+    const currency = getCurrencyFromBrowserLocale();
+    const price = getDisplayPrice(service, currency);
+    setDisplay(price);
   }, [service]);
 
   return <span className={className}>{display}</span>;
