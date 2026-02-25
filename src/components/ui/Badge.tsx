@@ -1,10 +1,11 @@
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: "teal" | "navy" | "amber" | "slate";
+  variant?: "blue" | "teal" | "navy" | "amber" | "slate";
   className?: string;
 }
 
 const variants = {
+  blue: "bg-blue/10 text-blue-dark",
   teal: "bg-teal/10 text-teal-dark",
   navy: "bg-navy/10 text-navy",
   amber: "bg-amber/10 text-amber-light",
@@ -13,7 +14,7 @@ const variants = {
 
 export default function Badge({
   children,
-  variant = "teal",
+  variant = "blue",
   className = "",
 }: BadgeProps) {
   return (

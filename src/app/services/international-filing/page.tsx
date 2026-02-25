@@ -81,7 +81,7 @@ export default function InternationalFilingPage() {
                 key={feature}
                 className="flex items-start gap-3 bg-slate-50 rounded-lg p-4"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700 text-sm">{feature}</span>
               </div>
             ))}
@@ -93,8 +93,8 @@ export default function InternationalFilingPage() {
       <section className="py-20 bg-slate-50">
         <Container size="narrow">
           <div className="text-center mb-12">
-            <div className="w-12 h-12 bg-teal/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Globe className="w-6 h-6 text-teal" />
+            <div className="w-12 h-12 bg-blue/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Globe className="w-6 h-6 text-blue" />
             </div>
             <h2 className="text-3xl font-bold text-navy mb-4">
               How the PCT Route Works
@@ -130,9 +130,9 @@ export default function InternationalFilingPage() {
           </div>
 
           <div className="mt-8">
-            <Card padding="md" className="bg-teal/5 border-teal/20">
+            <Card padding="md" className="bg-blue/5 border-blue/20">
               <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <Clock className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-navy text-sm">
                     Important Deadline
@@ -164,7 +164,7 @@ export default function InternationalFilingPage() {
                 key={item}
                 className="flex items-start gap-3 bg-slate-50 rounded-lg p-4"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{item}</span>
               </div>
             ))}
@@ -200,7 +200,7 @@ export default function InternationalFilingPage() {
                 <div className="space-y-3 mb-8 flex-1">
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                       <span className="text-slate-600 text-sm">{feature}</span>
                     </div>
                   ))}

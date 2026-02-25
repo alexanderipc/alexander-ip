@@ -33,7 +33,7 @@ export default function Testimonials() {
               href="https://www.fiverr.com/alexander_ip"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-teal hover:text-teal-dark inline-flex items-center gap-1"
+              className="text-blue hover:text-blue-dark inline-flex items-center gap-1"
             >
               Fiverr
               <ExternalLink className="w-3.5 h-3.5" />
@@ -45,7 +45,7 @@ export default function Testimonials() {
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-10 relative">
             {/* Quote mark */}
-            <div className="absolute top-6 left-8 text-6xl text-teal/10 font-serif leading-none">
+            <div className="absolute top-6 left-8 text-6xl text-blue/10 font-serif leading-none">
               &ldquo;
             </div>
 
@@ -89,7 +89,7 @@ export default function Testimonials() {
                 key={i}
                 onClick={() => setCurrent(i)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  i === current ? "bg-teal w-6" : "bg-slate-300"
+                  i === current ? "bg-blue w-6" : "bg-slate-300"
                 }`}
                 aria-label={`Go to testimonial ${i + 1}`}
               />

@@ -67,7 +67,7 @@ export default function IPValuationPage() {
                 key={feature}
                 className="flex items-start gap-3 bg-slate-50 rounded-lg p-4"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{feature}</span>
               </div>
             ))}
@@ -89,7 +89,7 @@ export default function IPValuationPage() {
                 key={item}
                 className="flex items-start gap-3 bg-white rounded-lg p-4 border border-slate-200"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{item}</span>
               </div>
             ))}
@@ -147,7 +147,7 @@ export default function IPValuationPage() {
                 <div className="space-y-3 mb-8 flex-1">
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                       <span className="text-slate-600 text-sm">{feature}</span>
                     </div>
                   ))}

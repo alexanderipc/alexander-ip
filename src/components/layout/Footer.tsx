@@ -54,7 +54,7 @@ export default function Footer() {
                 <Mail className="w-4 h-4 flex-shrink-0" />
                 <a
                   href="mailto:hello@alexander-ip.com"
-                  className="hover:text-teal transition-colors"
+                  className="hover:text-blue-light transition-colors"
                 >
                   hello@alexander-ip.com
                 </a>
@@ -72,7 +72,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-teal transition-colors"
+                    className="text-sm text-slate-400 hover:text-blue-light transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -91,7 +91,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-teal transition-colors"
+                    className="text-sm text-slate-400 hover:text-blue-light transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -110,7 +110,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-teal transition-colors"
+                    className="text-sm text-slate-400 hover:text-blue-light transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -124,7 +124,7 @@ export default function Footer() {
               href="https://www.fiverr.com/alexander_ip"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-teal transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-blue-light transition-colors"
             >
               Fiverr (800+ Reviews)
               <ExternalLink className="w-3.5 h-3.5" />

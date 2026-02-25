@@ -59,8 +59,8 @@ export default function IntakeForm() {
 
   if (status === "success") {
     return (
-      <div className="bg-teal/5 border border-teal/20 rounded-xl p-8 text-center">
-        <CheckCircle2 className="w-12 h-12 text-teal mx-auto mb-4" />
+      <div className="bg-blue/5 border border-blue/20 rounded-xl p-8 text-center">
+        <CheckCircle2 className="w-12 h-12 text-blue mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-navy mb-2">
           Enquiry Received
         </h3>
@@ -86,7 +86,7 @@ export default function IntakeForm() {
             id="name"
             name="name"
             required
-            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent text-sm"
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm"
             placeholder="Your name"
           />
         </div>
@@ -99,7 +99,7 @@ export default function IntakeForm() {
             id="email"
             name="email"
             required
-            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent text-sm"
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm"
             placeholder="your@email.com"
           />
         </div>
@@ -114,7 +114,7 @@ export default function IntakeForm() {
           type="text"
           id="country"
           name="country"
-          className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent text-sm"
+          className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm"
           placeholder="Your country"
         />
       </div>
@@ -128,7 +128,7 @@ export default function IntakeForm() {
           id="service"
           name="service"
           required
-          className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent text-sm bg-white"
+          className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm bg-white"
         >
           <option value="">Select a service...</option>
           {serviceOptions.map((opt) => (
@@ -149,7 +149,7 @@ export default function IntakeForm() {
           name="description"
           required
           rows={4}
-          className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent text-sm resize-y"
+          className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm resize-y"
           placeholder="Please provide a high-level description of your invention. Don't worry about confidentiality at this stage — keep it general. I'll arrange an NDA before you share detailed technical information."
         />
       </div>
@@ -163,7 +163,7 @@ export default function IntakeForm() {
           <select
             id="referral"
             name="referral"
-            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent text-sm bg-white"
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm bg-white"
           >
             <option value="">Select...</option>
             {referralOptions.map((opt) => (
@@ -180,7 +180,7 @@ export default function IntakeForm() {
           <select
             id="timeline"
             name="timeline"
-            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent text-sm bg-white"
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm bg-white"
           >
             <option value="">Select...</option>
             {timelineOptions.map((opt) => (
@@ -198,7 +198,7 @@ export default function IntakeForm() {
           type="checkbox"
           id="budget"
           name="budget_aware"
-          className="mt-1 w-4 h-4 text-teal border-slate-300 rounded focus:ring-teal"
+          className="mt-1 w-4 h-4 text-blue border-slate-300 rounded focus:ring-blue"
         />
         <label htmlFor="budget" className="text-sm text-slate-600">
           I understand that services start from $125 for consultations and

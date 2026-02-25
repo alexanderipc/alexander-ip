@@ -1,24 +1,24 @@
-import { GraduationCap, User, ShieldCheck } from "lucide-react";
+import { MessageCircle, GraduationCap, User } from "lucide-react";
 import Container from "@/components/ui/Container";
 
 const differentiators = [
   {
+    icon: MessageCircle,
+    title: "I Explain Things in Plain English",
+    description:
+      "Most patent firms communicate in legalese because it reinforces the mystique. I do the opposite. You'll understand exactly what's happening with your application, why it matters, and what your options are — in language that actually makes sense.",
+  },
+  {
     icon: GraduationCap,
     title: "Top-Tier Training, Accessible Pricing",
     description:
-      "Trained at Kilburn & Strode LLP, a top-tier Legal 500 intellectual property firm. The same calibre of work traditionally reserved for large corporations, at a fraction of the cost.",
+      "I trained at Kilburn & Strode, a Legal 500 intellectual property firm. You get the same quality of work, without the large-office overhead, partner profit margins, or junior associates. Just the expert doing the work.",
   },
   {
     icon: User,
-    title: "Direct Personal Service",
+    title: "I Handle the Full Lifecycle, Personally",
     description:
-      "Work directly with the expert handling your case. No handoffs to junior associates, no layers of management. One point of contact from start to finish.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Proven Global Track Record",
-    description:
-      "Hundreds of patents granted across the US, UK, Europe, and internationally. 800+ five-star reviews from individual inventors, startups, and established companies alike.",
+      "No handoffs, no account managers, no junior associates picking up where someone else left off. One person — from initial concept through to grant and beyond. Many of my clients come back with new inventions.",
   },
 ];
 
@@ -39,8 +39,8 @@ export default function WhyAlexanderIPC() {
         <div className="grid md:grid-cols-3 gap-8">
           {differentiators.map((item) => (
             <div key={item.title} className="text-center">
-              <div className="w-14 h-14 bg-navy rounded-xl flex items-center justify-center mx-auto mb-5 shadow-lg">
-                <item.icon className="w-7 h-7 text-teal" />
+              <div className="w-14 h-14 bg-blue rounded-xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+                <item.icon className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-navy mb-3">
                 {item.title}

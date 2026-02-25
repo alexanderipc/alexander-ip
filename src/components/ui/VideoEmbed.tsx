@@ -33,7 +33,7 @@ export default function VideoEmbed({
 
       {/* Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
-        <div className="w-16 h-16 rounded-full bg-teal/90 flex items-center justify-center mb-4 shadow-lg">
+        <div className="w-16 h-16 rounded-full bg-blue/90 flex items-center justify-center mb-4 shadow-lg">
           <Play className="w-7 h-7 ml-1" fill="white" />
         </div>
         <p className="text-lg font-semibold">{title}</p>

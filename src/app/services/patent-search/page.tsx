@@ -48,11 +48,11 @@ export default function PatentSearchPage() {
       </section>
 
       {/* Bundle Note */}
-      <section className="bg-teal/5 border-y border-teal/20">
+      <section className="bg-blue/5 border-y border-blue/20">
         <Container>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-6 text-center sm:text-left">
-            <div className="w-12 h-12 bg-teal/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <FileText className="w-6 h-6 text-teal" />
+            <div className="w-12 h-12 bg-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <FileText className="w-6 h-6 text-blue" />
             </div>
             <div>
               <p className="font-semibold text-navy text-lg">
@@ -96,7 +96,7 @@ export default function PatentSearchPage() {
                 key={feature}
                 className="flex items-start gap-3 bg-slate-50 rounded-lg p-4"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{feature}</span>
               </div>
             ))}
@@ -118,7 +118,7 @@ export default function PatentSearchPage() {
                 key={item}
                 className="flex items-start gap-3 bg-white rounded-lg p-4 border border-slate-200"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{item}</span>
               </div>
             ))}
@@ -171,7 +171,7 @@ export default function PatentSearchPage() {
                 <div className="space-y-3 mb-8 flex-1">
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                       <span className="text-slate-600 text-sm">{feature}</span>
                     </div>
                   ))}

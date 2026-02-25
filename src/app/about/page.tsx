@@ -75,16 +75,22 @@ export default function AboutPage() {
             <div>
               <Badge className="mb-6">About Alexander</Badge>
               <h1 className="text-4xl sm:text-5xl font-bold text-navy leading-tight mb-6">
-                Democratising
+                Why This
                 <br />
-                Patent Protection
+                Practice Exists
               </h1>
+              <p className="text-lg text-slate-600 leading-relaxed mb-4">
+                The patent industry has a problem: it doesn&apos;t serve smaller
+                innovators well. If you&apos;re an independent inventor or an
+                early-stage startup, getting a patent drafted typically means
+                paying $8,000&ndash;$15,000 in attorney fees alone &mdash; or
+                trying to navigate a complex legal system without guidance.
+              </p>
               <p className="text-lg text-slate-600 leading-relaxed mb-8">
-                I founded Alexander IPC on a simple observation: the patent
-                legal industry doesn&apos;t cater well to startups and individual
-                inventors — the very source of much genuine innovation.
-                Traditional patent firms charge $10,000+ for basic services. I
-                deliver the same calibre of work at a fraction of the cost.
+                I started this practice to change that. You get the same depth
+                of training, the same rigorous work, and the same results as a
+                top-tier firm &mdash; without the overheads that make their
+                pricing inaccessible.
               </p>
               <Button href="/contact">Work With Me</Button>
             </div>
@@ -100,7 +106,7 @@ export default function AboutPage() {
                 />
               </div>
               {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-teal/10 rounded-full blur-2xl" />
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue/10 rounded-full blur-2xl" />
               <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-navy/5 rounded-full blur-2xl" />
               {/* PATENTED stamp watermark */}
               <div className="absolute -bottom-3 -right-3 w-24 h-24 opacity-15">
@@ -124,7 +130,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <stat.icon className="w-5 h-5 text-teal mx-auto mb-1.5" />
+                <stat.icon className="w-5 h-5 text-blue mx-auto mb-1.5" />
                 <span className="text-2xl font-bold text-white block">
                   {stat.value}
                 </span>
@@ -142,45 +148,92 @@ export default function AboutPage() {
           <div className="prose prose-lg prose-slate max-w-none space-y-6 text-slate-600 leading-relaxed">
             <p>
               I hold an MSc in Physics from the University of Bristol, where I
-              specialised in practical laboratory physics. Immediately after
-              graduating in 2016, I began training as a patent attorney at
-              Kilburn &amp; Strode LLP — a top-tier Legal 500 intellectual
-              property firm in London.
+              specialised in practical laboratory physics. After graduating in
+              2016, I went straight into training as a patent attorney at
+              Kilburn &amp; Strode LLP &mdash; one of the UK&apos;s leading
+              intellectual property firms and a long-standing Legal 500 name.
             </p>
             <p>
-              During my time at Kilburn &amp; Strode, I earned a Certificate in
-              Intellectual Property from Queen Mary University of London and
-              focused on software and communications patents, working on
-              European patent prosecution for major clients including Research
-              in Motion (BlackBerry) and Cisco.
+              At Kilburn &amp; Strode, I earned a Certificate in Intellectual
+              Property from Queen Mary University of London. I focused on
+              software and telecommunications patents, handling European patent
+              prosecution for clients including Research in Motion (BlackBerry)
+              and Cisco. After more than two years there, I moved between firms
+              to deepen my experience in patent drafting, filing strategies, and
+              portfolio management.
             </p>
             <p>
-              After over two years, I moved between firms to gain broader
-              experience in patent drafting, filing strategies, and portfolio
-              management. I was on track to qualify as a European Patent
-              Attorney in 2020, having passed the pre-EQE, when COVID-19
-              caused the cancellation of all qualification exams.
+              By 2020, I had passed the pre-EQE and was on track to sit the
+              European Patent Attorney qualifying exams. Then COVID-19 cancelled
+              all exam sittings. During the disruption, I began freelancing
+              &mdash; and what I found surprised me. There was enormous unmet
+              demand for high-quality patent services from smaller innovators who
+              couldn&apos;t afford traditional firm fees but still needed
+              rigorous, professional work.
             </p>
             <p>
-              What started as freelancing during the pandemic quickly revealed
-              enormous unmet demand for accessible, high-quality patent
-              services from someone with rigorous training who wasn&apos;t tied to
-              big-firm overheads. Five years later, the practice has served
-              hundreds of clients across all major international jurisdictions,
-              and demand remains consistently high.
+              Going independent wasn&apos;t a fallback. It was a deliberate
+              choice. Without big-firm overheads &mdash; the central London
+              offices, the partner profit margins, the layers of administration
+              &mdash; I could offer the same calibre of work at a fraction of
+              the price. At a traditional patent firm, a single US utility
+              patent application typically costs $8,000&ndash;$15,000 in
+              attorney fees alone. My clients get the same depth of analysis and
+              quality of drafting, starting from $995.
             </p>
             <p>
-              In 2024, I incorporated as{" "}
-              <strong>Alexander IPC Ltd</strong>, formalising a practice that
-              had already established itself as a trusted name in accessible
-              patent services.
+              Five years later, the practice has served hundreds of clients
+              across all major international jurisdictions, with demand
+              consistently growing. In 2024, I incorporated as{" "}
+              <strong>Alexander IPC Ltd</strong>, formalising what had already
+              become a trusted name in accessible patent services. I&apos;m based
+              in Bristol, UK, and work with inventors and startups worldwide.
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* The Qualification Question */}
+      <section className="py-20 bg-slate-50">
+        <Container size="narrow">
+          <h2 className="text-3xl font-bold text-navy mb-8">
+            The Qualification Question
+          </h2>
+          <div className="prose prose-lg prose-slate max-w-none space-y-6 text-slate-600 leading-relaxed">
+            <p>
+              You might be wondering: is he a qualified patent attorney? Here&apos;s
+              the straightforward answer.
+            </p>
+            <p>
+              I have the full training and track record of a qualified patent
+              attorney. I completed a multi-year training programme at one of the
+              UK&apos;s top Legal 500 IP firms, passed the pre-EQE, and was on
+              track to sit the final qualifying exams when they were cancelled
+              due to COVID-19. The formal title hasn&apos;t followed &mdash; but
+              the substance has.
+            </p>
+            <p>
+              Since then, I&apos;ve drafted and prosecuted hundreds of patent
+              applications across the US, UK, Europe, and other major
+              jurisdictions. I&apos;ve worked with individual inventors,
+              startups, and established businesses. Over five years of
+              independent practice, I&apos;ve accumulated more than 800
+              five-star reviews from clients who chose to come back, and to
+              refer others.
+            </p>
+            <p>
+              If you&apos;re evaluating whether to work with me, the question
+              isn&apos;t whether I hold a specific title. It&apos;s whether the
+              work is good, whether the results speak for themselves, and
+              whether you&apos;re getting genuine expertise at a fair price.
+              The track record answers all three.
             </p>
           </div>
         </Container>
       </section>
 
       {/* Credentials */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-white">
         <Container>
           <h2 className="text-3xl font-bold text-navy mb-10 text-center">
             Credentials &amp; Training
@@ -189,10 +242,10 @@ export default function AboutPage() {
             {credentials.map((cred) => (
               <div
                 key={cred.title}
-                className="flex gap-4 bg-white rounded-xl p-6 border border-slate-200"
+                className="flex gap-4 bg-slate-50 rounded-xl p-6 border border-slate-200"
               >
                 <div className="w-10 h-10 bg-navy rounded-lg flex items-center justify-center flex-shrink-0">
-                  <cred.icon className="w-5 h-5 text-teal" />
+                  <cred.icon className="w-5 h-5 text-blue" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-navy">{cred.title}</h3>
@@ -205,7 +258,7 @@ export default function AboutPage() {
       </section>
 
       {/* Technology Areas */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-slate-50">
         <Container>
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-navy mb-4">
@@ -221,9 +274,9 @@ export default function AboutPage() {
             {techAreas.map((area) => (
               <div
                 key={area}
-                className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2"
+                className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-4 py-2"
               >
-                <CheckCircle2 className="w-4 h-4 text-teal flex-shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-blue flex-shrink-0" />
                 <span className="text-sm font-medium text-slate-700">
                   {area}
                 </span>

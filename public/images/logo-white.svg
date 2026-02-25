@@ -1,8 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 50" fill="none">
-  <text x="0" y="36" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="700" fill="#ffffff" letter-spacing="-0.5">
-    Alexander
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 45" fill="none">
+  <text x="0" y="34" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="700" fill="#ffffff" letter-spacing="-0.5">
+    Alexander IP
   </text>
-  <text x="175" y="36" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="700" fill="#0d9488" letter-spacing="-0.5">
-    IP
-  </text>
+  <line x1="0" y1="23" x2="220" y2="23" stroke="#ffffff" stroke-width="2.5" />
 </svg>

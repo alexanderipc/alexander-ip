@@ -34,7 +34,7 @@ export default function TrustBar() {
               key={stat.label}
               className="flex flex-col items-center text-center"
             >
-              <stat.icon className="w-6 h-6 text-teal mb-2" />
+              <stat.icon className="w-6 h-6 text-blue-light mb-2" />
               <span className="text-2xl font-bold text-white">{stat.value}</span>
               <span className="text-sm text-slate-400">{stat.label}</span>
             </div>

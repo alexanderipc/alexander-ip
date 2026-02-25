@@ -36,11 +36,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/images/logo.svg"
+              src="/images/logo-original.jpg"
               alt="Alexander IP"
               width={180}
-              height={32}
-              className="h-8 w-auto"
+              height={36}
+              className="h-9 w-auto"
               priority
             />
           </Link>

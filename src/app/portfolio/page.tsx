@@ -65,7 +65,7 @@ export default function PortfolioPage() {
             {features.map((feature) => (
               <div key={feature.title} className="flex gap-4">
                 <div className="w-10 h-10 bg-navy rounded-lg flex items-center justify-center flex-shrink-0">
-                  <feature.icon className="w-5 h-5 text-teal" />
+                  <feature.icon className="w-5 h-5 text-blue" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-navy mb-1">

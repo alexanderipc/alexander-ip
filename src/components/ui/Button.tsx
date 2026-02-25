@@ -13,11 +13,11 @@ interface ButtonProps {
 
 const variants = {
   primary:
-    "bg-teal text-white hover:bg-teal-dark shadow-lg shadow-teal/20 hover:shadow-teal/30",
+    "bg-blue text-white hover:bg-blue-dark shadow-lg shadow-blue/20 hover:shadow-blue/30",
   secondary:
     "bg-navy text-white hover:bg-navy-light shadow-lg shadow-navy/20",
   outline:
-    "border-2 border-teal text-teal hover:bg-teal hover:text-white",
+    "border-2 border-blue text-blue hover:bg-blue hover:text-white",
   ghost:
     "text-slate-600 hover:text-navy hover:bg-slate-100",
 };
@@ -39,7 +39,7 @@ export default function Button({
   disabled = false,
 }: ButtonProps) {
   const baseClasses =
-    "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
   const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`;
 
   if (href) {

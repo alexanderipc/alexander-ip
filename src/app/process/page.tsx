@@ -34,7 +34,7 @@ const journey1Steps = [
     icon: Search,
     title: "Patent Search",
     description:
-      "A thorough investigation of existing patents and prior art to assess your invention's patentability. You receive a detailed report with my honest assessment.",
+      "Before investing in a full application, find out if your invention is novel enough. I search existing patents and prior art, then give you an honest assessment of where you stand.",
     timeline: "21 days",
     cost: "From $335",
   },
@@ -42,7 +42,7 @@ const journey1Steps = [
     icon: FileText,
     title: "Patent Drafting",
     description:
-      "Full preparation of your patent application: background, summary, detailed description, claims, abstract, and coordination of drawings.",
+      "I prepare the full patent application — background, summary, detailed description, claims, abstract, and drawings — and file it with the patent office on your behalf.",
     timeline: "45 days",
     cost: "From $995",
   },
@@ -58,7 +58,7 @@ const journey1Steps = [
     icon: Scale,
     title: "Prosecution",
     description:
-      "If the patent examiner raises objections (which is normal), I analyse them, develop a strategy, and draft a formal response to overcome them.",
+      "When the patent office responds (they almost always do), I handle the back-and-forth to get your patent granted. I analyse the objections, develop a strategy, and draft a formal response.",
     timeline: "12\u201324 months after filing",
     cost: "From $450",
   },
@@ -114,14 +114,14 @@ const journey3Steps = [
     icon: Globe,
     title: "PCT Application",
     description:
-      "Within 12 months, file a PCT international application for global 'patent pending' status.",
+      "Within 12 months, file a PCT international application. Think of it as holding your place in line internationally — you get global 'patent pending' status without committing to specific countries yet.",
     timeline: "Month 12",
   },
   {
     icon: FileText,
     title: "National Phase Entry",
     description:
-      "At 30 months, choose which countries to enter and file in each selected jurisdiction.",
+      "At 30 months, you decide which countries to actually file in. The PCT buys you time to test the market, raise funding, or figure out where the product is actually selling.",
     timeline: "Month 30",
   },
   {
@@ -153,8 +153,8 @@ function Timeline({ steps }: TimelineProps) {
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 z-10 shadow-md ${
                 i === steps.length - 1
-                  ? "bg-teal text-white"
-                  : "bg-navy text-teal"
+                  ? "bg-blue text-white"
+                  : "bg-navy text-blue"
               }`}
             >
               <step.icon className="w-5 h-5" />
@@ -173,7 +173,7 @@ function Timeline({ steps }: TimelineProps) {
                 {step.timeline}
               </div>
               {step.cost && (
-                <div className="flex items-center gap-1 text-xs text-teal-dark bg-teal/10 rounded-full px-2.5 py-0.5">
+                <div className="flex items-center gap-1 text-xs text-blue-dark bg-blue/10 rounded-full px-2.5 py-0.5">
                   <DollarSign className="w-3 h-3" />
                   {step.cost}
                 </div>
@@ -215,8 +215,8 @@ export default function ProcessPage() {
               Journey 1: New Invention
             </h2>
             <p className="text-slate-600">
-              The most common path — taking a new idea from concept to granted
-              patent.
+              The most common path — you have a new invention and want to
+              protect it. Here&apos;s what the process looks like, step by step.
             </p>
           </div>
           <Timeline steps={journey1Steps} />
@@ -247,7 +247,10 @@ export default function ProcessPage() {
               Journey 3: International Protection
             </h2>
             <p className="text-slate-600">
-              Extending your patent protection globally through the PCT route.
+              The PCT route is like holding your place in line internationally.
+              You don&apos;t have to file in every country immediately — the PCT
+              buys you time to test the market, raise funding, or figure out
+              where the product is actually selling.
             </p>
           </div>
           <Timeline steps={journey3Steps} />

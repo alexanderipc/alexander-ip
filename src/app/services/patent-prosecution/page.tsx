@@ -60,7 +60,7 @@ export default function PatentProsecutionPage() {
                 key={feature}
                 className="flex items-start gap-3 bg-slate-50 rounded-lg p-4"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{feature}</span>
               </div>
             ))}
@@ -82,7 +82,7 @@ export default function PatentProsecutionPage() {
                 key={item}
                 className="flex items-start gap-3 bg-white rounded-lg p-4 border border-slate-200"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{item}</span>
               </div>
             ))}
@@ -128,7 +128,7 @@ export default function PatentProsecutionPage() {
                 <div className="space-y-3 mb-8 flex-1">
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                       <span className="text-slate-600 text-sm">{feature}</span>
                     </div>
                   ))}
@@ -156,7 +156,7 @@ export default function PatentProsecutionPage() {
 
           {/* Combined pricing note */}
           <div className="mt-8 max-w-4xl mx-auto">
-            <Card padding="md" className="bg-teal/5 border-teal/20">
+            <Card padding="md" className="bg-blue/5 border-blue/20">
               <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                 <div className="flex-1">
                   <p className="font-semibold text-navy">

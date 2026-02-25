@@ -99,7 +99,7 @@ export default function PatentDraftingPage() {
                 key={feature}
                 className="flex items-start gap-3 bg-slate-50 rounded-lg p-4"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700 text-sm">{feature}</span>
               </div>
             ))}
@@ -121,7 +121,7 @@ export default function PatentDraftingPage() {
                 key={item}
                 className="flex items-start gap-3 bg-white rounded-lg p-4 border border-slate-200"
               >
-                <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700">{item}</span>
               </div>
             ))}
@@ -177,7 +177,7 @@ export default function PatentDraftingPage() {
                 <div className="space-y-3 mb-8 flex-1">
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                       <span className="text-slate-600 text-sm">{feature}</span>
                     </div>
                   ))}
@@ -199,8 +199,8 @@ export default function PatentDraftingPage() {
       <section className="py-20 bg-slate-50">
         <Container size="narrow">
           <div className="text-center mb-10">
-            <div className="w-12 h-12 bg-teal/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Plus className="w-6 h-6 text-teal" />
+            <div className="w-12 h-12 bg-blue/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Plus className="w-6 h-6 text-blue" />
             </div>
             <h2 className="text-3xl font-bold text-navy mb-4">
               Optional Extras
@@ -230,7 +230,7 @@ export default function PatentDraftingPage() {
                       </p>
                     )}
                   </div>
-                  <div className="text-lg font-bold text-teal mt-2 sm:mt-0 sm:ml-6">
+                  <div className="text-lg font-bold text-blue mt-2 sm:mt-0 sm:ml-6">
                     {extra.price}
                   </div>
                 </div>
@@ -286,7 +286,7 @@ export default function PatentDraftingPage() {
                 <div className="space-y-3 mb-8 flex-1">
                   {pkg.items.map((item) => (
                     <div key={item} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
                       <span className="text-slate-600 text-sm">{item}</span>
                     </div>
                   ))}

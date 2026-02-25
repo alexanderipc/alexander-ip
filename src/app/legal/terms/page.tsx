@@ -100,7 +100,7 @@ export default function TermsPage() {
             For questions about these terms, please contact:{" "}
             <a
               href="mailto:hello@alexander-ip.com"
-              className="text-teal hover:text-teal-dark"
+              className="text-blue hover:text-blue-dark"
             >
               hello@alexander-ip.com
             </a>

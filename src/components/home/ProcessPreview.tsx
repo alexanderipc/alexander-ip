@@ -52,8 +52,8 @@ export default function ProcessPreview() {
                 <div
                   className={`w-14 h-14 rounded-xl flex items-center justify-center mb-3 shadow-md ${
                     i === steps.length - 1
-                      ? "bg-teal text-white"
-                      : "bg-navy text-teal"
+                      ? "bg-blue text-white"
+                      : "bg-navy text-blue-light"
                   }`}
                 >
                   <step.icon className="w-6 h-6" />

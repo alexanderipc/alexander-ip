@@ -41,8 +41,8 @@ export default function ContactPage() {
 
               <div className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 bg-teal/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-teal" />
+                  <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-5 h-5 text-blue" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy">
@@ -55,14 +55,14 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 bg-teal/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-5 h-5 text-teal" />
+                  <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-5 h-5 text-blue" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy">Email</h3>
                     <a
                       href="mailto:hello@alexander-ip.com"
-                      className="text-sm text-teal hover:text-teal-dark"
+                      className="text-sm text-blue hover:text-blue-dark"
                     >
                       hello@alexander-ip.com
                     </a>
@@ -70,8 +70,8 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 bg-teal/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-teal" />
+                  <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-blue" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy">Location</h3>
@@ -82,8 +82,8 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 bg-teal/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-5 h-5 text-teal" />
+                  <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-5 h-5 text-blue" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy">

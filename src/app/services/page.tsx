@@ -97,9 +97,9 @@ export default function ServicesPage() {
                   className="group"
                 >
                   <Card hover padding="lg" className="h-full flex flex-col">
-                    <div className="w-12 h-12 bg-teal/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal/20 transition-colors">
+                    <div className="w-12 h-12 bg-blue/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue/20 transition-colors">
                       {IconComponent && (
-                        <IconComponent className="w-6 h-6 text-teal" />
+                        <IconComponent className="w-6 h-6 text-blue" />
                       )}
                     </div>
                     <h3 className="text-xl font-semibold text-navy mb-2">
@@ -110,7 +110,7 @@ export default function ServicesPage() {
                     </p>
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                       <div>
-                        <span className="text-teal font-bold text-lg">
+                        <span className="text-blue font-bold text-lg">
                           {service.startingPrice}
                         </span>
                         <span className="text-slate-400 text-sm ml-1">
@@ -123,7 +123,7 @@ export default function ServicesPage() {
                       </div>
                     </div>
                     <div className="flex items-center justify-end mt-3">
-                      <span className="text-sm text-teal font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                      <span className="text-sm text-blue font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
                         View details
                         <ArrowRight className="w-4 h-4" />
                       </span>
@@ -146,7 +146,7 @@ export default function ServicesPage() {
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Base pricing by invention complexity. Most clients also add
               a patent search, illustrations, and filing — see the{" "}
-              <Link href="/services/patent-drafting" className="text-teal hover:text-teal-dark underline">
+              <Link href="/services/patent-drafting" className="text-blue hover:text-blue-dark underline">
                 full pricing breakdown
               </Link>.
             </p>

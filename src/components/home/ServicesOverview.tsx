@@ -15,14 +15,14 @@ const serviceCards = [
   {
     icon: MessageSquare,
     title: "Consultation",
-    description: "Expert advice on patentability, strategy, and IP protection.",
+    description: "Not sure where to start? I'll assess your idea, explain what patent protection involves, and help you decide if it makes sense to proceed.",
     price: "From $125",
     href: "/services/consultation",
   },
   {
     icon: Search,
     title: "Patent Search",
-    description: "Thorough prior art investigation with detailed report.",
+    description: "A thorough search of existing patents and publications to see what's already out there — so you know what you're up against before investing in a full application.",
     price: "From $335",
     href: "/services/patent-search",
   },
@@ -30,7 +30,7 @@ const serviceCards = [
     icon: FileText,
     title: "Patent Drafting",
     description:
-      "Full patent application ready for filing in any major jurisdiction.",
+      "A complete patent application, drafted to maximise your protection and ready for filing in any major jurisdiction.",
     price: "From $995",
     href: "/services/patent-drafting",
   },
@@ -38,14 +38,14 @@ const serviceCards = [
     icon: Scale,
     title: "Prosecution",
     description:
-      "Strategic responses to patent office rejections and objections.",
+      "When the patent office pushes back, I prepare strategic responses to objections and rejections to get your patent granted.",
     price: "From $450",
     href: "/services/patent-prosecution",
   },
   {
     icon: Globe,
     title: "International Filing",
-    description: "PCT applications and national phase entries worldwide.",
+    description: "PCT applications and national phase entries to extend your protection to other countries — I'll help you decide where it's worth filing.",
     price: "From $600",
     href: "/services/international-filing",
   },
@@ -53,7 +53,7 @@ const serviceCards = [
     icon: TrendingUp,
     title: "IP Valuation",
     description:
-      "Portfolio valuations for investors, strategy, and decision-making.",
+      "A formal valuation of your patent portfolio — useful for investment rounds, licensing negotiations, or strategic planning.",
     price: "From $2,250",
     href: "/services/ip-valuation",
   },
@@ -68,8 +68,8 @@ export default function ServicesOverview() {
             Services &amp; Pricing
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Comprehensive patent services covering every stage of the IP
-            lifecycle. Transparent pricing with no hidden fees.
+            Everything you need from first idea to granted patent. Transparent
+            pricing — no hidden fees, no surprises.
           </p>
         </div>
 
@@ -77,8 +77,8 @@ export default function ServicesOverview() {
           {serviceCards.map((service) => (
             <Link key={service.href} href={service.href} className="group">
               <Card hover padding="lg" className="h-full flex flex-col">
-                <div className="w-12 h-12 bg-teal/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal/20 transition-colors">
-                  <service.icon className="w-6 h-6 text-teal" />
+                <div className="w-12 h-12 bg-blue/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue/20 transition-colors">
+                  <service.icon className="w-6 h-6 text-blue" />
                 </div>
                 <h3 className="text-xl font-semibold text-navy mb-2">
                   {service.title}
@@ -87,8 +87,8 @@ export default function ServicesOverview() {
                   {service.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-teal font-bold">{service.price}</span>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-teal group-hover:translate-x-1 transition-all" />
+                  <span className="text-blue font-bold">{service.price}</span>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue group-hover:translate-x-1 transition-all" />
                 </div>
               </Card>
             </Link>
@@ -98,7 +98,7 @@ export default function ServicesOverview() {
         <div className="text-center mt-10">
           <Link
             href="/services"
-            className="inline-flex items-center gap-2 text-teal font-semibold hover:text-teal-dark transition-colors"
+            className="inline-flex items-center gap-2 text-blue font-semibold hover:text-blue-dark transition-colors"
           >
             View all services with full pricing
             <ArrowRight className="w-4 h-4" />
