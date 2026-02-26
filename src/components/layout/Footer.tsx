@@ -28,7 +28,7 @@ const footerLinks = {
 
 export default function Footer() {
   return (
-    <footer className="bg-navy text-white">
+    <footer className="bg-navy text-white relative z-[2]">
       {/* CTA Banner */}
       <div className="border-b border-slate-700">
         <Container className="py-10">
