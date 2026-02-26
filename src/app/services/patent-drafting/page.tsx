@@ -3,6 +3,7 @@ import { CheckCircle2, Zap, Clock, Plus } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import CheckoutButton from "@/components/ui/CheckoutButton";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
@@ -64,6 +65,12 @@ const extraUsd: Record<string, number> = {
 
 const rushUsd: Record<number, number> = { 30: 200, 21: 400, 14: 700 };
 
+const draftingTierService: Record<string, string> = {
+  "Simple Invention": "patent-drafting-simple",
+  "Mid-Tier Invention": "patent-drafting-mid",
+  "Complex Invention": "patent-drafting-complex",
+};
+
 export default function PatentDraftingPage() {
   return (
     <>
@@ -79,9 +86,7 @@ export default function PatentDraftingPage() {
               {service.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button href="/contact" size="lg">
-                Get Started
-              </Button>
+              <CheckoutButton service="patent-drafting-mid" size="lg" label="Order Mid-Tier Drafting" />
               <Button href="/services/patent-search" variant="outline" size="lg">
                 Add a Patent Search
               </Button>
@@ -191,13 +196,12 @@ export default function PatentDraftingPage() {
                     </div>
                   ))}
                 </div>
-                <Button
-                  href="/contact"
-                  variant={tier.popular ? "primary" : "outline"}
+                <CheckoutButton
+                  service={draftingTierService[tier.name]}
+                  size="md"
+                  label={`Order ${tier.name.split(" ")[0]}`}
                   className="w-full"
-                >
-                  Get Started
-                </Button>
+                />
               </Card>
             ))}
           </div>
@@ -302,11 +306,11 @@ export default function PatentDraftingPage() {
                   ))}
                 </div>
                 <Button
-                  href="/contact"
+                  href="/contact?service=patent-drafting"
                   variant={pkg.popular ? "primary" : "outline"}
                   className="w-full"
                 >
-                  Get Started
+                  Order Full Package
                 </Button>
               </Card>
             ))}
@@ -404,9 +408,7 @@ export default function PatentDraftingPage() {
               in any major jurisdiction. Fixed fee, no surprises.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" size="lg">
-                Get Started
-              </Button>
+              <CheckoutButton service="patent-drafting-mid" size="lg" label="Order Mid-Tier Drafting" />
               <Button href="/services/consultation" variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 hover:text-white">
                 Not Sure? Book a Consultation
               </Button>

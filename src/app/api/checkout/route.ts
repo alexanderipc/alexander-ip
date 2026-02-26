@@ -12,6 +12,54 @@ const serviceConfig: Record<string, { name: string; description: string }> = {
     description:
       "Expert patent consultation with Alexander Rowley. Covers patentability assessment, filing strategy, and all your questions — with a written summary to follow.",
   },
+  /* Patent Search tiers */
+  "patent-search-basic": {
+    name: "Patent Search — Basic",
+    description:
+      "Prior art search of published patents relevant to your invention, with a detailed patentability report and opinion.",
+  },
+  "patent-search-standard": {
+    name: "Patent Search — Standard",
+    description:
+      "Expanded prior art search including web disclosures and non-patent literature, with a detailed patentability report.",
+  },
+  "patent-search-premium": {
+    name: "Patent Search — Premium",
+    description:
+      "Comprehensive prior art search with a live strategy call to discuss findings and plan the best path forward.",
+  },
+  /* Patent Drafting tiers */
+  "patent-drafting-simple": {
+    name: "Patent Drafting — Simple Invention",
+    description:
+      "Complete patent application for a mechanical invention with few moving parts. Includes background, claims, abstract, and one round of revisions.",
+  },
+  "patent-drafting-mid": {
+    name: "Patent Drafting — Mid-Tier Invention",
+    description:
+      "Complete patent application for an electrical/electronic system of moderate complexity. Includes background, claims, abstract, and one round of revisions.",
+  },
+  "patent-drafting-complex": {
+    name: "Patent Drafting — Complex Invention",
+    description:
+      "Complete patent application for software, AI, biochemistry, or advanced systems. Includes background, claims, abstract, and one round of revisions.",
+  },
+  /* IP Valuation tiers */
+  "ip-valuation-basic": {
+    name: "IP Valuation — Basic",
+    description:
+      "Holistic patent portfolio valuation with overall value range and general market conditions analysis. 25-day delivery.",
+  },
+  "ip-valuation-mid": {
+    name: "IP Valuation — Mid-Tier",
+    description:
+      "Portfolio valuation with detailed competitor IP analysis and strategic prioritisation advice. 30-day delivery.",
+  },
+  "ip-valuation-full": {
+    name: "IP Valuation — Full",
+    description:
+      "Comprehensive valuation with individual per-patent assessments, specific leverage strategies, and portfolio-level analysis. 35-day delivery.",
+  },
 };
 
 /* Hardcoded base URL — avoids any env var issues */

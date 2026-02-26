@@ -6,12 +6,12 @@ import Button from "@/components/ui/Button";
 import { getCurrencyFromBrowserLocale, convertPrice } from "@/lib/pricing";
 
 const serviceOptionsBase = [
-  { label: "Patent Consultation", usd: 125 },
-  { label: "Patent Search", usd: 335 },
-  { label: "Patent Drafting", usd: 995 },
-  { label: "Patent Prosecution / Office Action", usd: 450 },
-  { label: "International Filing / PCT", usd: 600 },
-  { label: "IP Valuation", usd: 2250 },
+  { label: "Patent Consultation", slug: "consultation", usd: 125 },
+  { label: "Patent Search", slug: "patent-search", usd: 335 },
+  { label: "Patent Drafting", slug: "patent-drafting", usd: 995 },
+  { label: "Patent Prosecution / Office Action", slug: "patent-prosecution", usd: 450 },
+  { label: "International Filing / PCT", slug: "international-filing", usd: 600 },
+  { label: "IP Valuation", slug: "ip-valuation", usd: 2250 },
 ];
 
 const referralOptions = [
@@ -30,9 +30,13 @@ const timelineOptions = [
   "Not sure yet",
 ];
 
-export default function IntakeForm() {
+interface IntakeFormProps {
+  defaultService?: string;
+}
+
+export default function IntakeForm({ defaultService }: IntakeFormProps) {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [serviceOptions, setServiceOptions] = useState<string[]>([]);
+  const [serviceOptions, setServiceOptions] = useState<{ value: string; label: string }[]>([]);
   const [budgetText, setBudgetText] = useState(
     "I understand that services start from $125 for consultations and typical patent drafting packages range from $995\u2013$2,370."
   );
@@ -40,10 +44,11 @@ export default function IntakeForm() {
   useEffect(() => {
     const currency = getCurrencyFromBrowserLocale();
 
-    // Build localised dropdown labels
-    const options = serviceOptionsBase.map(
-      (s) => `${s.label} (from ${convertPrice(s.usd, currency)})`
-    );
+    // Build localised dropdown labels with slug values for pre-selection
+    const options = serviceOptionsBase.map((s) => ({
+      value: s.slug,
+      label: `${s.label} (from ${convertPrice(s.usd, currency)})`,
+    }));
     setServiceOptions(options);
 
     // Build localised consent text
@@ -150,12 +155,13 @@ export default function IntakeForm() {
           id="service"
           name="service"
           required
+          defaultValue={defaultService || ""}
           className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm bg-white"
         >
           <option value="">Select a service...</option>
           {serviceOptions.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
             </option>
           ))}
         </select>

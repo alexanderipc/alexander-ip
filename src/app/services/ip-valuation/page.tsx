@@ -3,6 +3,7 @@ import { CheckCircle2, Clock } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import CheckoutButton from "@/components/ui/CheckoutButton";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
@@ -14,6 +15,12 @@ const valuationTierUsd: Record<string, number> = {
   Basic: 2250,
   "Mid-Tier": 3500,
   Full: 4750,
+};
+
+const valuationTierService: Record<string, string> = {
+  Basic: "ip-valuation-basic",
+  "Mid-Tier": "ip-valuation-mid",
+  Full: "ip-valuation-full",
 };
 
 export const metadata: Metadata = {
@@ -41,9 +48,7 @@ export default function IPValuationPage() {
             <p className="text-lg text-slate-600 leading-relaxed mb-8">
               {service.description}
             </p>
-            <Button href="/contact" size="lg">
-              Request a Valuation
-            </Button>
+            <CheckoutButton service="ip-valuation-mid" size="lg" label="Order Mid-Tier Valuation" />
           </div>
         </Container>
       </section>
@@ -152,13 +157,12 @@ export default function IPValuationPage() {
                     </div>
                   ))}
                 </div>
-                <Button
-                  href="/contact"
-                  variant={tier.popular ? "primary" : "outline"}
+                <CheckoutButton
+                  service={valuationTierService[tier.name]}
+                  size="md"
+                  label={`Order ${tier.name}`}
                   className="w-full"
-                >
-                  Request Valuation
-                </Button>
+                />
               </Card>
             ))}
           </div>
@@ -194,9 +198,7 @@ export default function IPValuationPage() {
               making acquisition decisions, get a professional assessment of
               your patent portfolio&apos;s value.
             </p>
-            <Button href="/contact" size="lg">
-              Request a Valuation
-            </Button>
+            <CheckoutButton service="ip-valuation-mid" size="lg" label="Order Mid-Tier Valuation" />
           </div>
         </Container>
       </section>

@@ -9,12 +9,60 @@ export interface CurrencyPrice {
   display: string;
 }
 
-/* Fixed consultation prices (used by Stripe checkout) */
+/* Fixed prices per service tier (used by Stripe checkout) */
 export const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
   consultation: {
     GBP: { currency: "gbp", amount: 9500, symbol: "£", display: "£95" },
     USD: { currency: "usd", amount: 12500, symbol: "$", display: "$125" },
     EUR: { currency: "eur", amount: 12000, symbol: "€", display: "€120" },
+  },
+  /* Patent Search tiers */
+  "patent-search-basic": {
+    GBP: { currency: "gbp", amount: 25000, symbol: "£", display: "£250" },
+    USD: { currency: "usd", amount: 33500, symbol: "$", display: "$335" },
+    EUR: { currency: "eur", amount: 32000, symbol: "€", display: "€320" },
+  },
+  "patent-search-standard": {
+    GBP: { currency: "gbp", amount: 28000, symbol: "£", display: "£280" },
+    USD: { currency: "usd", amount: 37500, symbol: "$", display: "$375" },
+    EUR: { currency: "eur", amount: 36000, symbol: "€", display: "€360" },
+  },
+  "patent-search-premium": {
+    GBP: { currency: "gbp", amount: 36000, symbol: "£", display: "£360" },
+    USD: { currency: "usd", amount: 48500, symbol: "$", display: "$485" },
+    EUR: { currency: "eur", amount: 46500, symbol: "€", display: "€465" },
+  },
+  /* Patent Drafting tiers */
+  "patent-drafting-simple": {
+    GBP: { currency: "gbp", amount: 73500, symbol: "£", display: "£735" },
+    USD: { currency: "usd", amount: 99500, symbol: "$", display: "$995" },
+    EUR: { currency: "eur", amount: 95500, symbol: "€", display: "€955" },
+  },
+  "patent-drafting-mid": {
+    GBP: { currency: "gbp", amount: 88500, symbol: "£", display: "£885" },
+    USD: { currency: "usd", amount: 119500, symbol: "$", display: "$1,195" },
+    EUR: { currency: "eur", amount: 115000, symbol: "€", display: "€1,150" },
+  },
+  "patent-drafting-complex": {
+    GBP: { currency: "gbp", amount: 103000, symbol: "£", display: "£1,030" },
+    USD: { currency: "usd", amount: 139500, symbol: "$", display: "$1,395" },
+    EUR: { currency: "eur", amount: 134000, symbol: "€", display: "€1,340" },
+  },
+  /* IP Valuation tiers */
+  "ip-valuation-basic": {
+    GBP: { currency: "gbp", amount: 167500, symbol: "£", display: "£1,675" },
+    USD: { currency: "usd", amount: 225000, symbol: "$", display: "$2,250" },
+    EUR: { currency: "eur", amount: 215000, symbol: "€", display: "€2,150" },
+  },
+  "ip-valuation-mid": {
+    GBP: { currency: "gbp", amount: 260000, symbol: "£", display: "£2,600" },
+    USD: { currency: "usd", amount: 350000, symbol: "$", display: "$3,500" },
+    EUR: { currency: "eur", amount: 335000, symbol: "€", display: "€3,350" },
+  },
+  "ip-valuation-full": {
+    GBP: { currency: "gbp", amount: 350000, symbol: "£", display: "£3,500" },
+    USD: { currency: "usd", amount: 475000, symbol: "$", display: "$4,750" },
+    EUR: { currency: "eur", amount: 455000, symbol: "€", display: "€4,550" },
   },
 };
 

@@ -26,7 +26,7 @@ const stats = [
 
 export default function TrustBar() {
   return (
-    <section className="bg-navy py-8">
+    <section className="bg-navy py-12">
       <Container>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {stats.map((stat) => (
@@ -36,7 +36,7 @@ export default function TrustBar() {
             >
               <stat.icon className="w-6 h-6 text-blue-light mb-2" />
               <span className="text-2xl font-bold text-white">{stat.value}</span>
-              <span className="text-sm text-slate-400">{stat.label}</span>
+              <span className="text-sm text-slate-200">{stat.label}</span>
             </div>
           ))}
         </div>

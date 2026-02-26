@@ -3,6 +3,7 @@ import { CheckCircle2, FileText, ArrowRight } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import CheckoutButton from "@/components/ui/CheckoutButton";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
@@ -14,6 +15,12 @@ const searchTierUsd: Record<string, number> = {
   Basic: 335,
   Standard: 375,
   Premium: 485,
+};
+
+const searchTierService: Record<string, string> = {
+  Basic: "patent-search-basic",
+  Standard: "patent-search-standard",
+  Premium: "patent-search-premium",
 };
 
 export const metadata: Metadata = {
@@ -36,9 +43,7 @@ export default function PatentSearchPage() {
               {service.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button href="/contact" size="lg">
-                Order a Patent Search
-              </Button>
+              <CheckoutButton service="patent-search-standard" size="lg" label="Order Standard Search" />
               <Button href="/services/patent-drafting" variant="outline" size="lg">
                 Bundle With Drafting
               </Button>
@@ -176,13 +181,12 @@ export default function PatentSearchPage() {
                     </div>
                   ))}
                 </div>
-                <Button
-                  href="/contact"
-                  variant={tier.popular ? "primary" : "outline"}
+                <CheckoutButton
+                  service={searchTierService[tier.name]}
+                  size="md"
+                  label={`Order ${tier.name}`}
                   className="w-full"
-                >
-                  Order {tier.name}
-                </Button>
+                />
               </Card>
             ))}
           </div>
@@ -214,9 +218,7 @@ export default function PatentSearchPage() {
               full application.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" size="lg">
-                Order a Patent Search
-              </Button>
+              <CheckoutButton service="patent-search-standard" size="lg" label="Order Standard Search" />
               <Button href="/services/patent-drafting" variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 hover:text-white">
                 Bundle With Drafting
               </Button>

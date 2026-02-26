@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Get in touch about patent services. Tell me about your invention and I'll respond within 24-48 hours with tailored advice.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ service?: string }>;
+}) {
+  const { service } = await searchParams;
+
   return (
     <>
       {/* Hero */}
@@ -28,7 +34,7 @@ export default function ContactPage() {
                 I&apos;ll respond within 24&ndash;48 hours with tailored advice on the
                 best path forward.
               </p>
-              <IntakeForm />
+              <IntakeForm defaultService={service} />
             </div>
 
             {/* Right: Info */}

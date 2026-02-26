@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, MapPin, ExternalLink } from "lucide-react";
 import Container from "@/components/ui/Container";
+import Button from "@/components/ui/Button";
 
 const footerLinks = {
   services: [
@@ -28,6 +29,30 @@ const footerLinks = {
 export default function Footer() {
   return (
     <footer className="bg-navy text-white">
+      {/* CTA Banner */}
+      <div className="border-b border-slate-700">
+        <Container className="py-10">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-1">
+                Ready to protect your invention?
+              </h3>
+              <p className="text-slate-400 text-sm">
+                Book a consultation or get started with a patent search today.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+              <Button href="/services/consultation" size="md">
+                Book a Consultation
+              </Button>
+              <Button href="/contact" variant="outline" size="md" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white">
+                Get in Touch
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </div>
+
       <Container className="py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}

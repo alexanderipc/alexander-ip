@@ -55,7 +55,7 @@ export default function InternationalFilingPage() {
             <p className="text-lg text-slate-600 leading-relaxed mb-8">
               {service.description}
             </p>
-            <Button href="/contact" size="lg">
+            <Button href="/contact?service=international-filing" size="lg">
               Discuss International Filing
             </Button>
           </div>
@@ -208,7 +208,7 @@ export default function InternationalFilingPage() {
                     </div>
                   ))}
                 </div>
-                <Button href="/contact" variant="outline" className="w-full">
+                <Button href="/contact?service=international-filing" variant="outline" className="w-full">
                   <span className="flex items-center gap-2">
                     Discuss Options <ArrowRight className="w-4 h-4" />
                   </span>
@@ -249,7 +249,7 @@ export default function InternationalFilingPage() {
               phase, I&apos;ll guide you through the process with strategic
               advice on country selection and cost optimisation.
             </p>
-            <Button href="/contact" size="lg">
+            <Button href="/contact?service=international-filing" size="lg">
               Discuss International Filing
             </Button>
           </div>

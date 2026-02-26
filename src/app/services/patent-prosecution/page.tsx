@@ -34,7 +34,7 @@ export default function PatentProsecutionPage() {
             <p className="text-lg text-slate-600 leading-relaxed mb-8">
               {service.description}
             </p>
-            <Button href="/contact" size="lg">
+            <Button href="/contact?service=patent-prosecution" size="lg">
               Get Help With an Office Action
             </Button>
           </div>
@@ -170,8 +170,8 @@ export default function PatentProsecutionPage() {
                     Delivery: {service.delivery} per part.
                   </p>
                 </div>
-                <Button href="/contact" size="sm">
-                  Get Started
+                <Button href="/contact?service=patent-prosecution" size="sm">
+                  Start Your Case
                 </Button>
               </div>
             </Card>
@@ -203,7 +203,7 @@ export default function PatentProsecutionPage() {
               after an initial rejection with the right strategic response.
               Get expert help today.
             </p>
-            <Button href="/contact" size="lg">
+            <Button href="/contact?service=patent-prosecution" size="lg">
               Get Help With Your Office Action
             </Button>
           </div>
