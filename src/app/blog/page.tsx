@@ -68,8 +68,8 @@ export default function BlogPage() {
               Coming Soon
             </h2>
             <p className="text-slate-600 max-w-lg mx-auto">
-              I&apos;m working on in-depth articles covering the most common
-              questions I receive from clients. Here&apos;s what&apos;s in the pipeline:
+              We&apos;re working on in-depth articles covering the most common
+              questions we receive from clients. Here&apos;s what&apos;s in the pipeline:
             </p>
           </div>
 
@@ -106,7 +106,7 @@ export default function BlogPage() {
               <Button href="/faq" variant="outline">
                 View FAQ
               </Button>
-              <Button href="/contact">Contact Me</Button>
+              <Button href="/contact">Get in Touch</Button>
             </div>
           </div>
         </Container>

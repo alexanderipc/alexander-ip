@@ -23,7 +23,7 @@ export default function BookingSuccessPage() {
           </h1>
 
           <p className="text-lg text-slate-600 mb-10 max-w-lg mx-auto">
-            Thank you for booking a patent consultation. I&apos;ll be in touch
+            Thank you for booking a patent consultation. We&apos;ll be in touch
             shortly to arrange a time that works for you.
           </p>
 
@@ -42,7 +42,7 @@ export default function BookingSuccessPage() {
                   </p>
                   <p className="text-slate-500 text-sm">
                     You&apos;ll receive a receipt from Stripe and a personal
-                    email from me within 24 hours.
+                    email from us within 24 hours.
                   </p>
                 </div>
               </div>
@@ -56,7 +56,7 @@ export default function BookingSuccessPage() {
                     Schedule Your Session
                   </p>
                   <p className="text-slate-500 text-sm">
-                    I&apos;ll propose available times for your consultation via
+                    We&apos;ll propose available times for your consultation via
                     email. Sessions typically run 45&ndash;60 minutes via video
                     call.
                   </p>

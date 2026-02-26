@@ -267,11 +267,11 @@ export default function ServicesPage() {
             </h2>
             <p className="text-slate-300 mb-8 max-w-lg mx-auto">
               Get in touch with a brief description of your invention and
-              I&apos;ll recommend the best path forward. No obligation.
+              We&apos;ll recommend the best path forward. No obligation.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href="/contact" size="lg">
-                Contact Me
+                Get in Touch
               </Button>
               <Button href="/services/consultation" variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 hover:text-white">
                 Book a Consultation

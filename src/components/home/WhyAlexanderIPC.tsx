@@ -4,21 +4,21 @@ import Container from "@/components/ui/Container";
 const differentiators = [
   {
     icon: MessageCircle,
-    title: "I Explain Things in Plain English",
+    title: "Plain English, No Jargon",
     description:
-      "Most patent firms communicate in legalese because it reinforces the mystique. I do the opposite. You'll understand exactly what's happening with your application, why it matters, and what your options are — in language that actually makes sense.",
+      "Most patent firms communicate in legalese because it reinforces the mystique. Alexander IP does the opposite. You'll understand exactly what's happening with your application, why it matters, and what your options are — in language that actually makes sense.",
   },
   {
     icon: GraduationCap,
     title: "Top-Tier Training, Accessible Pricing",
     description:
-      "I trained at Kilburn & Strode, a Legal 500 intellectual property firm. You get the same quality of work, without the large-office overhead, partner profit margins, or junior associates. Just the expert doing the work.",
+      "Founded by a specialist trained at Kilburn & Strode, a Legal 500 intellectual property firm. You get the same quality of work, without the large-office overhead, partner profit margins, or junior associates. Just the expert doing the work.",
   },
   {
     icon: User,
-    title: "I Handle the Full Lifecycle, Personally",
+    title: "Full Lifecycle Support",
     description:
-      "No handoffs, no account managers, no junior associates picking up where someone else left off. One person — from initial concept through to grant and beyond. Many of my clients come back with new inventions.",
+      "No handoffs, no account managers, no junior associates picking up where someone else left off. A dedicated specialist from initial concept through to grant and beyond. Many of our clients come back with new inventions.",
   },
 ];
 
@@ -32,7 +32,7 @@ export default function WhyAlexanderIPC() {
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             The patent industry doesn&apos;t cater well to startups and individual
-            inventors. I exist to change that.
+            inventors. Alexander IP exists to change that.
           </p>
         </div>
 

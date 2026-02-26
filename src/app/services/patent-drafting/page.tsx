@@ -58,7 +58,7 @@ const draftingTierUsd: Record<string, number> = {
 
 const extraUsd: Record<string, number> = {
   "Patent Search": 375,
-  "Patent Illustrations (created by Alexander)": 350,
+  "Patent Illustrations (created by Alexander IP)": 350,
   "Patent Illustrations (client-provided, formatted)": 50,
   "Patent Filing / Submission": 250,
 };
@@ -152,7 +152,7 @@ export default function PatentDraftingPage() {
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Pricing is based on the technical complexity of your invention.
-              Not sure which tier applies? Book a consultation and I&apos;ll
+              Not sure which tier applies? Book a consultation and we&apos;ll
               advise.
             </p>
           </div>

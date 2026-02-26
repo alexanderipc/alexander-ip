@@ -18,7 +18,7 @@ export default function Hero() {
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-blue/10 text-blue-dark rounded-full px-4 py-1.5 text-sm font-medium mb-6">
               <span className="w-2 h-2 bg-blue rounded-full" />
-              Trained at a top Legal 500 firm &middot; 800+ five-star reviews &middot; 30+ patents granted across 6 jurisdictions
+              Legal 500 trained &middot; 800+ five-star reviews &middot; 30+ patents granted across 155+ PCT states
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-navy leading-[1.1] mb-6">
@@ -35,7 +35,7 @@ export default function Hero() {
               <span className="font-semibold text-navy">Most traditional firms charge{" "}
               <LocalizedPrice range={[8000, 15000]} fallback="$8,000–$15,000" /></span>{" "}
               for a single US utility patent application.
-              With me, a typical patent package &mdash; including search, drafting,
+              With Alexander IP, a typical patent package &mdash; including search, drafting,
               illustrations, and filing &mdash; costs{" "}
               <span className="font-semibold text-navy"><LocalizedPrice range={[1500, 2500]} fallback="$1,500–$2,500" /></span>{" "}
               depending on complexity. Same calibre of work, trained at a leading

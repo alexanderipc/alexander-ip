@@ -37,7 +37,7 @@ export const services: Service[] = [
     description:
       "Expert advice on patentability, strategy, and IP protection — designed for those who need guidance before committing to a full filing.",
     longDescription:
-      "A paid consultation covering patentability assessments, filing strategy, and general IP guidance. This is designed for those who have a good idea but aren't sure whether it's worth pursuing patent protection. It is not a patent search and does not result in any official document — rather, it's a platform for expert advice tailored to your situation. If I'm unable to provide value, you'll receive a full refund.",
+      "A paid consultation covering patentability assessments, filing strategy, and general IP guidance. This is designed for those who have a good idea but aren't sure whether it's worth pursuing patent protection. It is not a patent search and does not result in any official document — rather, it's a platform for expert advice tailored to your situation. If we're unable to provide value, you'll receive a full refund.",
     startingPrice: "$125",
     currency: "USD",
     delivery: "14 days",
@@ -72,12 +72,12 @@ export const services: Service[] = [
       {
         question: "What happens during a consultation?",
         answer:
-          "We'll discuss your invention in detail, assess its patentability, and I'll provide tailored strategic advice on the best path forward — including which jurisdictions to consider, timing, and budget expectations.",
+          "We'll discuss your invention in detail, assess its patentability, and provide tailored strategic advice on the best path forward — including which jurisdictions to consider, timing, and budget expectations.",
       },
       {
         question: "Is this the same as a patent search?",
         answer:
-          "No. A consultation provides expert strategic advice based on my experience and knowledge. A patent search is a formal investigation of the prior art landscape with a detailed written report. Both are valuable, but serve different purposes.",
+          "No. A consultation provides expert strategic advice based on deep industry experience and knowledge. A patent search is a formal investigation of the prior art landscape with a detailed written report. Both are valuable, but serve different purposes.",
       },
     ],
   },
@@ -153,7 +153,7 @@ export const services: Service[] = [
       {
         question: "What databases do you search?",
         answer:
-          "I search all major patent databases including USPTO, EPO (Espacenet), WIPO (PatentScope), and relevant national databases. The search also covers non-patent literature where relevant.",
+          "We search all major patent databases including USPTO, EPO (Espacenet), WIPO (PatentScope), and relevant national databases. The search also covers non-patent literature where relevant.",
       },
     ],
   },
@@ -223,7 +223,7 @@ export const services: Service[] = [
         note: "21 days standalone, or included within the 45-day drafting timeline if bundled",
       },
       {
-        name: "Patent Illustrations (created by Alexander)",
+        name: "Patent Illustrations (created by Alexander IP)",
         price: "$350",
         note: "Professional patent drawings prepared to patent office standards",
       },
@@ -247,12 +247,12 @@ export const services: Service[] = [
       {
         question: "Which complexity tier is right for me?",
         answer:
-          "If your invention is purely mechanical with few moving parts, choose Simple. If it involves electronics but no software, choose Mid-Tier. If it involves software, AI, or advanced chemistry/biology, choose Complex. Not sure? Book a consultation and I'll advise.",
+          "If your invention is purely mechanical with few moving parts, choose Simple. If it involves electronics but no software, choose Mid-Tier. If it involves software, AI, or advanced chemistry/biology, choose Complex. Not sure? Book a consultation and we'll advise.",
       },
       {
         question: "Can you file in my country?",
         answer:
-          "I cover all major jurisdictions: US (USPTO), UK (UKIPO), Europe (EPO), Canada (CIPO), Australia (IP Australia), and international PCT applications. For other countries, I can coordinate national phase entry.",
+          "We cover all major jurisdictions: US (USPTO), UK (UKIPO), Europe (EPO), Canada (CIPO), Australia (IP Australia), and international PCT applications. For other countries, we can coordinate national phase entry.",
       },
       {
         question: "What about rush delivery?",
@@ -268,7 +268,7 @@ export const services: Service[] = [
     description:
       "Expert analysis and response to patent office rejections — turning objections into granted patents.",
     longDescription:
-      "When a patent examiner raises objections to your application (an 'office action'), you need a strategic, well-argued response. I analyse the examiner's objections, develop a response strategy, and draft formal response documents including claim amendments and legal arguments. This covers all types of rejections including 35 USC \u00a7101, \u00a7102, \u00a7103, \u00a7112 issues, drawing objections, and restriction requirements.",
+      "When a patent examiner raises objections to your application (an 'office action'), you need a strategic, well-argued response. We analyse the examiner's objections, develop a response strategy, and draft formal response documents including claim amendments and legal arguments. This covers all types of rejections including 35 USC \u00a7101, \u00a7102, \u00a7103, \u00a7112 issues, drawing objections, and restriction requirements.",
     startingPrice: "$450",
     currency: "USD",
     delivery: "14 days",
@@ -319,7 +319,7 @@ export const services: Service[] = [
       {
         question: "What if my patent was previously rejected?",
         answer:
-          "I handle all stages of prosecution including responses to final office actions, Requests for Continued Examination (RCEs), after-final amendments, and appeals strategy. Many patents that receive initial rejections go on to be granted with the right response.",
+          "We handle all stages of prosecution including responses to final office actions, Requests for Continued Examination (RCEs), after-final amendments, and appeals strategy. Many patents that receive initial rejections go on to be granted with the right response.",
       },
     ],
   },
@@ -330,7 +330,7 @@ export const services: Service[] = [
     description:
       "Strategic international patent protection through PCT applications and national phase entries across all major markets.",
     longDescription:
-      "Extend your patent protection globally through the Patent Cooperation Treaty (PCT) route. I handle PCT international applications, strategic advice on ISA/IPEA selection, Chapter II demands, and coordination of national phase entries across multiple jurisdictions. This includes timing advice to maximise your protection windows and cost optimisation across countries.",
+      "Extend your patent protection globally through the Patent Cooperation Treaty (PCT) route. We handle PCT international applications, strategic advice on ISA/IPEA selection, Chapter II demands, and coordination of national phase entries across multiple jurisdictions. This includes timing advice to maximise your protection windows and cost optimisation across countries.",
     startingPrice: "$600",
     currency: "USD",
     delivery: "21\u201345 days",
@@ -381,7 +381,7 @@ export const services: Service[] = [
       {
         question: "Which countries should I file in?",
         answer:
-          "This depends on your market, manufacturing locations, and competitors. I provide strategic advice on country selection as part of the service, helping you balance protection with cost.",
+          "This depends on your market, manufacturing locations, and competitors. We provide strategic advice on country selection as part of the service, helping you balance protection with cost.",
       },
     ],
   },

@@ -91,10 +91,10 @@ export default function FAQPage() {
               Still Have Questions?
             </h2>
             <p className="text-slate-600 mb-8 max-w-lg mx-auto">
-              Get in touch and I&apos;ll be happy to help. No obligation, no
+              Get in touch and we&apos;ll be happy to help. No obligation, no
               pressure.
             </p>
-            <Button href="/contact">Contact Me</Button>
+            <Button href="/contact">Get in Touch</Button>
           </div>
         </Container>
       </section>

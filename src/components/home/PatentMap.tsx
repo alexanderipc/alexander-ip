@@ -44,6 +44,10 @@ function patentUrl(pubNumber: string) {
   return `https://worldwide.espacenet.com/patent/search?q=pn%3D${pubNumber}`;
 }
 
+/** PCT-eligible countries (everything not in a specific jurisdiction) */
+const PCT_GREEN = "#1a7a5a";
+const PCT_GREEN_HOVER = "#15634a";
+
 const jurisdictions: Jurisdiction[] = [
   {
     id: "us",
@@ -164,10 +168,10 @@ const jurisdictions: Jurisdiction[] = [
   },
   {
     id: "pct",
-    name: "PCT International",
-    color: "#4b83e8",
-    hoverColor: "#1a56db",
-    countryCodes: [], // PCT covers everything — handled specially
+    name: "PCT (155 Contracting States)",
+    color: PCT_GREEN,
+    hoverColor: PCT_GREEN_HOVER,
+    countryCodes: [], // PCT covers everything — unassigned countries default here
     patents: [
       { number: "WO2025006045A1", label: "WO 2025/006045 A1", url: patentUrl("WO2025006045A1") },
       { number: "WO2024240368A1", label: "WO 2024/240368 A1", url: patentUrl("WO2024240368A1") },
@@ -210,31 +214,32 @@ function PatentMap() {
     // If this country belongs to a highlighted jurisdiction
     if (j) return j.color;
 
-    // PCT mode: tint everything
-    if (activeJurisdiction === "pct") return "#b8cff0";
-
-    return "#d1d9e6"; // default grey
+    // Unassigned countries = PCT eligible (dark green)
+    if (activeJurisdiction === "pct") return PCT_GREEN_HOVER;
+    return PCT_GREEN;
   }
 
   function getOpacity(countryId: string): number {
     const j = getJurisdictionForCountry(countryId);
     if (j && activeJurisdiction === j.id) return 1;
     if (j) return 0.7;
-    if (activeJurisdiction === "pct") return 0.6;
-    return 1;
+    if (activeJurisdiction === "pct") return 0.85;
+    return 0.55;
   }
 
   function getStroke(countryId: string): string {
     const j = getJurisdictionForCountry(countryId);
     if (j && activeJurisdiction === j.id) return "#ffffff";
     if (j) return "#ffffff";
-    return "#b0bdd0";
+    if (activeJurisdiction === "pct") return "#ffffff";
+    return "#2d8a6a";
   }
 
   function getStrokeWidth(countryId: string): number {
     const j = getJurisdictionForCountry(countryId);
     if (j && activeJurisdiction === j.id) return 1.2;
     if (j) return 0.8;
+    if (activeJurisdiction === "pct") return 0.6;
     return 0.3;
   }
 
@@ -242,14 +247,14 @@ function PatentMap() {
     <section className="py-20 bg-white">
       <Container>
         <div className="text-center mb-12">
-          <Badge className="mb-4">Selected Examples</Badge>
+          <Badge className="mb-4">Global Coverage</Badge>
           <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">
             Patents Granted Worldwide
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            A small selection of patents I&apos;ve drafted and prosecuted
-            through to grant across multiple jurisdictions. Hover over a
-            highlighted region to browse publications.
+            A selection of patents drafted and prosecuted through to grant,
+            with PCT coverage across 155+ contracting states. Hover over
+            any region to browse publications.
           </p>
         </div>
 
@@ -270,7 +275,6 @@ function PatentMap() {
                     geographies.map((geo) => {
                       const countryId = geo.id as string;
                       const j = getJurisdictionForCountry(countryId);
-                      const isClickable = !!j;
 
                       return (
                         <Geography
@@ -287,9 +291,9 @@ function PatentMap() {
                             },
                             hover: {
                               outline: "none",
-                              fill: j ? j.hoverColor : "#c0c9d8",
+                              fill: j ? j.hoverColor : PCT_GREEN_HOVER,
                               opacity: 1,
-                              cursor: isClickable ? "pointer" : "default",
+                              cursor: "pointer",
                               transition: "all 150ms ease",
                             },
                             pressed: {
@@ -297,14 +301,13 @@ function PatentMap() {
                             },
                           }}
                           onMouseEnter={() => {
-                            if (j) setActiveJurisdiction(j.id);
+                            setActiveJurisdiction(j ? j.id : "pct");
                           }}
                           onClick={() => {
-                            if (j) {
-                              setActiveJurisdiction(
-                                activeJurisdiction === j.id ? null : j.id
-                              );
-                            }
+                            const target = j ? j.id : "pct";
+                            setActiveJurisdiction(
+                              activeJurisdiction === target ? null : target
+                            );
                           }}
                         />
                       );

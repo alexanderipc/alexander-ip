@@ -11,9 +11,9 @@ export default function CTASection() {
             Ready to Protect Your Invention?
           </h2>
           <p className="text-lg text-slate-300 leading-relaxed mb-8">
-            Get in touch with a brief description of your invention and I&apos;ll
-            come back to you with tailored advice on the best path forward.
-            Typically within 24&ndash;48 hours.
+            Get in touch with a brief description of your invention and
+            we&apos;ll come back to you with tailored advice on the best path
+            forward. Typically within 24&ndash;48 hours.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button href="/contact" size="lg">

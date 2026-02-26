@@ -16,7 +16,7 @@ const serviceCards = [
   {
     icon: MessageSquare,
     title: "Consultation",
-    description: "Not sure where to start? I'll assess your idea, explain what patent protection involves, and help you decide if it makes sense to proceed.",
+    description: "Not sure where to start? We'll assess your idea, explain what patent protection involves, and help you decide if it makes sense to proceed.",
     usdAmount: 125,
     href: "/services/consultation",
   },
@@ -39,14 +39,14 @@ const serviceCards = [
     icon: Scale,
     title: "Prosecution",
     description:
-      "When the patent office pushes back, I prepare strategic responses to objections and rejections to get your patent granted.",
+      "When the patent office pushes back, we prepare strategic responses to objections and rejections to get your patent granted.",
     usdAmount: 450,
     href: "/services/patent-prosecution",
   },
   {
     icon: Globe,
     title: "International Filing",
-    description: "PCT applications and national phase entries to extend your protection to other countries — I'll help you decide where it's worth filing.",
+    description: "PCT applications and national phase entries to extend your protection to other countries — we'll help you decide where it's worth filing.",
     usdAmount: 600,
     href: "/services/international-filing",
   },

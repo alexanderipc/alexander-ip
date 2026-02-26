@@ -92,7 +92,7 @@ export default function AboutPage() {
                 top-tier firm &mdash; without the overheads that make their
                 pricing inaccessible.
               </p>
-              <Button href="/contact">Work With Me</Button>
+              <Button href="/contact">Work With Us</Button>
             </div>
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
@@ -268,7 +268,7 @@ export default function AboutPage() {
               Technology Areas
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              I cover virtually any technical subject matter. The only area
+              Alexander IP covers virtually any technical subject matter. The only area
               generally excluded is in-depth biological or biotech
               applications.
             </p>
@@ -298,7 +298,7 @@ export default function AboutPage() {
             </h2>
             <p className="text-slate-300 mb-8 max-w-lg mx-auto">
               Get in touch with a brief description of your invention and
-              I&apos;ll provide tailored advice on the best path forward.
+              we&apos;ll provide tailored advice on the best path forward.
             </p>
             <Button href="/contact" size="lg">
               Get Started

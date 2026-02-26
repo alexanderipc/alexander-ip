@@ -92,7 +92,7 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
           Enquiry Received
         </h3>
         <p className="text-slate-600">
-          Many thanks for getting in touch. I&apos;ll review your enquiry and
+          Many thanks for getting in touch. We&apos;ll review your enquiry and
           respond within 24&ndash;48 hours with tailored advice on the best path
           forward.
         </p>
@@ -178,7 +178,7 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
           required
           rows={4}
           className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm resize-y"
-          placeholder="Please provide a high-level description of your invention. Don't worry about confidentiality at this stage — keep it general. I'll arrange an NDA before you share detailed technical information."
+          placeholder="Please provide a high-level description of your invention. Don't worry about confidentiality at this stage — keep it general. We'll arrange an NDA before you share detailed technical information."
         />
       </div>
 

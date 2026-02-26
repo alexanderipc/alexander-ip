@@ -52,7 +52,7 @@ export default function ConsultationPage() {
                 Full Refund Guarantee
               </p>
               <p className="text-slate-600 text-sm">
-                If I&apos;m unable to provide value during the consultation,
+                If we&apos;re unable to provide value during the consultation,
                 you&apos;ll receive a complete refund. No questions asked.
               </p>
             </div>
@@ -101,14 +101,14 @@ export default function ConsultationPage() {
                 step: "1",
                 title: "Book Your Consultation",
                 description:
-                  "Get in touch via the contact form with a brief description of your invention. I'll confirm availability and schedule a time.",
+                  "Get in touch via the contact form with a brief description of your invention. We'll confirm availability and schedule a time.",
               },
               {
                 icon: RefreshCw,
                 step: "2",
                 title: "Live Video Session",
                 description:
-                  "We'll discuss your invention in detail. I'll assess patentability, recommend filing strategy, and answer all your questions.",
+                  "We'll discuss your invention in detail, assess patentability, recommend filing strategy, and answer all your questions.",
               },
               {
                 icon: CheckCircle2,
@@ -218,7 +218,7 @@ export default function ConsultationPage() {
             </h2>
             <p className="text-slate-300 mb-8 max-w-lg mx-auto">
               Book a consultation and get expert advice tailored to your
-              specific situation. Full refund if I can&apos;t provide value.
+              specific situation. Full refund if we can&apos;t provide value.
             </p>
             <CheckoutButton service="consultation" size="lg" label="Book & Pay" />
           </div>

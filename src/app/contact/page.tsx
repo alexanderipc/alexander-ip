@@ -7,7 +7,7 @@ import IntakeForm from "@/components/forms/IntakeForm";
 export const metadata: Metadata = {
   title: "Contact | Alexander IP Consulting",
   description:
-    "Get in touch about patent services. Tell me about your invention and I'll respond within 24-48 hours with tailored advice.",
+    "Get in touch about patent services. Tell us about your invention and we'll respond within 24-48 hours with tailored advice.",
 };
 
 export default async function ContactPage({
@@ -30,8 +30,8 @@ export default async function ContactPage({
                 Start Your Enquiry
               </h1>
               <p className="text-lg text-slate-600 mb-8">
-                Tell me about your invention and what you&apos;re looking for.
-                I&apos;ll respond within 24&ndash;48 hours with tailored advice on the
+                Tell us about your invention and what you&apos;re looking for.
+                We&apos;ll respond within 24&ndash;48 hours with tailored advice on the
                 best path forward.
               </p>
               <IntakeForm defaultService={service} />

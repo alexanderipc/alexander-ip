@@ -169,7 +169,7 @@ export default function IPValuationPage() {
 
           <p className="text-center text-sm text-slate-400 mt-8 max-w-2xl mx-auto">
             Investor-facing versions with appropriate positive positioning can
-            be prepared as a separate deliverable. Contact me for details.
+            be prepared as a separate deliverable. Get in touch for details.
           </p>
         </Container>
       </section>

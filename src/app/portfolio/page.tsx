@@ -87,10 +87,10 @@ export default function PortfolioPage() {
               Want to Be Notified When This Launches?
             </h2>
             <p className="text-slate-600 mb-8">
-              Get in touch and I&apos;ll let you know when the verified portfolio
+              Get in touch and we&apos;ll let you know when the verified portfolio
               is live.
             </p>
-            <Button href="/contact">Contact Me</Button>
+            <Button href="/contact">Get in Touch</Button>
           </div>
         </Container>
       </section>

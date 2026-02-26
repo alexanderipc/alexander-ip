@@ -24,12 +24,12 @@ export default function BookingCancelledPage() {
 
           <p className="text-lg text-slate-600 mb-6 max-w-lg mx-auto">
             No worries &mdash; you haven&apos;t been charged. If you changed
-            your mind or had a question, I&apos;m happy to help.
+            your mind or had a question, we&apos;re happy to help.
           </p>
 
           <p className="text-slate-500 mb-10 max-w-md mx-auto">
             If you&apos;d prefer to discuss your situation before committing,
-            feel free to get in touch via the contact form or email me directly
+            feel free to get in touch via the contact form or email us directly
             at{" "}
             <a
               href="mailto:alexanderip.contact@gmail.com"
@@ -47,7 +47,7 @@ export default function BookingCancelledPage() {
             </Button>
             <Button href="/contact" variant="outline">
               <Mail className="w-4 h-4 mr-2" />
-              Contact Me Instead
+              Get in Touch
             </Button>
           </div>
         </div>

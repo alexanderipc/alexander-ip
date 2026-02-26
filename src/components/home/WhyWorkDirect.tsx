@@ -5,9 +5,9 @@ import Button from "@/components/ui/Button";
 const benefits = [
   {
     icon: DollarSign,
-    title: "Real Savings for Both of Us",
+    title: "Real Savings for Both Sides",
     description:
-      "Fiverr takes a 20% commission on every order. Working directly means that overhead disappears — savings I can pass on to you.",
+      "Fiverr takes a 20% commission on every order. Working directly means that overhead disappears — savings we pass on to you.",
   },
   {
     icon: Zap,
@@ -19,13 +19,13 @@ const benefits = [
     icon: CreditCard,
     title: "Flexible Payment Options",
     description:
-      "Pay by card (Stripe) or bank transfer. For larger projects, I offer structured milestone payments so you're never paying for work that hasn't been done.",
+      "Pay by card (Stripe) or bank transfer. For larger projects, we offer structured milestone payments so you\u2019re never paying for work that hasn\u2019t been done.",
   },
   {
     icon: Handshake,
-    title: "Same Person, Same Quality",
+    title: "Same Team, Same Quality",
     description:
-      "Nothing changes about the work itself. You get the exact same person and the exact same quality — just without the middleman.",
+      "Nothing changes about the work itself. You get the exact same expertise and the exact same quality \u2014 just without the middleman.",
   },
 ];
 
@@ -36,13 +36,13 @@ export default function WhyWorkDirect() {
         <div className="bg-gradient-to-br from-navy to-navy-light rounded-2xl p-8 md:p-12 lg:p-16">
           <div className="max-w-3xl mx-auto text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Already know me from Fiverr?
+              Already know us from Fiverr?
             </h2>
             <p className="text-lg text-slate-300 leading-relaxed">
-              Many of my clients find me on Fiverr first. For future work,
-              you&apos;re welcome to reach out directly — same service, same
-              quality, and more flexible timelines and pricing for returning
-              clients.
+              Many of our clients find Alexander IP on Fiverr first. For future
+              work, you&apos;re welcome to reach out directly &mdash; same
+              service, same quality, and more flexible timelines and pricing
+              for returning clients.
             </p>
           </div>
 
@@ -67,7 +67,7 @@ export default function WhyWorkDirect() {
 
           <div className="text-center">
             <Button href="/contact" variant="primary" size="lg">
-              Work With Me Directly
+              Work With Us Directly
             </Button>
           </div>
         </div>

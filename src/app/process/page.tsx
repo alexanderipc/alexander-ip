@@ -27,7 +27,7 @@ const journey1Steps = [
     icon: MessageSquare,
     title: "Enquiry",
     description:
-      "You reach out with a brief description of your invention. I respond within 24\u201348 hours with initial thoughts and recommended next steps.",
+      "You reach out with a brief description of your invention. We respond within 24\u201348 hours with initial thoughts and recommended next steps.",
     timeline: "Day 1",
     cost: "Free",
   },
@@ -35,7 +35,7 @@ const journey1Steps = [
     icon: Search,
     title: "Patent Search",
     description:
-      "Before investing in a full application, find out if your invention is novel enough. I search existing patents and prior art, then give you an honest assessment of where you stand.",
+      "Before investing in a full application, find out if your invention is novel enough. We search existing patents and prior art, then give you an honest assessment of where you stand.",
     timeline: "21 days",
     costUsd: 335,
   },
@@ -43,7 +43,7 @@ const journey1Steps = [
     icon: FileText,
     title: "Patent Drafting",
     description:
-      "I prepare the full patent application — background, summary, detailed description, claims, abstract, and drawings — and file it with the patent office on your behalf.",
+      "We prepare the full patent application — background, summary, detailed description, claims, abstract, and drawings — and file it with the patent office on your behalf.",
     timeline: "45 days",
     costUsd: 995,
   },
@@ -59,7 +59,7 @@ const journey1Steps = [
     icon: Scale,
     title: "Prosecution",
     description:
-      "When the patent office responds (they almost always do), I handle the back-and-forth to get your patent granted. I analyse the objections, develop a strategy, and draft a formal response.",
+      "When the patent office responds (they almost always do), we handle the back-and-forth to get your patent granted. We analyse the objections, develop a strategy, and draft a formal response.",
     timeline: "12\u201324 months after filing",
     costUsd: 450,
   },
@@ -78,7 +78,7 @@ const journey2Steps = [
     icon: MessageSquare,
     title: "Enquiry",
     description:
-      "Share your office action or existing application details. I'll review and advise on the best approach.",
+      "Share your office action or existing application details. We'll review and advise on the best approach.",
     timeline: "Day 1",
   },
   {
@@ -238,7 +238,7 @@ export default function ProcessPage() {
               Journey 2: Existing Application
             </h2>
             <p className="text-slate-600">
-              Already have a pending application with an office action? I can
+              Already have a pending application with an office action? We can
               help get it to grant.
             </p>
           </div>
@@ -273,7 +273,7 @@ export default function ProcessPage() {
             </h2>
             <p className="text-slate-300 mb-8 max-w-lg mx-auto">
               Whether you&apos;re starting from scratch or need help with an
-              existing application, get in touch and I&apos;ll advise on the
+              existing application, get in touch and we&apos;ll advise on the
               best path forward.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

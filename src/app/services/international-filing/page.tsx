@@ -219,7 +219,7 @@ export default function InternationalFilingPage() {
 
           <p className="text-center text-sm text-slate-400 mt-8 max-w-2xl mx-auto">
             Official fees (paid to patent offices) are separate and vary by
-            jurisdiction. I&apos;ll provide a full cost breakdown before you
+            jurisdiction. We&apos;ll provide a full cost breakdown before you
             commit.
           </p>
         </Container>
@@ -246,7 +246,7 @@ export default function InternationalFilingPage() {
             </h2>
             <p className="text-slate-300 mb-8 max-w-lg mx-auto">
               Whether you&apos;re filing a PCT application or entering national
-              phase, I&apos;ll guide you through the process with strategic
+              phase, we&apos;ll guide you through the process with strategic
               advice on country selection and cost optimisation.
             </p>
             <Button href="/contact?service=international-filing" size="lg">
