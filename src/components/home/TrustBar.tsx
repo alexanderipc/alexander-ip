@@ -1,26 +1,27 @@
-import { Star, Award, Globe, Clock } from "lucide-react";
+import { Star, Award, Globe, Clock, GraduationCap, Building2 } from "lucide-react";
 import Container from "@/components/ui/Container";
 
-const stats = [
+const authority = [
+  { icon: GraduationCap, label: "MSc Physics, University of Bristol" },
+  { icon: Building2, label: "Legal 500 Trained (Kilburn & Strode)" },
+  { icon: Clock, label: "10 Years in the Industry" },
+];
+
+const proofStats = [
   {
     icon: Star,
     value: "800+",
-    label: "Five-Star Reviews",
+    label: "five-star reviews on Fiverr",
   },
   {
     icon: Award,
-    value: "30+",
-    label: "Patents Granted",
+    value: "50+",
+    label: "patents granted across US, UK, Europe, and Australia",
   },
   {
     icon: Globe,
-    value: "140+",
-    label: "Jurisdictions via PCT",
-  },
-  {
-    icon: Clock,
-    value: "10",
-    label: "Years in the Industry",
+    value: "155+",
+    label: "PCT contracting states covered",
   },
 ];
 
@@ -28,8 +29,22 @@ export default function TrustBar() {
   return (
     <section className="bg-navy py-12">
       <Container>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {stats.map((stat) => (
+        {/* Row 1: Authority markers */}
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mb-8 pb-8 border-b border-slate-700">
+          {authority.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center gap-2 text-slate-300"
+            >
+              <item.icon className="w-4 h-4 text-blue-light flex-shrink-0" />
+              <span className="text-sm font-medium">{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Row 2: Proof stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+          {proofStats.map((stat) => (
             <div
               key={stat.label}
               className="flex flex-col items-center text-center"

@@ -6,8 +6,8 @@ import {
   Scale,
   Globe,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
-import { ArrowRight } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Card from "@/components/ui/Card";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
@@ -16,14 +16,16 @@ const serviceCards = [
   {
     icon: MessageSquare,
     title: "Consultation",
-    description: "Not sure where to start? We'll assess your idea, explain what patent protection involves, and help you decide if it makes sense to proceed. Also available for more advanced matters like filing strategy.",
+    description:
+      "Not sure where to start? Alexander IP will assess your idea, explain what patent protection involves, and help you decide whether it makes sense to proceed.",
     usdAmount: 125,
     href: "/services/consultation",
   },
   {
     icon: Search,
     title: "Patent Search",
-    description: "A thorough search of existing patents and publications to see what's already out there — so you know what you're up against before investing in a full application.",
+    description:
+      "A thorough search of existing patents and publications to assess patentability before investing in a full application.",
     usdAmount: 335,
     href: "/services/patent-search",
   },
@@ -31,7 +33,7 @@ const serviceCards = [
     icon: FileText,
     title: "Patent Drafting",
     description:
-      "A complete patent application, drafted to maximise your protection and ready for filing in any major jurisdiction.",
+      "A complete patent application — background, claims, detailed description, and abstract — drafted to maximise protection and ready for filing.",
     usdAmount: 995,
     href: "/services/patent-drafting",
   },
@@ -39,14 +41,15 @@ const serviceCards = [
     icon: Scale,
     title: "Prosecution",
     description:
-      "Strategic handling of patent office correspondence — objections, amendments, restriction requirements, and appeals — to get your patent granted.",
+      "Strategic handling of patent office correspondence — examiner objections, claim amendments, and appeals — to get your patent granted.",
     priceLabel: "Quoted per case",
     href: "/services/patent-prosecution",
   },
   {
     icon: Globe,
     title: "International Filing",
-    description: "PCT applications and national phase entries to extend your protection to other countries — we'll help you decide where it's worth filing.",
+    description:
+      "PCT applications and national phase entries to extend protection to other countries, with clear advice on where it's worth filing.",
     usdAmount: 600,
     href: "/services/international-filing",
   },
@@ -54,7 +57,7 @@ const serviceCards = [
     icon: ShieldCheck,
     title: "FTO / Infringement",
     description:
-      "Honest, understandable strategic advice on the risks of selling and manufacturing your product — backed by in-depth patent research.",
+      "Honest, understandable strategic advice on the risks of selling and manufacturing your product, backed by in-depth patent research.",
     usdAmount: 600,
     href: "/services/fto",
   },
@@ -64,14 +67,32 @@ export default function ServicesOverview() {
   return (
     <section className="py-20 bg-white">
       <Container>
-        <div className="text-center mb-12">
+        <div className="text-center mb-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">
             Services &amp; Pricing
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Everything you need from first idea to granted patent. Transparent
-            pricing — no hidden fees, no surprises.
+            Most clients start with a consultation or search, then move to
+            drafting and filing, and come back for prosecution when the patent
+            office responds. Every service has a clear, fixed fee &mdash; no
+            hidden costs, no hourly billing.
           </p>
+        </div>
+
+        {/* Typical journey hint */}
+        <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-10">
+          <span className="bg-blue/10 text-blue-dark rounded-full px-3 py-1 font-medium">
+            Typical path:
+          </span>
+          <span>Search</span>
+          <ArrowRight className="w-3 h-3" />
+          <span>Draft</span>
+          <ArrowRight className="w-3 h-3" />
+          <span>File</span>
+          <ArrowRight className="w-3 h-3" />
+          <span>Prosecute</span>
+          <ArrowRight className="w-3 h-3" />
+          <span>Grant</span>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -92,7 +113,11 @@ export default function ServicesOverview() {
                     {service.priceLabel ? (
                       service.priceLabel
                     ) : (
-                      <LocalizedPrice amount={service.usdAmount!} prefix="From" fallback={`From $${service.usdAmount!.toLocaleString()}`} />
+                      <LocalizedPrice
+                        amount={service.usdAmount!}
+                        prefix="From"
+                        fallback={`From $${service.usdAmount!.toLocaleString()}`}
+                      />
                     )}
                   </span>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue group-hover:translate-x-1 transition-all" />

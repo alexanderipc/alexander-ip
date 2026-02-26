@@ -15,10 +15,11 @@ const footerLinks = {
   ],
   company: [
     { label: "About", href: "/about" },
-    { label: "Process", href: "/process" },
+    { label: "How It Works", href: "/process" },
     { label: "FAQ", href: "/faq" },
     { label: "Blog", href: "/blog" },
     { label: "Contact", href: "/contact" },
+    { label: "Returning Clients", href: "/returning-clients" },
   ],
   legal: [
     { label: "Privacy Policy", href: "/legal/privacy" },
@@ -67,8 +68,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-slate-400 text-sm leading-relaxed mb-4">
-              Expert patent drafting, prosecution, and IP strategy. Top-tier
-              training, accessible pricing.
+              Built for inventors and innovators, not behemoths.
             </p>
             <div className="space-y-2 text-sm text-slate-400">
               <div className="flex items-center gap-2">

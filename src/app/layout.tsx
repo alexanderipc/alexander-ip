@@ -12,24 +12,24 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title:
-    "Alexander IP Consulting — Patent Protection Without the Corporate Price Tag",
+    "Alexander IP — Patent Consultancy for Inventors and Innovators",
   description:
-    "Expert patent drafting, prosecution, and IP strategy. Top-tier training from Legal 500 firms, accessible pricing. Patents granted across the US, UK, Europe, and 140+ jurisdictions via PCT.",
+    "Alexander IP is a patent consultancy built for inventors and innovators, not corporations. Legal 500-trained specialist offering patent drafting, prosecution, and international filing with transparent pricing and communication you can actually understand.",
   metadataBase: new URL("https://alexander-ip.com"),
   openGraph: {
-    title: "Alexander IP Consulting",
+    title: "Alexander IP — Patent Consultancy for Inventors and Innovators",
     description:
-      "Expert patent drafting, prosecution, and IP strategy. Top-tier training, accessible pricing.",
+      "Legal 500-trained patent consultancy offering drafting, prosecution, and international filing. Built for inventors and innovators, not behemoths.",
     url: "https://alexander-ip.com",
-    siteName: "Alexander IP Consulting",
+    siteName: "Alexander IP",
     type: "website",
     locale: "en_GB",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Alexander IP Consulting",
+    title: "Alexander IP — Patent Consultancy for Inventors and Innovators",
     description:
-      "Expert patent drafting, prosecution, and IP strategy. Top-tier training, accessible pricing.",
+      "Legal 500-trained patent consultancy offering drafting, prosecution, and international filing. Built for inventors and innovators, not behemoths.",
   },
   robots: { index: true, follow: true },
 };

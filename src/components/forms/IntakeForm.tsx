@@ -12,12 +12,14 @@ const serviceOptionsBase = [
   { label: "Patent Prosecution", slug: "patent-prosecution", usd: null },
   { label: "International Filing / PCT", slug: "international-filing", usd: 600 },
   { label: "FTO / Infringement Check", slug: "fto", usd: 600 },
+  { label: "Portfolio Management", slug: "portfolio-management", usd: null },
+  { label: "Not Sure", slug: "not-sure", usd: null },
 ];
 
 const referralOptions = [
-  "Fiverr",
   "Google Search",
   "Referral from someone",
+  "Fiverr",
   "LinkedIn",
   "Other",
 ];
@@ -28,6 +30,12 @@ const timelineOptions = [
   "Within 14 days",
   "Urgent (within 7 days)",
   "Not sure yet",
+];
+
+const priorSearchOptions = [
+  "Yes",
+  "No",
+  "Not sure",
 ];
 
 interface IntakeFormProps {
@@ -44,17 +52,15 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
   useEffect(() => {
     const currency = getCurrencyFromBrowserLocale();
 
-    // Build localised dropdown labels with slug values for pre-selection
     const vatSuffix = currency === "GBP" ? " +VAT" : "";
     const options = serviceOptionsBase.map((s) => ({
       value: s.slug,
       label: s.usd != null
         ? `${s.label} (from ${convertPrice(s.usd, currency)}${vatSuffix})`
-        : `${s.label} (quoted per case)`,
+        : s.label,
     }));
     setServiceOptions(options);
 
-    // Build localised consent text
     const consultPrice = convertPrice(125, currency);
     const draftLow = convertPrice(995, currency);
     const draftHigh = convertPrice(2370, currency);
@@ -95,9 +101,9 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
           Enquiry Received
         </h3>
         <p className="text-slate-600">
-          Many thanks for getting in touch. We&apos;ll review your enquiry and
-          respond within 24&ndash;48 hours with tailored advice on the best path
-          forward.
+          Many thanks for getting in touch. Alexander IP will review your
+          enquiry and respond within 24&ndash;48 hours with tailored advice on
+          the best path forward.
         </p>
       </div>
     );
@@ -135,20 +141,6 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
         </div>
       </div>
 
-      {/* Country */}
-      <div>
-        <label htmlFor="country" className="block text-sm font-medium text-navy mb-1.5">
-          Country
-        </label>
-        <input
-          type="text"
-          id="country"
-          name="country"
-          className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm"
-          placeholder="Your country"
-        />
-      </div>
-
       {/* Service */}
       <div>
         <label htmlFor="service" className="block text-sm font-medium text-navy mb-1.5">
@@ -181,15 +173,48 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
           required
           rows={4}
           className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm resize-y"
-          placeholder="Please provide a high-level description of your invention. Don't worry about confidentiality at this stage — keep it general. We'll arrange an NDA before you share detailed technical information."
+          placeholder="Describe what you've built and what you're trying to protect. Keep it general at this stage — an NDA will be arranged before you share detailed technical information."
         />
+      </div>
+
+      {/* Target countries & Prior search */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="countries" className="block text-sm font-medium text-navy mb-1.5">
+            Target Country/Countries for Filing
+          </label>
+          <input
+            type="text"
+            id="countries"
+            name="countries"
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm"
+            placeholder="e.g. US, UK, Europe"
+          />
+        </div>
+        <div>
+          <label htmlFor="prior_search" className="block text-sm font-medium text-navy mb-1.5">
+            Already Conducted a Patent Search?
+          </label>
+          <select
+            id="prior_search"
+            name="prior_search"
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent text-sm bg-white"
+          >
+            <option value="">Select...</option>
+            {priorSearchOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Referral & Timeline */}
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="referral" className="block text-sm font-medium text-navy mb-1.5">
-            How Did You Hear About Us?
+            How Did You Find Alexander IP?
           </label>
           <select
             id="referral"

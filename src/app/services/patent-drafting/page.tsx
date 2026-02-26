@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { CheckCircle2, Zap, Clock, Plus } from "lucide-react";
+import { CheckCircle2, Zap, Clock, Plus, ChevronDown } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -12,7 +12,7 @@ import { getServiceBySlug, rushSurcharges } from "@/data/services";
 const service = getServiceBySlug("patent-drafting")!;
 
 export const metadata: Metadata = {
-  title: `${service.title} | Alexander IP Consulting`,
+  title: `${service.title} | Alexander IP`,
   description: service.description,
 };
 
@@ -152,8 +152,8 @@ export default function PatentDraftingPage() {
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Pricing is based on the technical complexity of your invention.
-              Not sure which tier applies? Book a consultation and we&apos;ll
-              advise.
+              Not sure which tier applies? Describe it briefly in your enquiry
+              and Alexander IP will advise &mdash; no charge, no obligation.
             </p>
           </div>
 
@@ -384,8 +384,24 @@ export default function PatentDraftingPage() {
         </Container>
       </section>
 
+      {/* Why does this cost so much less? */}
+      <section className="py-12 bg-slate-50">
+        <Container size="narrow">
+          <Accordion
+            items={[
+              {
+                question:
+                  "Why does this cost so much less than a traditional patent firm?",
+                answer:
+                  "A typical patent attorney firm charges $8,000\u2013$15,000 for a single utility patent application. That price reflects central city offices, partner profit margins, layers of administration, and the overhead of running a large organisation. The work often passes through multiple hands \u2014 a junior associate drafts, a senior associate reviews, a partner signs off. You\u2019re paying for the hierarchy, the building, and the brand name. At Alexander IP, the specialist who understands your invention is the same person who drafts your claims, responds to office actions, and advises on strategy. There are no handoffs, no juniors, no middlemen. The quality comes from rigorous Legal 500 training and 10 years of high-volume practice. The lower pricing comes from a business model with virtually zero overhead \u2014 not from cutting corners on the work itself.",
+              },
+            ]}
+          />
+        </Container>
+      </section>
+
       {/* FAQ */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-white">
         <Container size="narrow">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-navy mb-4">
@@ -401,11 +417,11 @@ export default function PatentDraftingPage() {
         <Container>
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white mb-4">
-              Ready to Protect Your Invention?
+              Ready to get started?
             </h2>
             <p className="text-slate-300 mb-8 max-w-lg mx-auto">
-              Get a professionally drafted patent application ready for filing
-              in any major jurisdiction. Fixed fee, no surprises.
+              A professionally drafted patent application, ready for filing in
+              any major jurisdiction. Fixed fee, no surprises.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CheckoutButton service="patent-drafting-mid" size="lg" label="Order Mid-Tier Drafting" />

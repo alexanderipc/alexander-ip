@@ -39,8 +39,9 @@ export default function ProcessPreview() {
             How It Works
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            From initial idea to granted patent — a clear, structured process
-            with expert guidance at every step.
+            From initial idea to granted patent &mdash; a clear, structured
+            process with expert guidance at every stage. Alexander IP handles
+            everything personally.
           </p>
         </div>
 

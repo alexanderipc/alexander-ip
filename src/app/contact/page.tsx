@@ -5,9 +5,9 @@ import Badge from "@/components/ui/Badge";
 import IntakeForm from "@/components/forms/IntakeForm";
 
 export const metadata: Metadata = {
-  title: "Contact | Alexander IP Consulting",
+  title: "Contact | Alexander IP",
   description:
-    "Get in touch about patent services. Tell us about your invention and we'll respond within 24-48 hours with tailored advice.",
+    "Tell Alexander IP about your invention. Every enquiry is personally reviewed with a response within 24-48 hours, including honest advice on whether patent protection makes sense.",
 };
 
 export default async function ContactPage({
@@ -27,12 +27,13 @@ export default async function ContactPage({
             <div>
               <Badge className="mb-6">Get In Touch</Badge>
               <h1 className="text-4xl sm:text-5xl font-bold text-navy mb-4">
-                Start Your Enquiry
+                Tell me about your invention.
               </h1>
               <p className="text-lg text-slate-600 mb-8">
-                Tell us about your invention and what you&apos;re looking for.
-                We&apos;ll respond within 24&ndash;48 hours with tailored advice on the
-                best path forward.
+                Alexander IP personally reviews every enquiry and responds
+                within 24&ndash;48 hours during business days. If your invention
+                isn&apos;t something Alexander IP can help with, you&apos;ll be
+                told honestly &mdash; and pointed in the right direction.
               </p>
               <IntakeForm defaultService={service} />
             </div>

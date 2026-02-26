@@ -8,9 +8,10 @@ import Button from "@/components/ui/Button";
 
 const navLinks = [
   {
-    label: "Services",
+    label: "Services & Pricing",
     href: "/services",
     children: [
+      { label: "All Services & Pricing", href: "/services" },
       { label: "Patent Consultation", href: "/services/consultation" },
       { label: "Patent Search", href: "/services/patent-search" },
       { label: "Patent Drafting", href: "/services/patent-drafting" },
@@ -19,7 +20,7 @@ const navLinks = [
       { label: "FTO / Infringement Check", href: "/services/fto" },
     ],
   },
-  { label: "Process", href: "/process" },
+  { label: "How It Works", href: "/process" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
   { label: "Blog", href: "/blog" },
