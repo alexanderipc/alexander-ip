@@ -11,70 +11,64 @@ const diagrams = [
 ];
 
 /**
- * Each position has a wraith animation config:
- * - anim: which keyframe set (1-4, each drifts a different direction)
- * - duration: cycle length in seconds (desynchronises the images)
- * - delay: negative delay so each image starts at a random phase
+ * Each position places a large diagram across the viewport.
+ * - size: vw-based width (each image fills 1/4 to 1/3 of the page)
+ * - anim: which wraithDrift keyframe set (1-4)
+ * - dur/delay: unique timing so images desynchronise
  */
 const positions = [
-  { top: "-5%",  left: "-5%",  scale: 0.55, anim: 1, dur: 65,  delay: 0 },
-  { top: "5%",   left: "52%",  scale: 0.48, anim: 2, dur: 82,  delay: -18 },
-  { top: "-8%",  left: "28%",  scale: 0.50, anim: 3, dur: 56,  delay: -35 },
-  { top: "42%",  left: "-8%",  scale: 0.45, anim: 4, dur: 74,  delay: -8 },
-  { top: "48%",  left: "40%",  scale: 0.50, anim: 1, dur: 60,  delay: -42 },
-  { top: "32%",  left: "70%",  scale: 0.45, anim: 3, dur: 70,  delay: -22 },
-  { top: "68%",  left: "12%",  scale: 0.52, anim: 2, dur: 78,  delay: -50 },
-  // Second pass — offset duplicates for fuller coverage
-  { top: "18%",  left: "8%",   scale: 0.42, anim: 4, dur: 66,  delay: -12 },
-  { top: "62%",  left: "58%",  scale: 0.48, anim: 1, dur: 72,  delay: -30 },
-  { top: "-2%",  left: "76%",  scale: 0.44, anim: 3, dur: 85,  delay: -55 },
-  { top: "78%",  left: "42%",  scale: 0.42, anim: 2, dur: 62,  delay: -5 },
-  { top: "22%",  left: "86%",  scale: 0.38, anim: 4, dur: 77,  delay: -40 },
-  { top: "72%",  left: "-3%",  scale: 0.44, anim: 1, dur: 68,  delay: -26 },
-  { top: "52%",  left: "22%",  scale: 0.40, anim: 2, dur: 75,  delay: -48 },
+  { top: "-8%",  left: "-8%",  size: "34vw", anim: 1, dur: 68,  delay: 0 },
+  { top: "8%",   left: "55%",  size: "30vw", anim: 2, dur: 86,  delay: -20 },
+  { top: "-12%", left: "24%",  size: "32vw", anim: 3, dur: 58,  delay: -38 },
+  { top: "40%",  left: "-10%", size: "28vw", anim: 4, dur: 76,  delay: -10 },
+  { top: "48%",  left: "40%",  size: "35vw", anim: 1, dur: 62,  delay: -45 },
+  { top: "28%",  left: "70%",  size: "30vw", anim: 3, dur: 72,  delay: -25 },
+  { top: "68%",  left: "8%",   size: "32vw", anim: 2, dur: 80,  delay: -52 },
+  { top: "18%",  left: "4%",   size: "28vw", anim: 4, dur: 68,  delay: -15 },
+  { top: "62%",  left: "58%",  size: "34vw", anim: 1, dur: 74,  delay: -32 },
+  { top: "82%",  left: "30%",  size: "30vw", anim: 2, dur: 65,  delay: -48 },
 ];
 
 /**
- * Ethereal patent drawing background.
- * Each illustration drifts independently side-to-side with its own
- * opacity cycle — some fading in while others fade out, like wraiths
- * shifting through mist. Max opacity stays around 12-14%.
+ * Global patent-diagram wraith layer.
+ * Fixed to the viewport so the diagrams drift behind/over all page
+ * content. Each illustration moves independently — some fading in
+ * while others dissolve — like technical ghosts in the mist.
+ * Sits at z-40: above page content, below navbar (z-50).
  */
 export default function PatentDiagramBackground() {
   return (
     <div
-      className="absolute inset-0 overflow-hidden pointer-events-none"
+      className="fixed inset-0 z-40 overflow-hidden pointer-events-none"
       aria-hidden="true"
     >
-      <div className="absolute -inset-[15%]">
-        {positions.map((pos, i) => {
-          const d = diagrams[i % diagrams.length];
-          return (
-            <div
-              key={i}
-              className="absolute wraith-image"
-              style={{
-                top: pos.top,
-                left: pos.left,
-                width: `${Math.round(d.w * pos.scale)}px`,
-                height: `${Math.round(d.h * pos.scale)}px`,
-                animation: `wraithDrift${pos.anim} ${pos.dur}s ease-in-out ${pos.delay}s infinite`,
-                opacity: 0,
-              }}
-            >
-              <Image
-                src={d.src}
-                alt=""
-                width={d.w}
-                height={d.h}
-                className="w-full h-full object-contain"
-                loading="eager"
-                quality={40}
-              />
-            </div>
-          );
-        })}
-      </div>
+      {positions.map((pos, i) => {
+        const d = diagrams[i % diagrams.length];
+        return (
+          <div
+            key={i}
+            className="absolute wraith-image"
+            style={{
+              top: pos.top,
+              left: pos.left,
+              width: pos.size,
+              aspectRatio: `${d.w} / ${d.h}`,
+              animation: `wraithDrift${pos.anim} ${pos.dur}s ease-in-out ${pos.delay}s infinite`,
+              opacity: 0,
+            }}
+          >
+            <Image
+              src={d.src}
+              alt=""
+              width={d.w}
+              height={d.h}
+              className="w-full h-full object-contain"
+              loading="eager"
+              quality={40}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -2,14 +2,10 @@ import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
-import PatentDiagramBackground from "@/components/ui/PatentDiagramBackground";
 
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white py-16 lg:py-24">
-      {/* Patent diagram background layer */}
-      <PatentDiagramBackground />
-
       {/* Color wash overlay */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue/5 rounded-full blur-3xl" />
