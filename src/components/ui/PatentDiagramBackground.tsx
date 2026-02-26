@@ -4,19 +4,23 @@ import { useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 
 /**
- * 36 patent diagrams as ghostly floating wraiths with JS physics + lifecycle.
+ * 36 patent diagrams as ghostly drifting wraiths.
  *
- * Each tile drifts slowly, bounces off arena walls and other tiles (100 px
- * buffer — they never overlap). A state-machine governs each tile's opacity:
+ * Each tile drifts in a single, fixed direction — never bouncing, never
+ * changing course. A state-machine governs opacity:
  *
  *   HIDDEN → FADING_IN → VISIBLE → FADING_OUT → COOLDOWN → HIDDEN …
  *
- * A "director" runs every frame and ensures at least 2 tiles are visibly
- * fading in or holding within the viewport. When a tile vanishes it stays
- * gone for 25–45 s before it can be chosen again — like a real wraith.
+ * A "director" keeps ≥ 3 tiles visible in the viewport at all times.
+ * When a new tile is needed it's placed just off a viewport edge with
+ * the cross-axis position fully within bounds, so the tile is guaranteed
+ * to be fully on-screen once it clears the entry edge.
  *
- * On page load a complex diagram appears somewhat centrally first, then a
- * second tile fades in nearby.
+ * Tiles never overlap: every frame checks for AABB collision among
+ * visible tiles and immediately fades out the newer arrival.
+ *
+ * Each tile corresponds to a unique image — no duplicates appear because
+ * each particle is a single DOM element with a single state.
  */
 
 /* ── Tile catalogue ────────────────────────────────────────── */
@@ -75,21 +79,18 @@ const sizeVwMap: Record<Complexity, number> = {
   simple: 27,
 };
 
-/* ── Physics ───────────────────────────────────────────────── */
-const BUFFER = 100;        // min gap between any two tile edges (px)
-const SPEED = 0.18;        // base drift (px / frame at 60 fps)
-const ARENA_MULT = 4;      // arena = N × viewport in each dimension
+/* ── Drift ─────────────────────────────────────────────────── */
+const SPEED = 0.15;
 
 /* ── Tile lifecycle (ms) ───────────────────────────────────── */
 const OP_PEAK_LO = 0.35;
 const OP_PEAK_HI = 0.48;
 const FADE_IN_LO = 3000;   const FADE_IN_HI = 5000;
-const HOLD_LO = 12000;     const HOLD_HI = 25000;
+const HOLD_LO = 14000;     const HOLD_HI = 28000;
 const FADE_OUT_LO = 3000;  const FADE_OUT_HI = 5000;
-const COOL_LO = 25000;     const COOL_HI = 45000;
+const COOL_LO = 20000;     const COOL_HI = 40000;
 
-const MIN_VISIBLE = 2;     // director guarantees this many in viewport
-const VP_MARGIN = 500;     // "near viewport" search radius (px)
+const MIN_VISIBLE = 3;
 
 /* ── States ────────────────────────────────────────────────── */
 const HIDDEN = 0;
@@ -103,32 +104,29 @@ interface Particle {
   vx: number; vy: number;
   pw: number; ph: number;
   state: number;
-  stateT: number;         // timestamp when entered current state
-  peak: number;           // peak opacity for this cycle
-  fadeIn: number;         // fade-in duration (ms)
-  hold: number;           // hold duration (ms)
-  fadeOut: number;        // fade-out duration (ms)
-  cool: number;           // cooldown duration (ms)
+  stateT: number;
+  peak: number;
+  fadeIn: number;
+  hold: number;
+  fadeOut: number;
+  cool: number;
   complexity: Complexity;
 }
 
 /* ── Helpers ───────────────────────────────────────────────── */
 const rand = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
-const ease = (t: number) => t * t * (3 - 2 * t);   // smoothstep
+const ease = (t: number) => t * t * (3 - 2 * t);
 
 function tileOpacity(p: Particle, now: number): number {
   const dt = now - p.stateT;
-  if (p.state === FADING_IN) {
+  if (p.state === FADING_IN)
     return ease(Math.max(0, Math.min(1, dt / p.fadeIn))) * p.peak;
-  }
   if (p.state === VISIBLE) return p.peak;
-  if (p.state === FADING_OUT) {
+  if (p.state === FADING_OUT)
     return (1 - ease(Math.max(0, Math.min(1, dt / p.fadeOut)))) * p.peak;
-  }
-  return 0;                                          // HIDDEN / COOLDOWN
+  return 0;
 }
 
-/** Advance the state machine; randomise durations when a cycle ends */
 function tick(p: Particle, now: number) {
   const dt = now - p.stateT;
   if (p.state === FADING_IN && dt >= p.fadeIn) {
@@ -137,7 +135,6 @@ function tick(p: Particle, now: number) {
     p.state = FADING_OUT; p.stateT = now;
   } else if (p.state === FADING_OUT && dt >= p.fadeOut) {
     p.state = COOLDOWN; p.stateT = now;
-    // pick fresh values for next appearance
     p.peak = rand(OP_PEAK_LO, OP_PEAK_HI);
     p.fadeIn = rand(FADE_IN_LO, FADE_IN_HI);
     p.hold = rand(HOLD_LO, HOLD_HI);
@@ -148,13 +145,81 @@ function tick(p: Particle, now: number) {
   }
 }
 
-function inViewport(
-  p: Particle, ox: number, oy: number, vw: number, vh: number, margin = 0,
-) {
-  const sx = p.x - ox;
-  const sy = p.y - oy;
-  return sx + p.pw > -margin && sx < vw + margin &&
-         sy + p.ph > -margin && sy < vh + margin;
+function nearVP(p: Particle, vw: number, vh: number, margin = 0) {
+  return p.x + p.pw > -margin && p.x < vw + margin &&
+         p.y + p.ph > -margin && p.y < vh + margin;
+}
+
+/** AABB overlap test between two particles */
+function overlaps(a: Particle, b: Particle): boolean {
+  return a.x < b.x + b.pw && a.x + a.pw > b.x &&
+         a.y < b.y + b.ph && a.y + a.ph > b.y;
+}
+
+/** Is this tile currently showing (visible or becoming visible)? */
+function isShowing(p: Particle): boolean {
+  return p.state === FADING_IN || p.state === VISIBLE;
+}
+
+/**
+ * Fit on one axis: if the tile fits, pick a random position that keeps
+ * it fully inside the viewport. If oversize, centre it.
+ */
+function fitAxis(dim: number, tileDim: number): number {
+  if (tileDim >= dim) return (dim - tileDim) / 2;
+  return rand(0, dim - tileDim);
+}
+
+/**
+ * Place a tile just off a random viewport edge, aimed to drift across.
+ * Cross-axis is always within viewport bounds so the tile will be fully
+ * on-screen once it clears the entry edge.
+ */
+function placeAtEdge(p: Particle, vw: number, vh: number) {
+  const edge = Math.floor(Math.random() * 4);
+  const spd = SPEED * (0.7 + Math.random() * 0.6);
+  const spread = rand(-0.25, 0.25);
+
+  if (edge === 0) {
+    p.x = fitAxis(vw, p.pw);
+    p.y = -p.ph - rand(30, 150);
+    const a = Math.PI / 2 + spread;
+    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
+  } else if (edge === 1) {
+    p.x = vw + rand(30, 150);
+    p.y = fitAxis(vh, p.ph);
+    const a = Math.PI + spread;
+    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
+  } else if (edge === 2) {
+    p.x = fitAxis(vw, p.pw);
+    p.y = vh + rand(30, 150);
+    const a = -Math.PI / 2 + spread;
+    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
+  } else {
+    p.x = -p.pw - rand(30, 150);
+    p.y = fitAxis(vh, p.ph);
+    const a = spread;
+    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
+  }
+}
+
+/**
+ * Try to place a tile at a viewport edge without overlapping any
+ * currently-showing tile. Returns true if successful.
+ */
+function placeWithoutOverlap(
+  p: Particle, all: Particle[], vw: number, vh: number,
+): boolean {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    placeAtEdge(p, vw, vh);
+    let ok = true;
+    for (const other of all) {
+      if (other === p || !isShowing(other)) continue;
+      if (overlaps(p, other)) { ok = false; break; }
+    }
+    if (ok) return true;
+  }
+  return false;
 }
 
 /* ── Component ─────────────────────────────────────────────── */
@@ -165,7 +230,6 @@ export default function PatentDiagramBackground() {
   const raf = useRef(0);
   const prevT = useRef(0);
 
-  /* pixel sizes for current viewport width */
   const sizes = useCallback(() => {
     const vw = window.innerWidth;
     return tiles.map((t) => {
@@ -174,37 +238,16 @@ export default function PatentDiagramBackground() {
     });
   }, []);
 
-  /* ── Initialise particles ──────────────────────────────── */
+  /* ── Initialise ──────────────────────────────────────────── */
   const init = useCallback((now: number) => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const aw = vw * ARENA_MULT;
-    const ah = vh * ARENA_MULT;
-    const ox = (aw - vw) / 2;
-    const oy = (ah - vh) / 2;
     const sz = sizes();
-
-    const cols = 6, rows = 6;
-    const cw = aw / cols, ch = ah / rows;
 
     const arr: Particle[] = tiles.map((t, i) => {
       const { pw, ph } = sz[i];
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const jx = (Math.random() - 0.5) * Math.max(0, cw - pw - BUFFER * 2) * 0.5;
-      const jy = (Math.random() - 0.5) * Math.max(0, ch - ph - BUFFER * 2) * 0.5;
-      let x = col * cw + (cw - pw) / 2 + jx;
-      let y = row * ch + (ch - ph) / 2 + jy;
-      x = Math.max(BUFFER, Math.min(aw - pw - BUFFER, x));
-      y = Math.max(BUFFER, Math.min(ah - ph - BUFFER, y));
-
-      const a = Math.random() * Math.PI * 2;
-      const s = SPEED * (0.7 + Math.random() * 0.6);
-
-      return {
-        x, y,
-        vx: Math.cos(a) * s,
-        vy: Math.sin(a) * s,
+      const p: Particle = {
+        x: -9999, y: -9999, vx: 0, vy: 0,
         pw, ph,
         state: HIDDEN,
         stateT: now,
@@ -215,188 +258,164 @@ export default function PatentDiagramBackground() {
         cool: rand(COOL_LO, COOL_HI),
         complexity: t.complexity,
       };
+      placeAtEdge(p, vw, vh);     // park off-screen
+      return p;
     });
 
-    /* --- Starter 1: place a complex tile somewhat centrally --- */
+    /* clamp a tile fully inside viewport (or centre if oversize) */
+    const clampIn = (p: Particle) => {
+      if (p.pw < vw) p.x = Math.max(0, Math.min(vw - p.pw, p.x));
+      else p.x = (vw - p.pw) / 2;
+      if (p.ph < vh) p.y = Math.max(0, Math.min(vh - p.ph, p.y));
+      else p.y = (vh - p.ph) / 2;
+    };
+
+    /* --- Starter 1: complex tile somewhat central --- */
     const cIdx = tiles.findIndex((t) => t.complexity === "complex");
     if (cIdx >= 0) {
       const p = arr[cIdx];
-      p.x = ox + (vw - p.pw) / 2 + rand(-120, 120);
-      p.y = oy + (vh - p.ph) / 2 + rand(-60, 60);
-      p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
-      p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
+      p.x = (vw - p.pw) / 2 + rand(-120, 120);
+      p.y = (vh - p.ph) / 2 + rand(-60, 60);
+      clampIn(p);
+      const angle = rand(0, Math.PI * 2);
+      const spd = SPEED * rand(0.7, 1.1);
+      p.vx = Math.cos(angle) * spd;
+      p.vy = Math.sin(angle) * spd;
       p.state = FADING_IN;
       p.stateT = now;
-      p.fadeIn = 2000;        // quick initial appearance
+      p.fadeIn = 2000;
     }
 
-    /* --- Starter 2: nearest tile to viewport centre --- */
-    const vcx = ox + vw / 2;
-    const vcy = oy + vh / 2;
-    let s2 = -1, best = Infinity;
-    for (let i = 0; i < arr.length; i++) {
+    /* --- Starters 2–3: two more in different viewport regions --- */
+    const starters = [1500, 3500];
+    const regions = [
+      { x: 0.2, y: 0.65 },
+      { x: 0.75, y: 0.3 },
+    ];
+    let placed = 0;
+    for (let i = 0; i < arr.length && placed < starters.length; i++) {
       if (i === cIdx) continue;
-      const dx = arr[i].x + arr[i].pw / 2 - vcx;
-      const dy = arr[i].y + arr[i].ph / 2 - vcy;
-      const d = dx * dx + dy * dy;
-      if (d < best) { best = d; s2 = i; }
-    }
-    if (s2 >= 0) {
-      const p = arr[s2];
-      // nudge into viewport if not already
-      if (!inViewport(p, ox, oy, vw, vh, 200)) {
-        p.x = ox + rand(100, vw - p.pw - 100);
-        p.y = oy + rand(100, vh - p.ph - 100);
-        p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
-        p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
+      const p = arr[i];
+      p.x = vw * regions[placed].x - p.pw / 2 + rand(-60, 60);
+      p.y = vh * regions[placed].y - p.ph / 2 + rand(-30, 30);
+      clampIn(p);
+
+      // check it doesn't overlap any already-placed starter
+      let ok = true;
+      for (const other of arr) {
+        if (other === p || !isShowing(other)) continue;
+        if (overlaps(p, other)) { ok = false; break; }
       }
+      if (!ok) continue;          // skip, try next tile
+
+      const angle = rand(0, Math.PI * 2);
+      const spd = SPEED * rand(0.7, 1.1);
+      p.vx = Math.cos(angle) * spd;
+      p.vy = Math.sin(angle) * spd;
       p.state = FADING_IN;
-      p.stateT = now;
-      p.fadeIn = 3500;        // slightly slower than first
+      p.stateT = now + starters[placed];
+      p.fadeIn = rand(3000, 4500);
+      placed++;
     }
 
     ps.current = arr;
   }, [sizes]);
 
-  /* ── Animation loop ────────────────────────────────────── */
+  /* ── Animation loop ──────────────────────────────────────── */
   const loop = useCallback((ts: number) => {
     if (!prevT.current) prevT.current = ts;
-    const dt = Math.min((ts - prevT.current) / 16.667, 3);   // normalised to 60 fps
+    const dt = Math.min((ts - prevT.current) / 16.667, 3);
     prevT.current = ts;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const aw = vw * ARENA_MULT;
-    const ah = vh * ARENA_MULT;
-    const ox = (aw - vw) / 2;
-    const oy = (ah - vh) / 2;
     const arr = ps.current;
     const n = arr.length;
 
-    /* 1 — advance every tile's state machine */
+    /* 1 — advance state machines */
     for (let i = 0; i < n; i++) tick(arr[i], ts);
 
-    /* 2 — move */
+    /* 2 — drift (straight line, no bouncing, no direction changes) */
     for (let i = 0; i < n; i++) {
       arr[i].x += arr[i].vx * dt;
       arr[i].y += arr[i].vy * dt;
     }
 
-    /* 3 — arena walls */
-    for (let i = 0; i < n; i++) {
-      const p = arr[i];
-      if (p.x < BUFFER) { p.x = BUFFER; p.vx = Math.abs(p.vx); }
-      if (p.y < BUFFER) { p.y = BUFFER; p.vy = Math.abs(p.vy); }
-      if (p.x + p.pw > aw - BUFFER) { p.x = aw - BUFFER - p.pw; p.vx = -Math.abs(p.vx); }
-      if (p.y + p.ph > ah - BUFFER) { p.y = ah - BUFFER - p.ph; p.vy = -Math.abs(p.vy); }
-    }
-
-    /* 4 — tile-to-tile collision (AABB + buffer) */
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        const a = arr[i], b = arr[j];
-        const o1 = a.x + a.pw + BUFFER - b.x;
-        const o2 = b.x + b.pw + BUFFER - a.x;
-        const o3 = a.y + a.ph + BUFFER - b.y;
-        const o4 = b.y + b.ph + BUFFER - a.y;
-
-        if (o1 > 0 && o2 > 0 && o3 > 0 && o4 > 0) {
-          const pens = [o1, o2, o3, o4];
-          const min = Math.min(o1, o2, o3, o4);
-          const ax = pens.indexOf(min);
-          const push = min / 2 + 1;
-
-          if (ax === 0)      { a.x -= push; b.x += push; a.vx = -Math.abs(a.vx); b.vx =  Math.abs(b.vx); }
-          else if (ax === 1) { b.x -= push; a.x += push; b.vx = -Math.abs(b.vx); a.vx =  Math.abs(a.vx); }
-          else if (ax === 2) { a.y -= push; b.y += push; a.vy = -Math.abs(a.vy); b.vy =  Math.abs(b.vy); }
-          else               { b.y -= push; a.y += push; b.vy = -Math.abs(b.vy); a.vy =  Math.abs(a.vy); }
-        }
-      }
-    }
-
-    /* 5 — re-clamp */
-    for (let i = 0; i < n; i++) {
-      const p = arr[i];
-      p.x = Math.max(BUFFER, Math.min(aw - BUFFER - p.pw, p.x));
-      p.y = Math.max(BUFFER, Math.min(ah - BUFFER - p.ph, p.y));
-    }
-
-    /* 6 — director: keep ≥ 2 tiles visible in viewport */
-    let vis = 0;
+    /* 3 — recycle tiles that have drifted way off-screen */
+    const farMargin = Math.max(vw, vh) * 2;
     for (let i = 0; i < n; i++) {
       const p = arr[i];
       if ((p.state === FADING_IN || p.state === VISIBLE) &&
-          inViewport(p, ox, oy, vw, vh, 0)) {
-        vis++;
+          !nearVP(p, vw, vh, farMargin)) {
+        p.state = COOLDOWN;
+        p.stateT = ts;
+        p.cool = rand(COOL_LO, COOL_HI);
       }
     }
 
-    if (vis < MIN_VISIBLE) {
-      // find the best HIDDEN tile near the viewport
-      let pick = -1, score = -Infinity;
-      for (let i = 0; i < n; i++) {
-        const p = arr[i];
-        if (p.state !== HIDDEN) continue;
-        if (!inViewport(p, ox, oy, vw, vh, VP_MARGIN)) continue;
-        const cx = p.x + p.pw / 2 - ox - vw / 2;
-        const cy = p.y + p.ph / 2 - oy - vh / 2;
-        let s = -(cx * cx + cy * cy);          // closer = better
-        if (p.complexity === "complex") s += 40000;  // mild preference
-        if (s > score) { score = s; pick = i; }
-      }
-
-      // nothing nearby → summon any HIDDEN tile to a viewport edge
-      if (pick < 0) {
-        for (let i = 0; i < n; i++) {
-          if (arr[i].state === HIDDEN) { pick = i; break; }
-        }
-        if (pick >= 0) {
-          const p = arr[pick];
-          const edge = Math.floor(Math.random() * 4);
-          if (edge === 0) {                                       // top
-            p.x = ox + rand(0, vw - p.pw);
-            p.y = oy - p.ph - rand(50, 200);
-            p.vy = Math.abs(p.vy) || SPEED;
-          } else if (edge === 1) {                                // right
-            p.x = ox + vw + rand(50, 200);
-            p.y = oy + rand(0, vh - p.ph);
-            p.vx = -(Math.abs(p.vx) || SPEED);
-          } else if (edge === 2) {                                // bottom
-            p.x = ox + rand(0, vw - p.pw);
-            p.y = oy + vh + rand(50, 200);
-            p.vy = -(Math.abs(p.vy) || SPEED);
-          } else {                                                // left
-            p.x = ox - p.pw - rand(50, 200);
-            p.y = oy + rand(0, vh - p.ph);
-            p.vx = Math.abs(p.vx) || SPEED;
+    /* 4 — overlap guard: if two showing tiles overlap, fade out the
+           one that started showing more recently */
+    for (let i = 0; i < n; i++) {
+      if (!isShowing(arr[i])) continue;
+      for (let j = i + 1; j < n; j++) {
+        if (!isShowing(arr[j])) continue;
+        if (overlaps(arr[i], arr[j])) {
+          // fade out the newer one (higher stateT = activated later)
+          const victim = arr[i].stateT > arr[j].stateT ? arr[i] : arr[j];
+          if (victim.state !== FADING_OUT) {
+            victim.state = FADING_OUT;
+            victim.stateT = ts;
           }
-          p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
-          p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
         }
       }
+    }
 
-      // if we still couldn't find HIDDEN, grab oldest COOLDOWN tile
-      if (pick < 0) {
-        let oldest = Infinity;
+    /* 5 — director: keep ≥ MIN_VISIBLE tiles showing in viewport */
+    let vis = 0;
+    for (let i = 0; i < n; i++) {
+      if (isShowing(arr[i]) && nearVP(arr[i], vw, vh, 0)) vis++;
+    }
+
+    while (vis < MIN_VISIBLE) {
+      // collect HIDDEN candidates
+      const hidden: number[] = [];
+      for (let i = 0; i < n; i++) {
+        if (arr[i].state === HIDDEN) hidden.push(i);
+      }
+      // fallback: oldest cooldown
+      if (hidden.length === 0) {
+        let oldest = Infinity, pick = -1;
         for (let i = 0; i < n; i++) {
           if (arr[i].state === COOLDOWN && arr[i].stateT < oldest) {
             oldest = arr[i].stateT; pick = i;
           }
         }
+        if (pick < 0) break;
+        hidden.push(pick);
       }
 
-      if (pick >= 0) {
-        arr[pick].state = FADING_IN;
-        arr[pick].stateT = ts;
+      // try random HIDDEN tiles until one can be placed without overlap
+      let placed = false;
+      const shuffled = hidden.sort(() => Math.random() - 0.5);
+      for (const idx of shuffled) {
+        const p = arr[idx];
+        if (placeWithoutOverlap(p, arr, vw, vh)) {
+          p.state = FADING_IN;
+          p.stateT = ts;
+          vis++;
+          placed = true;
+          break;
+        }
       }
+      if (!placed) break;  // can't fit any more tiles without overlap
     }
 
-    /* 7 — paint */
+    /* 6 — paint */
     for (let i = 0; i < n; i++) {
       const el = tileRefs.current[i];
       if (!el) continue;
       const p = arr[i];
-      el.style.transform = `translate(${p.x - ox}px, ${p.y - oy}px)`;
+      el.style.transform = `translate(${p.x}px, ${p.y}px)`;
       el.style.opacity = String(tileOpacity(p, ts));
     }
 
@@ -411,12 +430,10 @@ export default function PatentDiagramBackground() {
       return;
     }
 
-    const now = performance.now();
-    init(now);
+    init(performance.now());
 
-    // commit initial pixel widths
     const sz = sizes();
-    ps.current.forEach((p, i) => {
+    ps.current.forEach((_, i) => {
       const el = tileRefs.current[i];
       if (el) el.style.width = `${sz[i].pw}px`;
     });
@@ -424,16 +441,10 @@ export default function PatentDiagramBackground() {
     raf.current = requestAnimationFrame(loop);
 
     const onResize = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const aw = vw * ARENA_MULT;
-      const ah = vh * ARENA_MULT;
       const sz = sizes();
       ps.current.forEach((p, i) => {
         p.pw = sz[i].pw;
         p.ph = sz[i].ph;
-        p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
-        p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
         const el = tileRefs.current[i];
         if (el) el.style.width = `${p.pw}px`;
       });
@@ -461,7 +472,6 @@ export default function PatentDiagramBackground() {
     };
   }, [init, loop, sizes]);
 
-  /* ── Render ────────────────────────────────────────────── */
   return (
     <div
       className="fixed inset-0 z-[1] pointer-events-none overflow-hidden"
