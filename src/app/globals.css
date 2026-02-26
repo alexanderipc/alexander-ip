@@ -68,34 +68,52 @@ body {
   opacity: 0;
 }
 
-/* Patent diagram background drift animation */
-@keyframes patentDrift {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  25% {
-    transform: translate(-2%, -1.5%) rotate(0.3deg);
-  }
-  50% {
-    transform: translate(-3.5%, -3%) rotate(0deg);
-  }
-  75% {
-    transform: translate(-1.5%, -1%) rotate(-0.3deg);
-  }
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
+/* Patent diagram wraith animations — each image drifts independently */
+
+/* Drift right with two opacity peaks */
+@keyframes wraithDrift1 {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 0.03; }
+  20% { transform: translateX(100px) translateY(-18px) rotate(0.7deg); opacity: 0.12; }
+  40% { transform: translateX(190px) translateY(8px) rotate(0deg); opacity: 0.04; }
+  60% { transform: translateX(130px) translateY(-25px) rotate(-0.4deg); opacity: 0.13; }
+  80% { transform: translateX(40px) translateY(12px) rotate(0.3deg); opacity: 0.03; }
 }
 
-.patent-drift {
-  animation: patentDrift 80s ease-in-out infinite;
-  will-change: transform;
+/* Drift left, offset opacity curve */
+@keyframes wraithDrift2 {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 0.07; }
+  18% { transform: translateX(-90px) translateY(22px) rotate(-0.6deg); opacity: 0.02; }
+  42% { transform: translateX(-170px) translateY(-8px) rotate(0.3deg); opacity: 0.13; }
+  68% { transform: translateX(-70px) translateY(16px) rotate(-0.3deg); opacity: 0.04; }
+  88% { transform: translateX(-20px) translateY(-6px) rotate(0.2deg); opacity: 0.10; }
+}
+
+/* Long rightward sweep, single strong peak */
+@keyframes wraithDrift3 {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 0.04; }
+  30% { transform: translateX(140px) translateY(14px) rotate(0.5deg); opacity: 0.02; }
+  55% { transform: translateX(90px) translateY(-18px) rotate(-0.7deg); opacity: 0.14; }
+  80% { transform: translateX(-30px) translateY(8px) rotate(0.2deg); opacity: 0.05; }
+}
+
+/* Leftward drift, late fade-in */
+@keyframes wraithDrift4 {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 0.02; }
+  25% { transform: translateX(-120px) translateY(-16px) rotate(0.5deg); opacity: 0.05; }
+  50% { transform: translateX(-60px) translateY(18px) rotate(-0.4deg); opacity: 0.03; }
+  75% { transform: translateX(30px) translateY(-10px) rotate(0.2deg); opacity: 0.12; }
+  90% { transform: translateX(50px) translateY(6px) rotate(-0.2deg); opacity: 0.10; }
+}
+
+.wraith-image {
+  will-change: transform, opacity;
 }
 
 /* Respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
-  .patent-drift {
-    animation: none;
+  .wraith-image {
+    animation: none !important;
+    opacity: 0.08 !important;
   }
 }
 
