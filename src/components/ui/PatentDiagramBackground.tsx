@@ -4,23 +4,22 @@ import { useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 
 /**
- * 36 patent diagrams as giant floating wraiths with JS-driven physics.
+ * 36 patent diagrams as ghostly floating wraiths with JS physics + lifecycle.
  *
- * Architecture:
- *   Fixed fullscreen container (overflow hidden, clips at viewport).
- *   Each tile is a particle with position, velocity, and opacity phase.
- *   A requestAnimationFrame loop handles:
- *     1. Movement (slow drift, ~0.15 px/frame)
- *     2. Arena boundary bounce
- *     3. AABB collision detection with 100 px buffer (tiles never overlap)
- *     4. Sinusoidal opacity cycling (2 %–45 %, staggered phases)
- *     5. Direct DOM style updates (no React state re-renders)
+ * Each tile drifts slowly, bounces off arena walls and other tiles (100 px
+ * buffer — they never overlap). A state-machine governs each tile's opacity:
  *
- * Size by complexity (preserved from design approval):
- *   complex → 47 vw
- *   medium  → 37 vw
- *   simple  → 27 vw
+ *   HIDDEN → FADING_IN → VISIBLE → FADING_OUT → COOLDOWN → HIDDEN …
+ *
+ * A "director" runs every frame and ensures at least 2 tiles are visibly
+ * fading in or holding within the viewport. When a tile vanishes it stays
+ * gone for 25–45 s before it can be chosen again — like a real wraith.
+ *
+ * On page load a complex diagram appears somewhat centrally first, then a
+ * second tile fades in nearby.
  */
+
+/* ── Tile catalogue ────────────────────────────────────────── */
 
 type Complexity = "complex" | "medium" | "simple";
 
@@ -31,49 +30,37 @@ interface TileDef {
   complexity: Complexity;
 }
 
-/* Tiles interleaved by complexity for even visual distribution */
 const tiles: TileDef[] = [
-  // ── Row 1 ──
   { src: "/images/diagrams/engine-cross-section.webp", w: 600, h: 451, complexity: "complex" },
   { src: "/images/diagrams/knee-brace.webp", w: 548, h: 800, complexity: "medium" },
   { src: "/images/diagrams/cylindrical-column.webp", w: 334, h: 800, complexity: "simple" },
   { src: "/images/diagrams/engine-block-gears.webp", w: 800, h: 602, complexity: "complex" },
   { src: "/images/diagrams/cable-car-system.webp", w: 799, h: 729, complexity: "medium" },
   { src: "/images/diagrams/cloud-wearable-schematic.webp", w: 800, h: 629, complexity: "simple" },
-
-  // ── Row 2 ──
   { src: "/images/diagrams/pipe-clamp-3d.webp", w: 777, h: 800, complexity: "medium" },
   { src: "/images/diagrams/portable-device-internals.webp", w: 800, h: 470, complexity: "complex" },
   { src: "/images/diagrams/dynamic-ads-flowchart.webp", w: 800, h: 497, complexity: "simple" },
   { src: "/images/diagrams/pipe-clamp-dimensioned.webp", w: 797, h: 800, complexity: "medium" },
   { src: "/images/diagrams/smart-garment-sensors.webp", w: 800, h: 574, complexity: "complex" },
   { src: "/images/diagrams/valve-manifold.webp", w: 800, h: 681, complexity: "simple" },
-
-  // ── Row 3 ──
   { src: "/images/diagrams/panel-tray.webp", w: 800, h: 688, complexity: "simple" },
   { src: "/images/diagrams/3d-chip-stack.webp", w: 800, h: 664, complexity: "complex" },
   { src: "/images/diagrams/holographic-storage.webp", w: 800, h: 195, complexity: "medium" },
   { src: "/images/diagrams/bracket-mount-2.webp", w: 800, h: 607, complexity: "simple" },
   { src: "/images/diagrams/neural-network-diagram.webp", w: 800, h: 787, complexity: "complex" },
   { src: "/images/diagrams/hook-assembly-exploded.webp", w: 618, h: 800, complexity: "medium" },
-
-  // ── Row 4 ──
   { src: "/images/diagrams/ai-luggage-sorting.webp", w: 800, h: 595, complexity: "complex" },
   { src: "/images/diagrams/hook-assembly-complete.webp", w: 675, h: 800, complexity: "medium" },
   { src: "/images/diagrams/snowboard-bindings-full.webp", w: 800, h: 514, complexity: "simple" },
   { src: "/images/diagrams/pen-cross-section.webp", w: 800, h: 605, complexity: "complex" },
   { src: "/images/diagrams/vr-headset.webp", w: 800, h: 609, complexity: "medium" },
   { src: "/images/diagrams/industrial-equipment.webp", w: 600, h: 352, complexity: "simple" },
-
-  // ── Row 5 ──
   { src: "/images/diagrams/snowboard-bindings.webp", w: 600, h: 385, complexity: "simple" },
   { src: "/images/diagrams/fluid-treatment-system.webp", w: 800, h: 572, complexity: "complex" },
   { src: "/images/diagrams/pen-exterior.webp", w: 800, h: 598, complexity: "medium" },
   { src: "/images/diagrams/gear-mechanism.webp", w: 800, h: 643, complexity: "medium" },
   { src: "/images/diagrams/heat-exchanger-coils.webp", w: 685, h: 800, complexity: "complex" },
   { src: "/images/diagrams/wheel-traction-device.webp", w: 800, h: 698, complexity: "medium" },
-
-  // ── Row 6 ──
   { src: "/images/diagrams/rollator-walker.webp", w: 657, h: 800, complexity: "complex" },
   { src: "/images/diagrams/hook-assembly-labeled.webp", w: 800, h: 784, complexity: "medium" },
   { src: "/images/diagrams/filter-system.webp", w: 600, h: 429, complexity: "medium" },
@@ -82,302 +69,401 @@ const tiles: TileDef[] = [
   { src: "/images/diagrams/wheel-assembly.webp", w: 600, h: 523, complexity: "medium" },
 ];
 
-/* Display width per complexity as fraction of viewport width */
 const sizeVwMap: Record<Complexity, number> = {
   complex: 47,
   medium: 37,
   simple: 27,
 };
 
-/* ── Physics constants ─────────────────────────────────────── */
-const BUFFER = 100;          // minimum gap between tile borders (px)
-const SPEED = 0.12;          // base speed (px per frame at 60 fps)
-const OPACITY_MIN = 0.02;
-const OPACITY_MAX = 0.45;
-const OPACITY_CYCLE_S = 25;  // seconds per full opacity cycle
-const ARENA_MULT = 8;        // arena is this many × the viewport
+/* ── Physics ───────────────────────────────────────────────── */
+const BUFFER = 100;        // min gap between any two tile edges (px)
+const SPEED = 0.18;        // base drift (px / frame at 60 fps)
+const ARENA_MULT = 4;      // arena = N × viewport in each dimension
 
-/* ── Particle state ────────────────────────────────────────── */
+/* ── Tile lifecycle (ms) ───────────────────────────────────── */
+const OP_PEAK_LO = 0.35;
+const OP_PEAK_HI = 0.48;
+const FADE_IN_LO = 3000;   const FADE_IN_HI = 5000;
+const HOLD_LO = 12000;     const HOLD_HI = 25000;
+const FADE_OUT_LO = 3000;  const FADE_OUT_HI = 5000;
+const COOL_LO = 25000;     const COOL_HI = 45000;
+
+const MIN_VISIBLE = 2;     // director guarantees this many in viewport
+const VP_MARGIN = 500;     // "near viewport" search radius (px)
+
+/* ── States ────────────────────────────────────────────────── */
+const HIDDEN = 0;
+const FADING_IN = 1;
+const VISIBLE = 2;
+const FADING_OUT = 3;
+const COOLDOWN = 4;
+
 interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  pw: number;   // pixel width
-  ph: number;   // pixel height
-  opPhase: number; // opacity phase offset (radians)
+  x: number; y: number;
+  vx: number; vy: number;
+  pw: number; ph: number;
+  state: number;
+  stateT: number;         // timestamp when entered current state
+  peak: number;           // peak opacity for this cycle
+  fadeIn: number;         // fade-in duration (ms)
+  hold: number;           // hold duration (ms)
+  fadeOut: number;        // fade-out duration (ms)
+  cool: number;           // cooldown duration (ms)
+  complexity: Complexity;
 }
 
-export default function PatentDiagramBackground() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const tileRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const particles = useRef<Particle[]>([]);
-  const rafId = useRef<number>(0);
-  const lastTime = useRef<number>(0);
-  const reducedMotion = useRef(false);
+/* ── Helpers ───────────────────────────────────────────────── */
+const rand = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
+const ease = (t: number) => t * t * (3 - 2 * t);   // smoothstep
 
-  /* Convert tile definitions to initial pixel sizes */
-  const computeSizes = useCallback(() => {
+function tileOpacity(p: Particle, now: number): number {
+  const dt = now - p.stateT;
+  if (p.state === FADING_IN) {
+    return ease(Math.max(0, Math.min(1, dt / p.fadeIn))) * p.peak;
+  }
+  if (p.state === VISIBLE) return p.peak;
+  if (p.state === FADING_OUT) {
+    return (1 - ease(Math.max(0, Math.min(1, dt / p.fadeOut)))) * p.peak;
+  }
+  return 0;                                          // HIDDEN / COOLDOWN
+}
+
+/** Advance the state machine; randomise durations when a cycle ends */
+function tick(p: Particle, now: number) {
+  const dt = now - p.stateT;
+  if (p.state === FADING_IN && dt >= p.fadeIn) {
+    p.state = VISIBLE; p.stateT = now;
+  } else if (p.state === VISIBLE && dt >= p.hold) {
+    p.state = FADING_OUT; p.stateT = now;
+  } else if (p.state === FADING_OUT && dt >= p.fadeOut) {
+    p.state = COOLDOWN; p.stateT = now;
+    // pick fresh values for next appearance
+    p.peak = rand(OP_PEAK_LO, OP_PEAK_HI);
+    p.fadeIn = rand(FADE_IN_LO, FADE_IN_HI);
+    p.hold = rand(HOLD_LO, HOLD_HI);
+    p.fadeOut = rand(FADE_OUT_LO, FADE_OUT_HI);
+    p.cool = rand(COOL_LO, COOL_HI);
+  } else if (p.state === COOLDOWN && dt >= p.cool) {
+    p.state = HIDDEN; p.stateT = now;
+  }
+}
+
+function inViewport(
+  p: Particle, ox: number, oy: number, vw: number, vh: number, margin = 0,
+) {
+  const sx = p.x - ox;
+  const sy = p.y - oy;
+  return sx + p.pw > -margin && sx < vw + margin &&
+         sy + p.ph > -margin && sy < vh + margin;
+}
+
+/* ── Component ─────────────────────────────────────────────── */
+
+export default function PatentDiagramBackground() {
+  const tileRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const ps = useRef<Particle[]>([]);
+  const raf = useRef(0);
+  const prevT = useRef(0);
+
+  /* pixel sizes for current viewport width */
+  const sizes = useCallback(() => {
     const vw = window.innerWidth;
     return tiles.map((t) => {
       const pw = (sizeVwMap[t.complexity] / 100) * vw;
-      const ph = pw * (t.h / t.w);
-      return { pw, ph };
+      return { pw, ph: pw * (t.h / t.w) };
     });
   }, []);
 
-  /* Place tiles in a non-overlapping grid within the arena */
-  const initParticles = useCallback(() => {
+  /* ── Initialise particles ──────────────────────────────── */
+  const init = useCallback((now: number) => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const arenaW = vw * ARENA_MULT;
-    const arenaH = vh * ARENA_MULT;
-    const sizes = computeSizes();
+    const aw = vw * ARENA_MULT;
+    const ah = vh * ARENA_MULT;
+    const ox = (aw - vw) / 2;
+    const oy = (ah - vh) / 2;
+    const sz = sizes();
 
-    const placed: Particle[] = [];
+    const cols = 6, rows = 6;
+    const cw = aw / cols, ch = ah / rows;
 
-    // Sort by area descending so large tiles get placed first
-    const indices = tiles.map((_, i) => i);
-    indices.sort((a, b) => (sizes[b].pw * sizes[b].ph) - (sizes[a].pw * sizes[a].ph));
+    const arr: Particle[] = tiles.map((t, i) => {
+      const { pw, ph } = sz[i];
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const jx = (Math.random() - 0.5) * Math.max(0, cw - pw - BUFFER * 2) * 0.5;
+      const jy = (Math.random() - 0.5) * Math.max(0, ch - ph - BUFFER * 2) * 0.5;
+      let x = col * cw + (cw - pw) / 2 + jx;
+      let y = row * ch + (ch - ph) / 2 + jy;
+      x = Math.max(BUFFER, Math.min(aw - pw - BUFFER, x));
+      y = Math.max(BUFFER, Math.min(ah - ph - BUFFER, y));
 
-    // Grid-based placement with jitter for natural look
-    const cols = 6;
-    const rows = 6;
-    const cellW = arenaW / cols;
-    const cellH = arenaH / rows;
+      const a = Math.random() * Math.PI * 2;
+      const s = SPEED * (0.7 + Math.random() * 0.6);
 
-    for (let idx = 0; idx < indices.length; idx++) {
-      const i = indices[idx];
-      const { pw, ph } = sizes[i];
-
-      // Assign to grid cell
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-
-      // Center in cell with random jitter
-      const jitterX = (Math.random() - 0.5) * Math.max(0, cellW - pw - BUFFER * 2) * 0.6;
-      const jitterY = (Math.random() - 0.5) * Math.max(0, cellH - ph - BUFFER * 2) * 0.6;
-
-      const x = col * cellW + (cellW - pw) / 2 + jitterX;
-      const y = row * cellH + (cellH - ph) / 2 + jitterY;
-
-      // Random velocity direction, fixed speed
-      const angle = Math.random() * Math.PI * 2;
-      const speed = SPEED * (0.7 + Math.random() * 0.6); // slight variation
-
-      placed[i] = {
-        x: Math.max(BUFFER, Math.min(arenaW - pw - BUFFER, x)),
-        y: Math.max(BUFFER, Math.min(arenaH - ph - BUFFER, y)),
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        pw,
-        ph,
-        opPhase: (i / tiles.length) * Math.PI * 2, // stagger opacity phases
+      return {
+        x, y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        pw, ph,
+        state: HIDDEN,
+        stateT: now,
+        peak: rand(OP_PEAK_LO, OP_PEAK_HI),
+        fadeIn: rand(FADE_IN_LO, FADE_IN_HI),
+        hold: rand(HOLD_LO, HOLD_HI),
+        fadeOut: rand(FADE_OUT_LO, FADE_OUT_HI),
+        cool: rand(COOL_LO, COOL_HI),
+        complexity: t.complexity,
       };
-    }
-
-    particles.current = placed;
-  }, [computeSizes]);
-
-  /* Resize handler — recompute sizes, keep relative positions */
-  const handleResize = useCallback(() => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const arenaW = vw * ARENA_MULT;
-    const arenaH = vh * ARENA_MULT;
-    const sizes = computeSizes();
-
-    particles.current.forEach((p, i) => {
-      const { pw, ph } = sizes[i];
-      // Scale position proportionally
-      if (p.pw > 0) {
-        p.x = (p.x / (p.pw * ARENA_MULT / sizeVwMap[tiles[i].complexity])) *
-              (pw * ARENA_MULT / sizeVwMap[tiles[i].complexity]);
-      }
-      p.pw = pw;
-      p.ph = ph;
-      // Clamp to arena
-      p.x = Math.max(BUFFER, Math.min(arenaW - pw - BUFFER, p.x));
-      p.y = Math.max(BUFFER, Math.min(arenaH - ph - BUFFER, p.y));
     });
-  }, [computeSizes]);
 
-  /* Main animation loop */
-  const animate = useCallback((timestamp: number) => {
-    if (!lastTime.current) lastTime.current = timestamp;
-    const dt = Math.min((timestamp - lastTime.current) / 16.667, 3); // normalise to 60fps, cap at 3×
-    lastTime.current = timestamp;
+    /* --- Starter 1: place a complex tile somewhat centrally --- */
+    const cIdx = tiles.findIndex((t) => t.complexity === "complex");
+    if (cIdx >= 0) {
+      const p = arr[cIdx];
+      p.x = ox + (vw - p.pw) / 2 + rand(-120, 120);
+      p.y = oy + (vh - p.ph) / 2 + rand(-60, 60);
+      p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
+      p.y = Math.max(BUFFER, Math.min(aw - p.ph - BUFFER, p.y));
+      p.state = FADING_IN;
+      p.stateT = now;
+      p.fadeIn = 2000;        // quick initial appearance
+    }
+
+    /* --- Starter 2: nearest tile to viewport centre --- */
+    const vcx = ox + vw / 2;
+    const vcy = oy + vh / 2;
+    let s2 = -1, best = Infinity;
+    for (let i = 0; i < arr.length; i++) {
+      if (i === cIdx) continue;
+      const dx = arr[i].x + arr[i].pw / 2 - vcx;
+      const dy = arr[i].y + arr[i].ph / 2 - vcy;
+      const d = dx * dx + dy * dy;
+      if (d < best) { best = d; s2 = i; }
+    }
+    if (s2 >= 0) {
+      const p = arr[s2];
+      // nudge into viewport if not already
+      if (!inViewport(p, ox, oy, vw, vh, 200)) {
+        p.x = ox + rand(100, vw - p.pw - 100);
+        p.y = oy + rand(100, vh - p.ph - 100);
+        p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
+        p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
+      }
+      p.state = FADING_IN;
+      p.stateT = now;
+      p.fadeIn = 3500;        // slightly slower than first
+    }
+
+    ps.current = arr;
+  }, [sizes]);
+
+  /* ── Animation loop ────────────────────────────────────── */
+  const loop = useCallback((ts: number) => {
+    if (!prevT.current) prevT.current = ts;
+    const dt = Math.min((ts - prevT.current) / 16.667, 3);   // normalised to 60 fps
+    prevT.current = ts;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const arenaW = vw * ARENA_MULT;
-    const arenaH = vh * ARENA_MULT;
+    const aw = vw * ARENA_MULT;
+    const ah = vh * ARENA_MULT;
+    const ox = (aw - vw) / 2;
+    const oy = (ah - vh) / 2;
+    const arr = ps.current;
+    const n = arr.length;
 
-    const ps = particles.current;
-    const n = ps.length;
+    /* 1 — advance every tile's state machine */
+    for (let i = 0; i < n; i++) tick(arr[i], ts);
 
-    // 1. Move particles
+    /* 2 — move */
     for (let i = 0; i < n; i++) {
-      const p = ps[i];
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
+      arr[i].x += arr[i].vx * dt;
+      arr[i].y += arr[i].vy * dt;
     }
 
-    // 2. Arena boundary bounce
+    /* 3 — arena walls */
     for (let i = 0; i < n; i++) {
-      const p = ps[i];
+      const p = arr[i];
       if (p.x < BUFFER) { p.x = BUFFER; p.vx = Math.abs(p.vx); }
       if (p.y < BUFFER) { p.y = BUFFER; p.vy = Math.abs(p.vy); }
-      if (p.x + p.pw > arenaW - BUFFER) { p.x = arenaW - BUFFER - p.pw; p.vx = -Math.abs(p.vx); }
-      if (p.y + p.ph > arenaH - BUFFER) { p.y = arenaH - BUFFER - p.ph; p.vy = -Math.abs(p.vy); }
+      if (p.x + p.pw > aw - BUFFER) { p.x = aw - BUFFER - p.pw; p.vx = -Math.abs(p.vx); }
+      if (p.y + p.ph > ah - BUFFER) { p.y = ah - BUFFER - p.ph; p.vy = -Math.abs(p.vy); }
     }
 
-    // 3. AABB collision detection & bounce (with BUFFER gap)
+    /* 4 — tile-to-tile collision (AABB + buffer) */
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
-        const a = ps[i];
-        const b = ps[j];
+        const a = arr[i], b = arr[j];
+        const o1 = a.x + a.pw + BUFFER - b.x;
+        const o2 = b.x + b.pw + BUFFER - a.x;
+        const o3 = a.y + a.ph + BUFFER - b.y;
+        const o4 = b.y + b.ph + BUFFER - a.y;
 
-        // Check overlap including buffer
-        const overlapX = (a.x + a.pw + BUFFER) - b.x;
-        const overlapX2 = (b.x + b.pw + BUFFER) - a.x;
-        const overlapY = (a.y + a.ph + BUFFER) - b.y;
-        const overlapY2 = (b.y + b.ph + BUFFER) - a.y;
+        if (o1 > 0 && o2 > 0 && o3 > 0 && o4 > 0) {
+          const pens = [o1, o2, o3, o4];
+          const min = Math.min(o1, o2, o3, o4);
+          const ax = pens.indexOf(min);
+          const push = min / 2 + 1;
 
-        if (overlapX > 0 && overlapX2 > 0 && overlapY > 0 && overlapY2 > 0) {
-          // They overlap (including buffer). Find minimum separation axis.
-          const penetrations = [overlapX, overlapX2, overlapY, overlapY2];
-          const minPen = Math.min(...penetrations);
-          const minIdx = penetrations.indexOf(minPen);
-
-          const pushEach = minPen / 2 + 1;
-
-          switch (minIdx) {
-            case 0: // a is left of b, push apart on X
-              a.x -= pushEach;
-              b.x += pushEach;
-              a.vx = -Math.abs(a.vx);
-              b.vx = Math.abs(b.vx);
-              break;
-            case 1: // b is left of a
-              b.x -= pushEach;
-              a.x += pushEach;
-              b.vx = -Math.abs(b.vx);
-              a.vx = Math.abs(a.vx);
-              break;
-            case 2: // a is above b, push apart on Y
-              a.y -= pushEach;
-              b.y += pushEach;
-              a.vy = -Math.abs(a.vy);
-              b.vy = Math.abs(b.vy);
-              break;
-            case 3: // b is above a
-              b.y -= pushEach;
-              a.y += pushEach;
-              b.vy = -Math.abs(b.vy);
-              a.vy = Math.abs(a.vy);
-              break;
-          }
+          if (ax === 0)      { a.x -= push; b.x += push; a.vx = -Math.abs(a.vx); b.vx =  Math.abs(b.vx); }
+          else if (ax === 1) { b.x -= push; a.x += push; b.vx = -Math.abs(b.vx); a.vx =  Math.abs(a.vx); }
+          else if (ax === 2) { a.y -= push; b.y += push; a.vy = -Math.abs(a.vy); b.vy =  Math.abs(b.vy); }
+          else               { b.y -= push; a.y += push; b.vy = -Math.abs(b.vy); a.vy =  Math.abs(a.vy); }
         }
       }
     }
 
-    // 4. Re-clamp to arena after collision resolution
+    /* 5 — re-clamp */
     for (let i = 0; i < n; i++) {
-      const p = ps[i];
-      p.x = Math.max(BUFFER, Math.min(arenaW - BUFFER - p.pw, p.x));
-      p.y = Math.max(BUFFER, Math.min(arenaH - BUFFER - p.ph, p.y));
+      const p = arr[i];
+      p.x = Math.max(BUFFER, Math.min(aw - BUFFER - p.pw, p.x));
+      p.y = Math.max(BUFFER, Math.min(ah - BUFFER - p.ph, p.y));
     }
 
-    // 5. Compute opacity & update DOM
-    const timeSec = timestamp / 1000;
-    // Viewport offset: center of viewport is at center of arena
-    const offsetX = (arenaW - vw) / 2;
-    const offsetY = (arenaH - vh) / 2;
+    /* 6 — director: keep ≥ 2 tiles visible in viewport */
+    let vis = 0;
+    for (let i = 0; i < n; i++) {
+      const p = arr[i];
+      if ((p.state === FADING_IN || p.state === VISIBLE) &&
+          inViewport(p, ox, oy, vw, vh, 0)) {
+        vis++;
+      }
+    }
 
+    if (vis < MIN_VISIBLE) {
+      // find the best HIDDEN tile near the viewport
+      let pick = -1, score = -Infinity;
+      for (let i = 0; i < n; i++) {
+        const p = arr[i];
+        if (p.state !== HIDDEN) continue;
+        if (!inViewport(p, ox, oy, vw, vh, VP_MARGIN)) continue;
+        const cx = p.x + p.pw / 2 - ox - vw / 2;
+        const cy = p.y + p.ph / 2 - oy - vh / 2;
+        let s = -(cx * cx + cy * cy);          // closer = better
+        if (p.complexity === "complex") s += 40000;  // mild preference
+        if (s > score) { score = s; pick = i; }
+      }
+
+      // nothing nearby → summon any HIDDEN tile to a viewport edge
+      if (pick < 0) {
+        for (let i = 0; i < n; i++) {
+          if (arr[i].state === HIDDEN) { pick = i; break; }
+        }
+        if (pick >= 0) {
+          const p = arr[pick];
+          const edge = Math.floor(Math.random() * 4);
+          if (edge === 0) {                                       // top
+            p.x = ox + rand(0, vw - p.pw);
+            p.y = oy - p.ph - rand(50, 200);
+            p.vy = Math.abs(p.vy) || SPEED;
+          } else if (edge === 1) {                                // right
+            p.x = ox + vw + rand(50, 200);
+            p.y = oy + rand(0, vh - p.ph);
+            p.vx = -(Math.abs(p.vx) || SPEED);
+          } else if (edge === 2) {                                // bottom
+            p.x = ox + rand(0, vw - p.pw);
+            p.y = oy + vh + rand(50, 200);
+            p.vy = -(Math.abs(p.vy) || SPEED);
+          } else {                                                // left
+            p.x = ox - p.pw - rand(50, 200);
+            p.y = oy + rand(0, vh - p.ph);
+            p.vx = Math.abs(p.vx) || SPEED;
+          }
+          p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
+          p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
+        }
+      }
+
+      // if we still couldn't find HIDDEN, grab oldest COOLDOWN tile
+      if (pick < 0) {
+        let oldest = Infinity;
+        for (let i = 0; i < n; i++) {
+          if (arr[i].state === COOLDOWN && arr[i].stateT < oldest) {
+            oldest = arr[i].stateT; pick = i;
+          }
+        }
+      }
+
+      if (pick >= 0) {
+        arr[pick].state = FADING_IN;
+        arr[pick].stateT = ts;
+      }
+    }
+
+    /* 7 — paint */
     for (let i = 0; i < n; i++) {
       const el = tileRefs.current[i];
       if (!el) continue;
-
-      const p = ps[i];
-      const screenX = p.x - offsetX;
-      const screenY = p.y - offsetY;
-
-      // Sinusoidal opacity
-      const opCycle = Math.sin(timeSec * (Math.PI * 2 / OPACITY_CYCLE_S) + p.opPhase);
-      const opacity = OPACITY_MIN + (OPACITY_MAX - OPACITY_MIN) * ((opCycle + 1) / 2);
-
-      el.style.transform = `translate(${screenX}px, ${screenY}px)`;
-      el.style.opacity = String(opacity);
+      const p = arr[i];
+      el.style.transform = `translate(${p.x - ox}px, ${p.y - oy}px)`;
+      el.style.opacity = String(tileOpacity(p, ts));
     }
 
-    rafId.current = requestAnimationFrame(animate);
+    raf.current = requestAnimationFrame(loop);
   }, []);
 
+  /* ── Setup / teardown ──────────────────────────────────── */
   useEffect(() => {
-    // Check reduced motion preference
     const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reducedMotion.current = mql.matches;
-
-    if (reducedMotion.current) {
-      // Static display at fixed opacity
-      tileRefs.current.forEach((el) => {
-        if (el) el.style.opacity = "0.25";
-      });
+    if (mql.matches) {
+      tileRefs.current.forEach((el) => { if (el) el.style.opacity = "0.25"; });
       return;
     }
 
-    initParticles();
+    const now = performance.now();
+    init(now);
 
-    // Apply initial positions immediately
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const arenaW = vw * ARENA_MULT;
-    const arenaH = vh * ARENA_MULT;
-    const offsetX = (arenaW - vw) / 2;
-    const offsetY = (arenaH - vh) / 2;
-
-    particles.current.forEach((p, i) => {
+    // commit initial pixel widths
+    const sz = sizes();
+    ps.current.forEach((p, i) => {
       const el = tileRefs.current[i];
-      if (!el) return;
-      el.style.transform = `translate(${p.x - offsetX}px, ${p.y - offsetY}px)`;
-      el.style.opacity = String(OPACITY_MIN);
-      el.style.width = `${p.pw}px`;
+      if (el) el.style.width = `${sz[i].pw}px`;
     });
 
-    rafId.current = requestAnimationFrame(animate);
+    raf.current = requestAnimationFrame(loop);
 
-    const onResize = () => handleResize();
+    const onResize = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const aw = vw * ARENA_MULT;
+      const ah = vh * ARENA_MULT;
+      const sz = sizes();
+      ps.current.forEach((p, i) => {
+        p.pw = sz[i].pw;
+        p.ph = sz[i].ph;
+        p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
+        p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
+        const el = tileRefs.current[i];
+        if (el) el.style.width = `${p.pw}px`;
+      });
+    };
     window.addEventListener("resize", onResize);
 
-    const onMotionChange = (e: MediaQueryListEvent) => {
-      reducedMotion.current = e.matches;
+    const onMotion = (e: MediaQueryListEvent) => {
       if (e.matches) {
-        cancelAnimationFrame(rafId.current);
+        cancelAnimationFrame(raf.current);
         tileRefs.current.forEach((el) => {
-          if (el) {
-            el.style.opacity = "0.25";
-            el.style.animation = "none";
-          }
+          if (el) el.style.opacity = "0.25";
         });
       } else {
-        initParticles();
-        lastTime.current = 0;
-        rafId.current = requestAnimationFrame(animate);
+        init(performance.now());
+        prevT.current = 0;
+        raf.current = requestAnimationFrame(loop);
       }
     };
-    mql.addEventListener("change", onMotionChange);
+    mql.addEventListener("change", onMotion);
 
     return () => {
-      cancelAnimationFrame(rafId.current);
+      cancelAnimationFrame(raf.current);
       window.removeEventListener("resize", onResize);
-      mql.removeEventListener("change", onMotionChange);
+      mql.removeEventListener("change", onMotion);
     };
-  }, [animate, initParticles, handleResize]);
+  }, [init, loop, sizes]);
 
+  /* ── Render ────────────────────────────────────────────── */
   return (
     <div
-      ref={containerRef}
       className="fixed inset-0 z-[1] pointer-events-none overflow-hidden"
       aria-hidden="true"
     >
@@ -386,10 +472,7 @@ export default function PatentDiagramBackground() {
           key={i}
           ref={(el) => { tileRefs.current[i] = el; }}
           className="absolute top-0 left-0 will-change-[transform,opacity]"
-          style={{
-            width: `${sizeVwMap[tile.complexity]}vw`,
-            opacity: 0,
-          }}
+          style={{ width: `${sizeVwMap[tile.complexity]}vw`, opacity: 0 }}
         >
           <Image
             src={tile.src}
