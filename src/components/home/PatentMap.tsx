@@ -278,7 +278,7 @@ function PatentMap() {
 
                       return (
                         <Geography
-                          key={geo.rsmKey}
+                          key={geo.rsmKey ?? geo.id ?? countryId}
                           geography={geo}
                           fill={getFill(countryId)}
                           stroke={getStroke(countryId)}
