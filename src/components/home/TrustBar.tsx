@@ -9,7 +9,7 @@ const stats = [
   },
   {
     icon: Award,
-    value: "29+",
+    value: "30+",
     label: "Patents Granted",
   },
   {

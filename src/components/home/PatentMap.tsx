@@ -122,6 +122,7 @@ const jurisdictions: Jurisdiction[] = [
     ],
     patents: [
       { number: "EP4576048B1", label: "EP 4,576,048 B1", url: patentUrl("EP4576048B1") },
+      { number: "EP4476126B1", label: "EP 4,476,126 B1", url: patentUrl("EP4476126B1") },
     ],
   },
   {

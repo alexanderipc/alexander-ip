@@ -18,7 +18,7 @@ export default function Hero() {
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-blue/10 text-blue-dark rounded-full px-4 py-1.5 text-sm font-medium mb-6">
               <span className="w-2 h-2 bg-blue rounded-full" />
-              Trained at a top Legal 500 firm &middot; 800+ five-star reviews &middot; 29+ patents granted across 6 jurisdictions
+              Trained at a top Legal 500 firm &middot; 800+ five-star reviews &middot; 30+ patents granted across 6 jurisdictions
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-navy leading-[1.1] mb-6">
