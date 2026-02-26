@@ -68,6 +68,37 @@ body {
   opacity: 0;
 }
 
+/* Patent diagram background drift animation */
+@keyframes patentDrift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(-2%, -1.5%) rotate(0.3deg);
+  }
+  50% {
+    transform: translate(-3.5%, -3%) rotate(0deg);
+  }
+  75% {
+    transform: translate(-1.5%, -1%) rotate(-0.3deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.patent-drift {
+  animation: patentDrift 80s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .patent-drift {
+    animation: none;
+  }
+}
+
 /* Subtle gradient backgrounds */
 .bg-gradient-navy {
   background: linear-gradient(135deg, #1a2744 0%, #1a56db 100%);
