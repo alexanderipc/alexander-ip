@@ -4,26 +4,19 @@ import { useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 
 /**
- * 36 patent diagrams as ghostly drifting wraiths.
+ * Patent diagram wraiths — ghostly diagrams that fade in fully inside
+ * the viewport, drift slowly in one direction, and fade out before
+ * they leave. A director keeps ≥ 3 on-screen at all times.
  *
- * Each tile drifts in a single, fixed direction — never bouncing, never
- * changing course. A state-machine governs opacity:
+ * Lifecycle: HIDDEN → FADING_IN → VISIBLE → FADING_OUT → COOLDOWN → …
  *
- *   HIDDEN → FADING_IN → VISIBLE → FADING_OUT → COOLDOWN → HIDDEN …
- *
- * A "director" keeps ≥ 3 tiles visible in the viewport at all times.
- * When a new tile is needed it's placed just off a viewport edge with
- * the cross-axis position fully within bounds, so the tile is guaranteed
- * to be fully on-screen once it clears the entry edge.
- *
- * Tiles never overlap: every frame checks for AABB collision among
- * visible tiles and immediately fades out the newer arrival.
- *
- * Each tile corresponds to a unique image — no duplicates appear because
- * each particle is a single DOM element with a single state.
+ * Rules:
+ *  • Every tile is fully inside the viewport at peak opacity
+ *  • Tiles never overlap (checked at spawn + per-frame guard)
+ *  • Tiles never change direction (straight-line drift)
+ *  • No duplicate images appear simultaneously
+ *  • When a tile reaches the viewport edge it auto-fades out
  */
-
-/* ── Tile catalogue ────────────────────────────────────────── */
 
 type Complexity = "complex" | "medium" | "simple";
 
@@ -79,18 +72,16 @@ const sizeVwMap: Record<Complexity, number> = {
   simple: 27,
 };
 
-/* ── Drift ─────────────────────────────────────────────────── */
-const SPEED = 0.15;
-
-/* ── Tile lifecycle (ms) ───────────────────────────────────── */
-const OP_PEAK_LO = 0.35;
-const OP_PEAK_HI = 0.48;
+/* ── Tuning ────────────────────────────────────────────────── */
+const SPEED = 0.12;         // px / frame @ 60 fps  (~7 px/sec)
+const OP_PEAK_LO = 0.30;
+const OP_PEAK_HI = 0.42;
 const FADE_IN_LO = 3000;   const FADE_IN_HI = 5000;
-const HOLD_LO = 14000;     const HOLD_HI = 28000;
+const HOLD_LO = 16000;     const HOLD_HI = 30000;
 const FADE_OUT_LO = 3000;  const FADE_OUT_HI = 5000;
 const COOL_LO = 20000;     const COOL_HI = 40000;
-
 const MIN_VISIBLE = 3;
+const EDGE_MARGIN = 40;    // px inside viewport edge to start fade-out
 
 /* ── States ────────────────────────────────────────────────── */
 const HIDDEN = 0;
@@ -145,79 +136,59 @@ function tick(p: Particle, now: number) {
   }
 }
 
-function nearVP(p: Particle, vw: number, vh: number, margin = 0) {
-  return p.x + p.pw > -margin && p.x < vw + margin &&
-         p.y + p.ph > -margin && p.y < vh + margin;
+function isShowing(p: Particle) {
+  return p.state === FADING_IN || p.state === VISIBLE;
 }
 
-/** AABB overlap test between two particles */
-function overlaps(a: Particle, b: Particle): boolean {
+function overlaps(a: Particle, b: Particle) {
   return a.x < b.x + b.pw && a.x + a.pw > b.x &&
          a.y < b.y + b.ph && a.y + a.ph > b.y;
 }
 
-/** Is this tile currently showing (visible or becoming visible)? */
-function isShowing(p: Particle): boolean {
-  return p.state === FADING_IN || p.state === VISIBLE;
+/** Is every pixel of the tile inside the viewport? */
+function fullyInside(p: Particle, vw: number, vh: number) {
+  return p.x >= 0 && p.y >= 0 &&
+         p.x + p.pw <= vw && p.y + p.ph <= vh;
+}
+
+/** Is the tile approaching a viewport edge? */
+function nearEdge(p: Particle, vw: number, vh: number) {
+  return p.x < EDGE_MARGIN || p.y < EDGE_MARGIN ||
+         p.x + p.pw > vw - EDGE_MARGIN ||
+         p.y + p.ph > vh - EDGE_MARGIN;
 }
 
 /**
- * Fit on one axis: if the tile fits, pick a random position that keeps
- * it fully inside the viewport. If oversize, centre it.
+ * Pick a random position fully inside the viewport.
+ * For oversize tiles, centre on that axis.
  */
-function fitAxis(dim: number, tileDim: number): number {
-  if (tileDim >= dim) return (dim - tileDim) / 2;
-  return rand(0, dim - tileDim);
+function randomInsideVP(p: Particle, vw: number, vh: number) {
+  p.x = p.pw < vw ? rand(EDGE_MARGIN, vw - p.pw - EDGE_MARGIN) : (vw - p.pw) / 2;
+  p.y = p.ph < vh ? rand(EDGE_MARGIN, vh - p.ph - EDGE_MARGIN) : (vh - p.ph) / 2;
 }
 
 /**
- * Place a tile just off a random viewport edge, aimed to drift across.
- * Cross-axis is always within viewport bounds so the tile will be fully
- * on-screen once it clears the entry edge.
+ * Try to place a tile inside the viewport without overlapping any
+ * other showing tile. Returns true on success.
  */
-function placeAtEdge(p: Particle, vw: number, vh: number) {
-  const edge = Math.floor(Math.random() * 4);
-  const spd = SPEED * (0.7 + Math.random() * 0.6);
-  const spread = rand(-0.25, 0.25);
-
-  if (edge === 0) {
-    p.x = fitAxis(vw, p.pw);
-    p.y = -p.ph - rand(30, 150);
-    const a = Math.PI / 2 + spread;
-    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
-  } else if (edge === 1) {
-    p.x = vw + rand(30, 150);
-    p.y = fitAxis(vh, p.ph);
-    const a = Math.PI + spread;
-    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
-  } else if (edge === 2) {
-    p.x = fitAxis(vw, p.pw);
-    p.y = vh + rand(30, 150);
-    const a = -Math.PI / 2 + spread;
-    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
-  } else {
-    p.x = -p.pw - rand(30, 150);
-    p.y = fitAxis(vh, p.ph);
-    const a = spread;
-    p.vx = Math.cos(a) * spd; p.vy = Math.sin(a) * spd;
-  }
-}
-
-/**
- * Try to place a tile at a viewport edge without overlapping any
- * currently-showing tile. Returns true if successful.
- */
-function placeWithoutOverlap(
+function spawnInside(
   p: Particle, all: Particle[], vw: number, vh: number,
 ): boolean {
-  for (let attempt = 0; attempt < 8; attempt++) {
-    placeAtEdge(p, vw, vh);
+  for (let attempt = 0; attempt < 12; attempt++) {
+    randomInsideVP(p, vw, vh);
     let ok = true;
-    for (const other of all) {
-      if (other === p || !isShowing(other)) continue;
-      if (overlaps(p, other)) { ok = false; break; }
+    for (const o of all) {
+      if (o === p || !isShowing(o)) continue;
+      if (overlaps(p, o)) { ok = false; break; }
     }
-    if (ok) return true;
+    if (ok) {
+      // give it a random drift direction
+      const angle = rand(0, Math.PI * 2);
+      const spd = SPEED * rand(0.7, 1.2);
+      p.vx = Math.cos(angle) * spd;
+      p.vy = Math.sin(angle) * spd;
+      return true;
+    }
   }
   return false;
 }
@@ -246,10 +217,10 @@ export default function PatentDiagramBackground() {
 
     const arr: Particle[] = tiles.map((t, i) => {
       const { pw, ph } = sz[i];
-      const p: Particle = {
+      return {
         x: -9999, y: -9999, vx: 0, vy: 0,
         pw, ph,
-        state: HIDDEN,
+        state: HIDDEN as number,
         stateT: now,
         peak: rand(OP_PEAK_LO, OP_PEAK_HI),
         fadeIn: rand(FADE_IN_LO, FADE_IN_HI),
@@ -258,25 +229,19 @@ export default function PatentDiagramBackground() {
         cool: rand(COOL_LO, COOL_HI),
         complexity: t.complexity,
       };
-      placeAtEdge(p, vw, vh);     // park off-screen
-      return p;
     });
-
-    /* clamp a tile fully inside viewport (or centre if oversize) */
-    const clampIn = (p: Particle) => {
-      if (p.pw < vw) p.x = Math.max(0, Math.min(vw - p.pw, p.x));
-      else p.x = (vw - p.pw) / 2;
-      if (p.ph < vh) p.y = Math.max(0, Math.min(vh - p.ph, p.y));
-      else p.y = (vh - p.ph) / 2;
-    };
 
     /* --- Starter 1: complex tile somewhat central --- */
     const cIdx = tiles.findIndex((t) => t.complexity === "complex");
     if (cIdx >= 0) {
       const p = arr[cIdx];
-      p.x = (vw - p.pw) / 2 + rand(-120, 120);
-      p.y = (vh - p.ph) / 2 + rand(-60, 60);
-      clampIn(p);
+      p.x = (vw - p.pw) / 2 + rand(-80, 80);
+      p.y = (vh - p.ph) / 2 + rand(-40, 40);
+      // clamp inside
+      if (p.pw < vw) p.x = Math.max(EDGE_MARGIN, Math.min(vw - p.pw - EDGE_MARGIN, p.x));
+      else p.x = (vw - p.pw) / 2;
+      if (p.ph < vh) p.y = Math.max(EDGE_MARGIN, Math.min(vh - p.ph - EDGE_MARGIN, p.y));
+      else p.y = (vh - p.ph) / 2;
       const angle = rand(0, Math.PI * 2);
       const spd = SPEED * rand(0.7, 1.1);
       p.vx = Math.cos(angle) * spd;
@@ -286,36 +251,18 @@ export default function PatentDiagramBackground() {
       p.fadeIn = 2000;
     }
 
-    /* --- Starters 2–3: two more in different viewport regions --- */
-    const starters = [1500, 3500];
-    const regions = [
-      { x: 0.2, y: 0.65 },
-      { x: 0.75, y: 0.3 },
-    ];
+    /* --- Starters 2–3: two more placed without overlap --- */
+    const delays = [1200, 2800];
     let placed = 0;
-    for (let i = 0; i < arr.length && placed < starters.length; i++) {
+    for (let i = 0; i < arr.length && placed < delays.length; i++) {
       if (i === cIdx) continue;
       const p = arr[i];
-      p.x = vw * regions[placed].x - p.pw / 2 + rand(-60, 60);
-      p.y = vh * regions[placed].y - p.ph / 2 + rand(-30, 30);
-      clampIn(p);
-
-      // check it doesn't overlap any already-placed starter
-      let ok = true;
-      for (const other of arr) {
-        if (other === p || !isShowing(other)) continue;
-        if (overlaps(p, other)) { ok = false; break; }
+      if (spawnInside(p, arr, vw, vh)) {
+        p.state = FADING_IN;
+        p.stateT = now + delays[placed];
+        p.fadeIn = rand(3000, 4500);
+        placed++;
       }
-      if (!ok) continue;          // skip, try next tile
-
-      const angle = rand(0, Math.PI * 2);
-      const spd = SPEED * rand(0.7, 1.1);
-      p.vx = Math.cos(angle) * spd;
-      p.vy = Math.sin(angle) * spd;
-      p.state = FADING_IN;
-      p.stateT = now + starters[placed];
-      p.fadeIn = rand(3000, 4500);
-      placed++;
     }
 
     ps.current = arr;
@@ -335,32 +282,28 @@ export default function PatentDiagramBackground() {
     /* 1 — advance state machines */
     for (let i = 0; i < n; i++) tick(arr[i], ts);
 
-    /* 2 — drift (straight line, no bouncing, no direction changes) */
+    /* 2 — drift */
     for (let i = 0; i < n; i++) {
       arr[i].x += arr[i].vx * dt;
       arr[i].y += arr[i].vy * dt;
     }
 
-    /* 3 — recycle tiles that have drifted way off-screen */
-    const farMargin = Math.max(vw, vh) * 2;
+    /* 3 — auto-fade: if a VISIBLE tile is about to leave the viewport,
+           start fading it out so it disappears gracefully before the edge */
     for (let i = 0; i < n; i++) {
       const p = arr[i];
-      if ((p.state === FADING_IN || p.state === VISIBLE) &&
-          !nearVP(p, vw, vh, farMargin)) {
-        p.state = COOLDOWN;
+      if (p.state === VISIBLE && !fullyInside(p, vw, vh)) {
+        p.state = FADING_OUT;
         p.stateT = ts;
-        p.cool = rand(COOL_LO, COOL_HI);
       }
     }
 
-    /* 4 — overlap guard: if two showing tiles overlap, fade out the
-           one that started showing more recently */
+    /* 4 — overlap guard: if two showing tiles overlap, fade out newer */
     for (let i = 0; i < n; i++) {
       if (!isShowing(arr[i])) continue;
       for (let j = i + 1; j < n; j++) {
         if (!isShowing(arr[j])) continue;
         if (overlaps(arr[i], arr[j])) {
-          // fade out the newer one (higher stateT = activated later)
           const victim = arr[i].stateT > arr[j].stateT ? arr[i] : arr[j];
           if (victim.state !== FADING_OUT) {
             victim.state = FADING_OUT;
@@ -370,20 +313,32 @@ export default function PatentDiagramBackground() {
       }
     }
 
-    /* 5 — director: keep ≥ MIN_VISIBLE tiles showing in viewport */
+    /* 5 — fast-track tiles that are fully off-screen to COOLDOWN */
+    for (let i = 0; i < n; i++) {
+      const p = arr[i];
+      if (p.state === FADING_OUT) {
+        const offX = p.x + p.pw < -100 || p.x > vw + 100;
+        const offY = p.y + p.ph < -100 || p.y > vh + 100;
+        if (offX || offY) {
+          p.state = COOLDOWN; p.stateT = ts;
+          p.cool = rand(COOL_LO, COOL_HI);
+        }
+      }
+    }
+
+    /* 6 — director: keep ≥ MIN_VISIBLE tiles showing */
     let vis = 0;
     for (let i = 0; i < n; i++) {
-      if (isShowing(arr[i]) && nearVP(arr[i], vw, vh, 0)) vis++;
+      if (isShowing(arr[i]) && fullyInside(arr[i], vw, vh)) vis++;
     }
 
     while (vis < MIN_VISIBLE) {
-      // collect HIDDEN candidates
       const hidden: number[] = [];
       for (let i = 0; i < n; i++) {
         if (arr[i].state === HIDDEN) hidden.push(i);
       }
-      // fallback: oldest cooldown
       if (hidden.length === 0) {
+        // fallback: oldest cooldown
         let oldest = Infinity, pick = -1;
         for (let i = 0; i < n; i++) {
           if (arr[i].state === COOLDOWN && arr[i].stateT < oldest) {
@@ -394,23 +349,23 @@ export default function PatentDiagramBackground() {
         hidden.push(pick);
       }
 
-      // try random HIDDEN tiles until one can be placed without overlap
-      let placed = false;
+      // shuffle and try each candidate
+      let spawned = false;
       const shuffled = hidden.sort(() => Math.random() - 0.5);
       for (const idx of shuffled) {
         const p = arr[idx];
-        if (placeWithoutOverlap(p, arr, vw, vh)) {
+        if (spawnInside(p, arr, vw, vh)) {
           p.state = FADING_IN;
           p.stateT = ts;
           vis++;
-          placed = true;
+          spawned = true;
           break;
         }
       }
-      if (!placed) break;  // can't fit any more tiles without overlap
+      if (!spawned) break;
     }
 
-    /* 6 — paint */
+    /* 7 — paint */
     for (let i = 0; i < n; i++) {
       const el = tileRefs.current[i];
       if (!el) continue;

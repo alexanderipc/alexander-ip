@@ -71,14 +71,15 @@ body {
 /* Wraith physics handles animation via JS; reduced-motion handled in component */
 
 /*
- * Light section backgrounds become transparent so wraith diagrams
- * show through from the body white. Dark sections (navy/gradients)
- * retain their opaque backgrounds and naturally block the wraiths.
- * Card/element bg-white is unaffected (only targets <section>).
+ * Light sections get a frosted-glass background so wraith diagrams
+ * are visible but dimmed behind text. Dark sections keep their
+ * opaque navy backgrounds and fully block the wraiths.
  */
 main section:not([class*="bg-navy"]):not([class*="from-navy"]) {
-  background-color: transparent !important;
+  background-color: rgba(255, 255, 255, 0.82) !important;
   background-image: none !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 /* Subtle gradient backgrounds */
