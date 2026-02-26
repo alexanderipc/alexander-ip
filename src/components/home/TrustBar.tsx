@@ -9,8 +9,8 @@ const stats = [
   },
   {
     icon: Award,
-    value: "US, UK & EU",
-    label: "Patents to Grant",
+    value: "29+",
+    label: "Patents Granted",
   },
   {
     icon: Globe,

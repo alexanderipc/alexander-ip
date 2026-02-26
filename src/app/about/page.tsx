@@ -45,7 +45,7 @@ const credentials = [
 
 const stats = [
   { icon: Star, value: "800+", label: "Five-Star Reviews" },
-  { icon: Award, value: "US, UK & EU", label: "Patents to Grant" },
+  { icon: Award, value: "29+", label: "Patents Granted" },
   { icon: Globe, value: "140+", label: "Jurisdictions via PCT" },
   { icon: Clock, value: "10", label: "Years in the Industry" },
 ];

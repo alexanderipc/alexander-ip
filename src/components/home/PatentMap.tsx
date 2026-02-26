@@ -45,15 +45,30 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1540a8",
     countryCodes: ["840"],
     patents: [
+      // Granted patents (newest first)
+      { number: "US12556844B1", label: "US 12,556,844 B1", url: patentUrl("US12556844B1") },
+      { number: "US12554272B2", label: "US 12,554,272 B2", url: patentUrl("US12554272B2") },
+      { number: "US12539800B2", label: "US 12,539,800 B2", url: patentUrl("US12539800B2") },
+      { number: "US12515234B2", label: "US 12,515,234 B2", url: patentUrl("US12515234B2") },
+      { number: "US12503005B2", label: "US 12,503,005 B2", url: patentUrl("US12503005B2") },
+      { number: "US12433360B1", label: "US 12,433,360 B1", url: patentUrl("US12433360B1") },
+      { number: "US12404623B2", label: "US 12,404,623 B2", url: patentUrl("US12404623B2") },
+      { number: "US12381417B2", label: "US 12,381,417 B2", url: patentUrl("US12381417B2") },
+      { number: "US12354583B2", label: "US 12,354,583 B2", url: patentUrl("US12354583B2") },
+      { number: "US12349766B2", label: "US 12,349,766 B2", url: patentUrl("US12349766B2") },
+      { number: "US12337915B2", label: "US 12,337,915 B2", url: patentUrl("US12337915B2") },
       { number: "US12318654B2", label: "US 12,318,654 B2", url: patentUrl("US12318654B2") },
       { number: "US12277273B2", label: "US 12,277,273 B2", url: patentUrl("US12277273B2") },
+      { number: "US12236923B2", label: "US 12,236,923 B2", url: patentUrl("US12236923B2") },
+      { number: "US12213474B2", label: "US 12,213,474 B2", url: patentUrl("US12213474B2") },
+      { number: "US12189040B2", label: "US 12,189,040 B2", url: patentUrl("US12189040B2") },
+      { number: "US12121131B1", label: "US 12,121,131 B1", url: patentUrl("US12121131B1") },
       { number: "US11937591B1", label: "US 11,937,591 B1", url: patentUrl("US11937591B1") },
       { number: "US11839788B2", label: "US 11,839,788 B2", url: patentUrl("US11839788B2") },
       { number: "US11836570B1", label: "US 11,836,570 B1", url: patentUrl("US11836570B1") },
       { number: "US11833384B2", label: "US 11,833,384 B2", url: patentUrl("US11833384B2") },
       { number: "US11483078B1", label: "US 11,483,078 B1", url: patentUrl("US11483078B1") },
-      { number: "US20220136940A1", label: "US 2022/0136940 A1", url: patentUrl("US20220136940A1") },
-      { number: "US20230197215A1", label: "US 2023/0197215 A1", url: patentUrl("US20230197215A1") },
+      { number: "US10878232B2", label: "US 10,878,232 B2", url: patentUrl("US10878232B2") },
     ],
   },
   {
@@ -68,7 +83,7 @@ const jurisdictions: Jurisdiction[] = [
   },
   {
     id: "eu",
-    name: "Europe (EPO)",
+    name: "Europe (EPO / Unitary Patent)",
     color: "#1540a8",
     hoverColor: "#0f3d8a",
     // Major EPO member states
@@ -110,19 +125,33 @@ const jurisdictions: Jurisdiction[] = [
     ],
   },
   {
-    id: "ca",
-    name: "Canada",
-    color: "#1a56db",
-    hoverColor: "#1540a8",
-    countryCodes: ["124"],
-    patents: [],
-  },
-  {
     id: "au",
     name: "Australia",
     color: "#1a56db",
     hoverColor: "#1540a8",
     countryCodes: ["036"],
+    patents: [
+      { number: "AU2023361441B2", label: "AU 2023361441 B2", url: patentUrl("AU2023361441B2") },
+      { number: "AU2022440230B2", label: "AU 2022440230 B2", url: patentUrl("AU2022440230B2") },
+      { number: "AU2020471661B2", label: "AU 2020471661 B2", url: patentUrl("AU2020471661B2") },
+    ],
+  },
+  {
+    id: "nz",
+    name: "New Zealand",
+    color: "#1a56db",
+    hoverColor: "#1540a8",
+    countryCodes: ["554"],
+    patents: [
+      { number: "NZ799057A", label: "NZ 799057 A", url: patentUrl("NZ799057A") },
+    ],
+  },
+  {
+    id: "ca",
+    name: "Canada",
+    color: "#1a56db",
+    hoverColor: "#1540a8",
+    countryCodes: ["124"],
     patents: [],
   },
   {
@@ -132,8 +161,14 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1a56db",
     countryCodes: [], // PCT covers everything — handled specially
     patents: [
-      { number: "WO2022049262A2", label: "WO 2022/049262 A2", url: patentUrl("WO2022049262A2") },
+      { number: "WO2025006045A1", label: "WO 2025/006045 A1", url: patentUrl("WO2025006045A1") },
+      { number: "WO2024240368A1", label: "WO 2024/240368 A1", url: patentUrl("WO2024240368A1") },
+      { number: "WO2024079441A1", label: "WO 2024/079441 A1", url: patentUrl("WO2024079441A1") },
+      { number: "WO2023233278A2", label: "WO 2023/233278 A2", url: patentUrl("WO2023233278A2") },
+      { number: "WO2023152461A1", label: "WO 2023/152461 A1", url: patentUrl("WO2023152461A1") },
       { number: "WO2023152460A1", label: "WO 2023/152460 A1", url: patentUrl("WO2023152460A1") },
+      { number: "WO2022073056A1", label: "WO 2022/073056 A1", url: patentUrl("WO2022073056A1") },
+      { number: "WO2022049262A2", label: "WO 2022/049262 A2", url: patentUrl("WO2022049262A2") },
     ],
   },
 ];
@@ -315,12 +350,12 @@ function PatentMap() {
                     <div
                       className={`overflow-hidden transition-all duration-300 ${
                         isActive
-                          ? "max-h-[400px] opacity-100 mt-1"
+                          ? "max-h-[600px] opacity-100 mt-1"
                           : "max-h-0 opacity-0"
                       }`}
                     >
                       <div className="bg-white border border-slate-200 rounded-lg p-3 ml-2 shadow-sm">
-                        <ul className="space-y-0.5">
+                        <ul className="space-y-0.5 max-h-[280px] overflow-y-auto">
                           {j.patents.map((p) => (
                             <li key={p.number}>
                               <a
