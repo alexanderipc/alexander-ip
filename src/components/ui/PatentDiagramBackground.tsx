@@ -224,7 +224,7 @@ export default function PatentDiagramBackground() {
       p.x = ox + (vw - p.pw) / 2 + rand(-120, 120);
       p.y = oy + (vh - p.ph) / 2 + rand(-60, 60);
       p.x = Math.max(BUFFER, Math.min(aw - p.pw - BUFFER, p.x));
-      p.y = Math.max(BUFFER, Math.min(aw - p.ph - BUFFER, p.y));
+      p.y = Math.max(BUFFER, Math.min(ah - p.ph - BUFFER, p.y));
       p.state = FADING_IN;
       p.stateT = now;
       p.fadeIn = 2000;        // quick initial appearance
