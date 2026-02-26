@@ -34,7 +34,14 @@ interface Jurisdiction {
 }
 
 function patentUrl(pubNumber: string) {
-  return `https://patents.google.com/patent/${pubNumber}`;
+  // Use WIPO PatentScope for PCT / WO publications
+  if (pubNumber.startsWith("WO")) {
+    // Strip kind code (A1, A2, etc.) for WIPO doc ID
+    const docId = pubNumber.replace(/[A-Z]\d$/, "");
+    return `https://patentscope.wipo.int/search/en/detail.jsf?docId=${docId}`;
+  }
+  // Use Espacenet for all other jurisdictions (US, GB, EP, AU, NZ)
+  return `https://worldwide.espacenet.com/patent/search?q=pn%3D${pubNumber}`;
 }
 
 const jurisdictions: Jurisdiction[] = [
