@@ -44,21 +44,21 @@ const serviceConfig: Record<string, { name: string; description: string }> = {
     description:
       "Complete patent application for software, AI, biochemistry, or advanced systems. Includes background, claims, abstract, and one round of revisions.",
   },
-  /* IP Valuation tiers */
-  "ip-valuation-basic": {
-    name: "IP Valuation — Basic",
+  /* FTO / Infringement Check tiers */
+  "fto-landscape": {
+    name: "FTO — Patent Landscape",
     description:
-      "Holistic patent portfolio valuation with overall value range and general market conditions analysis. 25-day delivery.",
+      "Research and report identifying high-risk active patents and summarising the field, with a 60-minute consultation. 30-day delivery.",
   },
-  "ip-valuation-mid": {
-    name: "IP Valuation — Mid-Tier",
+  "fto-simple": {
+    name: "FTO — Simple Invention",
     description:
-      "Portfolio valuation with detailed competitor IP analysis and strategic prioritisation advice. 30-day delivery.",
+      "Full freedom-to-operate search and report with detailed claims analysis for straightforward products. 45-day delivery.",
   },
-  "ip-valuation-full": {
-    name: "IP Valuation — Full",
+  "fto-complex": {
+    name: "FTO — Complex Invention",
     description:
-      "Comprehensive valuation with individual per-patent assessments, specific leverage strategies, and portfolio-level analysis. 35-day delivery.",
+      "Full freedom-to-operate search and report with detailed claims analysis for complex, multi-technology products. 45-day delivery.",
   },
 };
 

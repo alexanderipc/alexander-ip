@@ -79,9 +79,9 @@ const tiles: TileDef[] = [
 
 /* Display width per complexity — every tile is enormous */
 const sizeMap: Record<Complexity, string> = {
-  complex: "140vw",
-  medium: "110vw",
-  simple: "80vw",
+  complex: "47vw",
+  medium: "37vw",
+  simple: "27vw",
 };
 
 export default function PatentDiagramBackground() {

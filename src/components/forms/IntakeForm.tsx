@@ -9,9 +9,9 @@ const serviceOptionsBase = [
   { label: "Patent Consultation", slug: "consultation", usd: 125 },
   { label: "Patent Search", slug: "patent-search", usd: 335 },
   { label: "Patent Drafting", slug: "patent-drafting", usd: 995 },
-  { label: "Patent Prosecution / Office Action", slug: "patent-prosecution", usd: 450 },
+  { label: "Patent Prosecution", slug: "patent-prosecution", usd: null },
   { label: "International Filing / PCT", slug: "international-filing", usd: 600 },
-  { label: "IP Valuation", slug: "ip-valuation", usd: 2250 },
+  { label: "FTO / Infringement Check", slug: "fto", usd: 600 },
 ];
 
 const referralOptions = [
@@ -45,9 +45,12 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
     const currency = getCurrencyFromBrowserLocale();
 
     // Build localised dropdown labels with slug values for pre-selection
+    const vatSuffix = currency === "GBP" ? " +VAT" : "";
     const options = serviceOptionsBase.map((s) => ({
       value: s.slug,
-      label: `${s.label} (from ${convertPrice(s.usd, currency)})`,
+      label: s.usd != null
+        ? `${s.label} (from ${convertPrice(s.usd, currency)}${vatSuffix})`
+        : `${s.label} (quoted per case)`,
     }));
     setServiceOptions(options);
 
@@ -56,7 +59,7 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
     const draftLow = convertPrice(995, currency);
     const draftHigh = convertPrice(2370, currency);
     setBudgetText(
-      `I understand that services start from ${consultPrice} for consultations and typical patent drafting packages range from ${draftLow}\u2013${draftHigh}.`
+      `I understand that services start from ${consultPrice}${vatSuffix} for consultations and typical patent drafting packages range from ${draftLow}\u2013${draftHigh}${vatSuffix}.`
     );
   }, []);
 

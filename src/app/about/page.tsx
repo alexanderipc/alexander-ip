@@ -45,7 +45,7 @@ const credentials = [
 
 const stats = [
   { icon: Star, value: "800+", label: "Five-Star Reviews" },
-  { icon: Award, value: "30+", label: "Patents Granted" },
+  { icon: Award, value: "50+", label: "Patents Granted" },
   { icon: Globe, value: "140+", label: "Jurisdictions via PCT" },
   { icon: Clock, value: "10", label: "Years in the Industry" },
 ];
@@ -176,7 +176,7 @@ export default function AboutPage() {
               choice. Without big-firm overheads &mdash; the central London
               offices, the partner profit margins, the layers of administration
               &mdash; I could offer the same calibre of work at a fraction of
-              the price. At a traditional patent firm, a single US utility
+              the price. At a traditional patent firm, a single utility
               patent application typically costs{" "}
               <LocalizedPrice range={[8000, 15000]} fallback="$8,000–$15,000" />{" "}
               in attorney fees alone. My clients get the same depth of analysis

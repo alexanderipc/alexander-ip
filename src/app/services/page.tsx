@@ -6,7 +6,7 @@ import {
   FileText,
   Scale,
   Globe,
-  TrendingUp,
+  ShieldCheck,
   ArrowRight,
   Clock,
   Zap,
@@ -30,17 +30,17 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileText,
   Scale,
   Globe,
-  TrendingUp,
+  ShieldCheck,
 };
 
 /** USD starting prices by slug (used for LocalizedPrice conversion) */
-const startingPriceUsd: Record<string, number> = {
+const startingPriceUsd: Record<string, number | null> = {
   consultation: 125,
   "patent-search": 335,
   "patent-drafting": 995,
-  "patent-prosecution": 450,
+  "patent-prosecution": null,
   "international-filing": 600,
-  "ip-valuation": 2250,
+  fto: 600,
 };
 
 const draftingTiers = [
@@ -111,12 +111,20 @@ export default function ServicesPage() {
                     </p>
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                       <div>
-                        <span className="text-blue font-bold text-lg">
-                          <LocalizedPrice amount={usd} fallback={service.startingPrice} />
-                        </span>
-                        <span className="text-slate-400 text-sm ml-1">
-                          starting
-                        </span>
+                        {usd != null ? (
+                          <>
+                            <span className="text-blue font-bold text-lg">
+                              <LocalizedPrice amount={usd} fallback={service.startingPrice} />
+                            </span>
+                            <span className="text-slate-400 text-sm ml-1">
+                              starting
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-blue font-bold text-lg">
+                            {service.startingPrice}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1 text-slate-400 text-sm">
                         <Clock className="w-3.5 h-3.5" />

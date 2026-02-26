@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -9,18 +9,18 @@ import Accordion from "@/components/ui/Accordion";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import { getServiceBySlug } from "@/data/services";
 
-const service = getServiceBySlug("ip-valuation")!;
+const service = getServiceBySlug("fto")!;
 
-const valuationTierUsd: Record<string, number> = {
-  Basic: 2250,
-  "Mid-Tier": 3500,
-  Full: 4750,
+const ftoTierUsd: Record<string, number> = {
+  "Patent Landscape": 600,
+  "Simple Invention FTO": 1600,
+  "Complex Invention FTO": 2500,
 };
 
-const valuationTierService: Record<string, string> = {
-  Basic: "ip-valuation-basic",
-  "Mid-Tier": "ip-valuation-mid",
-  Full: "ip-valuation-full",
+const ftoTierService: Record<string, string> = {
+  "Patent Landscape": "fto-landscape",
+  "Simple Invention FTO": "fto-simple",
+  "Complex Invention FTO": "fto-complex",
 };
 
 export const metadata: Metadata = {
@@ -28,27 +28,34 @@ export const metadata: Metadata = {
   description: service.description,
 };
 
-const deliveryTimelines: Record<string, string> = {
-  Basic: "25 days",
-  "Mid-Tier": "30 days",
-  Full: "35 days",
-};
-
-export default function IPValuationPage() {
+export default function FTOPage() {
   return (
     <>
       {/* Hero */}
       <section className="py-16 lg:py-24 bg-gradient-to-b from-slate-50 to-white">
         <Container>
           <div className="max-w-3xl">
-            <Badge className="mb-6">IP Valuation</Badge>
+            <Badge className="mb-6">FTO / Infringement Check</Badge>
             <h1 className="text-4xl sm:text-5xl font-bold text-navy leading-tight mb-6">
               {service.title}
             </h1>
             <p className="text-lg text-slate-600 leading-relaxed mb-8">
-              {service.description}
+              {service.longDescription}
             </p>
-            <CheckoutButton service="ip-valuation-mid" size="lg" label="Order Mid-Tier Valuation" />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <CheckoutButton
+                service="fto-simple"
+                size="lg"
+                label="Order Simple FTO"
+              />
+              <Button
+                href="/contact?service=fto"
+                variant="outline"
+                size="lg"
+              >
+                Get in Touch First
+              </Button>
+            </div>
           </div>
         </Container>
       </section>
@@ -61,9 +68,8 @@ export default function IPValuationPage() {
               What&apos;s Included
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Professional portfolio analysis and valuation to support your
-              business decisions, investor presentations, or strategic
-              planning.
+              In-depth research and analysis to give you a clear picture
+              of your infringement risk.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
@@ -102,19 +108,18 @@ export default function IPValuationPage() {
         </Container>
       </section>
 
-      {/* Pricing Tiers */}
+      {/* Pricing — 3 Tiers */}
       <section className="py-20 bg-white">
         <Container>
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-navy mb-4">
-              Valuation Tiers
+              FTO Packages
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Three levels of depth depending on your needs &mdash; from a
-              high-level ecosystem view to granular per-patent valuations.
+              Three tiers depending on the depth of analysis your product
+              requires.
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {service.pricing.map((tier) => (
               <Card
@@ -128,7 +133,7 @@ export default function IPValuationPage() {
               >
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge variant="teal">Recommended</Badge>
+                    <Badge variant="teal">Most Popular</Badge>
                   </div>
                 )}
                 <div className="text-center mb-6">
@@ -139,14 +144,10 @@ export default function IPValuationPage() {
                     {tier.description}
                   </p>
                   <div className="text-4xl font-bold text-navy">
-                    <LocalizedPrice amount={valuationTierUsd[tier.name]} fallback={tier.price} />
-                  </div>
-                  <div className="flex items-center justify-center gap-1 text-sm text-slate-400 mt-2">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>
-                      {deliveryTimelines[tier.name] || service.delivery}{" "}
-                      delivery
-                    </span>
+                    <LocalizedPrice
+                      amount={ftoTierUsd[tier.name]}
+                      fallback={tier.price}
+                    />
                   </div>
                 </div>
                 <div className="space-y-3 mb-8 flex-1">
@@ -158,7 +159,7 @@ export default function IPValuationPage() {
                   ))}
                 </div>
                 <CheckoutButton
-                  service={valuationTierService[tier.name]}
+                  service={ftoTierService[tier.name]}
                   size="md"
                   label={`Order ${tier.name}`}
                   className="w-full"
@@ -166,11 +167,6 @@ export default function IPValuationPage() {
               </Card>
             ))}
           </div>
-
-          <p className="text-center text-sm text-slate-400 mt-8 max-w-2xl mx-auto">
-            Investor-facing versions with appropriate positive positioning can
-            be prepared as a separate deliverable. Get in touch for details.
-          </p>
         </Container>
       </section>
 
@@ -191,14 +187,27 @@ export default function IPValuationPage() {
         <Container>
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white mb-4">
-              Know the Value of Your IP
+              Ready to Check Your Freedom to Operate?
             </h2>
             <p className="text-slate-300 mb-8 max-w-lg mx-auto">
-              Whether you&apos;re raising investment, planning strategy, or
-              making acquisition decisions, get a professional assessment of
-              your patent portfolio&apos;s value.
+              Don&apos;t invest in production without understanding your
+              patent risk. Get a clear, honest assessment before you commit.
             </p>
-            <CheckoutButton service="ip-valuation-mid" size="lg" label="Order Mid-Tier Valuation" />
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <CheckoutButton
+                service="fto-simple"
+                size="lg"
+                label="Order Simple FTO"
+              />
+              <Button
+                href="/contact?service=fto"
+                variant="outline"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10 hover:text-white"
+              >
+                Get in Touch First
+              </Button>
+            </div>
           </div>
         </Container>
       </section>

@@ -11,7 +11,7 @@ const footerLinks = {
     { label: "Patent Drafting", href: "/services/patent-drafting" },
     { label: "Patent Prosecution", href: "/services/patent-prosecution" },
     { label: "International Filing", href: "/services/international-filing" },
-    { label: "IP Valuation", href: "/services/ip-valuation" },
+    { label: "FTO / Infringement Check", href: "/services/fto" },
   ],
   company: [
     { label: "About", href: "/about" },

@@ -16,7 +16,7 @@ const navLinks = [
       { label: "Patent Drafting", href: "/services/patent-drafting" },
       { label: "Patent Prosecution", href: "/services/patent-prosecution" },
       { label: "International Filing", href: "/services/international-filing" },
-      { label: "IP Valuation", href: "/services/ip-valuation" },
+      { label: "FTO / Infringement Check", href: "/services/fto" },
     ],
   },
   { label: "Process", href: "/process" },

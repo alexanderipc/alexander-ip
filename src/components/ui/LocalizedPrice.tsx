@@ -53,6 +53,7 @@ export default function LocalizedPrice({
     if (prefix) parts.push(prefix);
     parts.push(price);
     if (suffix) parts.push(suffix);
+    if (currency === "GBP") parts.push("+VAT");
     setDisplay(parts.join(" ").trim());
   }, [service, amount, range, prefix, suffix, fallback]);
 

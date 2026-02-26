@@ -5,7 +5,7 @@ import {
   FileText,
   Scale,
   Globe,
-  TrendingUp,
+  ShieldCheck,
 } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -16,7 +16,7 @@ const serviceCards = [
   {
     icon: MessageSquare,
     title: "Consultation",
-    description: "Not sure where to start? We'll assess your idea, explain what patent protection involves, and help you decide if it makes sense to proceed.",
+    description: "Not sure where to start? We'll assess your idea, explain what patent protection involves, and help you decide if it makes sense to proceed. Also available for more advanced matters like filing strategy.",
     usdAmount: 125,
     href: "/services/consultation",
   },
@@ -39,8 +39,8 @@ const serviceCards = [
     icon: Scale,
     title: "Prosecution",
     description:
-      "When the patent office pushes back, we prepare strategic responses to objections and rejections to get your patent granted.",
-    usdAmount: 450,
+      "Strategic handling of patent office correspondence — objections, amendments, restriction requirements, and appeals — to get your patent granted.",
+    priceLabel: "Quoted per case",
     href: "/services/patent-prosecution",
   },
   {
@@ -51,12 +51,12 @@ const serviceCards = [
     href: "/services/international-filing",
   },
   {
-    icon: TrendingUp,
-    title: "IP Valuation",
+    icon: ShieldCheck,
+    title: "FTO / Infringement",
     description:
-      "A formal valuation of your patent portfolio — useful for investment rounds, licensing negotiations, or strategic planning.",
-    usdAmount: 2250,
-    href: "/services/ip-valuation",
+      "Honest, understandable strategic advice on the risks of selling and manufacturing your product — backed by in-depth patent research.",
+    usdAmount: 600,
+    href: "/services/fto",
   },
 ];
 
@@ -89,7 +89,11 @@ export default function ServicesOverview() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-blue font-bold">
-                    <LocalizedPrice amount={service.usdAmount} prefix="From" fallback={`From $${service.usdAmount.toLocaleString()}`} />
+                    {service.priceLabel ? (
+                      service.priceLabel
+                    ) : (
+                      <LocalizedPrice amount={service.usdAmount!} prefix="From" fallback={`From $${service.usdAmount!.toLocaleString()}`} />
+                    )}
                   </span>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue group-hover:translate-x-1 transition-all" />
                 </div>

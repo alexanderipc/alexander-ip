@@ -33,9 +33,9 @@ const journey1Steps = [
   },
   {
     icon: Search,
-    title: "Patent Search",
+    title: "Patent Search (Optional but Recommended)",
     description:
-      "Before investing in a full application, find out if your invention is novel enough. We search existing patents and prior art, then give you an honest assessment of where you stand.",
+      "Before investing in a full application, a novelty search helps you understand what's already out there. It's optional — you can go straight to drafting — but it's strongly recommended. It often shapes the direction of the claims and can save significant time and money down the line.",
     timeline: "21 days",
     costUsd: 335,
   },
@@ -59,9 +59,9 @@ const journey1Steps = [
     icon: Scale,
     title: "Prosecution",
     description:
-      "When the patent office responds (they almost always do), we handle the back-and-forth to get your patent granted. We analyse the objections, develop a strategy, and draft a formal response.",
+      "After filing, the patent office will examine your application and may raise objections, request amendments, or issue other correspondence. We handle all of this — developing a strategy and drafting formal responses to get your patent granted.",
     timeline: "12\u201324 months after filing",
-    costUsd: 450,
+    cost: "Quoted per case",
   },
   {
     icon: Award,

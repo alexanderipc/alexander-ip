@@ -48,21 +48,21 @@ export const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
     USD: { currency: "usd", amount: 139500, symbol: "$", display: "$1,395" },
     EUR: { currency: "eur", amount: 134000, symbol: "€", display: "€1,340" },
   },
-  /* IP Valuation tiers */
-  "ip-valuation-basic": {
-    GBP: { currency: "gbp", amount: 167500, symbol: "£", display: "£1,675" },
-    USD: { currency: "usd", amount: 225000, symbol: "$", display: "$2,250" },
-    EUR: { currency: "eur", amount: 215000, symbol: "€", display: "€2,150" },
+  /* FTO / Infringement Check tiers */
+  "fto-landscape": {
+    GBP: { currency: "gbp", amount: 44500, symbol: "£", display: "£445" },
+    USD: { currency: "usd", amount: 60000, symbol: "$", display: "$600" },
+    EUR: { currency: "eur", amount: 57500, symbol: "€", display: "€575" },
   },
-  "ip-valuation-mid": {
-    GBP: { currency: "gbp", amount: 260000, symbol: "£", display: "£2,600" },
-    USD: { currency: "usd", amount: 350000, symbol: "$", display: "$3,500" },
-    EUR: { currency: "eur", amount: 335000, symbol: "€", display: "€3,350" },
+  "fto-simple": {
+    GBP: { currency: "gbp", amount: 118500, symbol: "£", display: "£1,185" },
+    USD: { currency: "usd", amount: 160000, symbol: "$", display: "$1,600" },
+    EUR: { currency: "eur", amount: 153500, symbol: "€", display: "€1,535" },
   },
-  "ip-valuation-full": {
-    GBP: { currency: "gbp", amount: 350000, symbol: "£", display: "£3,500" },
-    USD: { currency: "usd", amount: 475000, symbol: "$", display: "$4,750" },
-    EUR: { currency: "eur", amount: 455000, symbol: "€", display: "€4,550" },
+  "fto-complex": {
+    GBP: { currency: "gbp", amount: 185000, symbol: "£", display: "£1,850" },
+    USD: { currency: "usd", amount: 250000, symbol: "$", display: "$2,500" },
+    EUR: { currency: "eur", amount: 240000, symbol: "€", display: "€2,400" },
   },
 };
 
