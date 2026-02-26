@@ -71,15 +71,41 @@ body {
 /* Wraith physics handles animation via JS; reduced-motion handled in component */
 
 /*
- * Light sections get a frosted-glass background so wraith diagrams
- * are visible but dimmed behind text. Dark sections keep their
- * opaque navy backgrounds and fully block the wraiths.
+ * Light sections get a frosted-glass centre so wraith diagrams are
+ * dimmed behind text but fully visible in the wide gutters either
+ * side of the max-w-6xl content container.  Dark sections keep
+ * their opaque navy backgrounds and fully block the wraiths.
+ *
+ * The ::before pseudo-element carries the gradient + blur so that
+ * section content (at any z-index) sits above the frost layer.
  */
 main section:not([class*="bg-navy"]):not([class*="from-navy"]) {
-  background-color: rgba(255, 255, 255, 0.82) !important;
+  position: relative;
+  background-color: transparent !important;
   background-image: none !important;
+}
+
+main section:not([class*="bg-navy"]):not([class*="from-navy"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.85) 10%,
+    rgba(255, 255, 255, 0.85) 90%,
+    transparent 100%
+  );
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+}
+
+/* Ensure section content sits above the frost pseudo-element */
+main section:not([class*="bg-navy"]):not([class*="from-navy"]) > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Subtle gradient backgrounds */
