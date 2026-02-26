@@ -94,8 +94,8 @@ main section:not([class*="bg-navy"]):not([class*="from-navy"])::before {
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(255, 255, 255, 0.85) 10%,
-    rgba(255, 255, 255, 0.85) 90%,
+    rgba(255, 255, 255, 0.85) 20%,
+    rgba(255, 255, 255, 0.85) 80%,
     transparent 100%
   );
   backdrop-filter: blur(2px);

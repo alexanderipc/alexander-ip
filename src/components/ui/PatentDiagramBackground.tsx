@@ -67,15 +67,15 @@ const tiles: TileDef[] = [
 ];
 
 const sizeVwMap: Record<Complexity, number> = {
-  complex: 47,
+  complex: 57,
   medium: 37,
   simple: 27,
 };
 
 /* ── Tuning ────────────────────────────────────────────────── */
 const SPEED = 0.12;         // px / frame @ 60 fps  (~7 px/sec)
-const OP_PEAK_LO = 0.30;
-const OP_PEAK_HI = 0.42;
+const OP_PEAK_LO = 0.36;
+const OP_PEAK_HI = 0.50;
 const FADE_IN_LO = 3000;   const FADE_IN_HI = 5000;
 const HOLD_LO = 16000;     const HOLD_HI = 30000;
 const FADE_OUT_LO = 3000;  const FADE_OUT_HI = 5000;
