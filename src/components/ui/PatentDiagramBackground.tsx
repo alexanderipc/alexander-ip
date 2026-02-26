@@ -1,20 +1,20 @@
 import Image from "next/image";
 
 /**
- * 36 unique patent diagrams arranged in a responsive CSS Grid.
+ * 36 patent diagrams as giant floating wraiths that slide on and off
+ * the screen from the edges. Each image is enormous (80–140 vw wide)
+ * and translates across viewport-scale distances via CSS animations.
  *
- * Complexity-based sizing:
- *   complex → minimal padding, image fills ~90% of cell (visually ~2× a simple tile)
- *   medium  → moderate padding, image fills ~65% of cell
- *   simple  → generous padding, image fills ~45% of cell
+ * Architecture:
+ *   Outer div: fixed fullscreen, overflow hidden (clips at viewport)
+ *   Inner div: oversized 6-col grid (160 vw × 160 vh, offset −30 vw/vh)
+ *   Each cell: overflow visible — images extend far beyond their cells
+ *   Each image: one of 8 wraithSlide animation variants (70–130 s)
  *
- * The grid is slightly oversized (130vw × 130vh) and offset so tiles
- * bleed beyond the viewport edges for a more organic feel.
- * Each image animates independently via one of six wraithDrift keyframes
- * with varied durations (50–95 s) and staggered negative delays.
- *
- * Grid: 4 cols (mobile) → 6 cols (md+), auto rows, 60 px gap.
- * Sits at z-[1] BEHIND all page content (main/footer at z-[2]).
+ * Size by complexity:
+ *   complex → 140 vw (~8× the old grid-cell size)
+ *   medium  → 110 vw
+ *   simple  →  80 vw
  */
 
 type Complexity = "complex" | "medium" | "simple";
@@ -26,17 +26,7 @@ interface TileDef {
   complexity: Complexity;
 }
 
-/*
- * Tiles ordered for visual distribution — complexities interleaved so
- * intricate drawings are spread evenly across the grid.
- *
- * Row 1: C  M  S  C  M  S
- * Row 2: M  C  S  M  C  S
- * Row 3: S  C  M  S  C  M
- * Row 4: C  M  S  C  M  S
- * Row 5: S  C  M  M  C  M
- * Row 6: C  M  M  C  M  M
- */
+/* Tiles interleaved by complexity for even visual distribution */
 const tiles: TileDef[] = [
   // ── Row 1 ──
   { src: "/images/diagrams/engine-cross-section.webp", w: 600, h: 451, complexity: "complex" },
@@ -87,52 +77,60 @@ const tiles: TileDef[] = [
   { src: "/images/diagrams/wheel-assembly.webp", w: 600, h: 523, complexity: "medium" },
 ];
 
-/* Padding per complexity — less padding = image fills more of the cell */
-const padMap: Record<Complexity, string> = {
-  complex: "p-[8px]",
-  medium: "p-[28px]",
-  simple: "p-[48px]",
+/* Display width per complexity — every tile is enormous */
+const sizeMap: Record<Complexity, string> = {
+  complex: "140vw",
+  medium: "110vw",
+  simple: "80vw",
 };
 
 export default function PatentDiagramBackground() {
   return (
     <div
-      className="fixed z-[1] pointer-events-none grid grid-cols-4 md:grid-cols-6 gap-6 md:gap-10 lg:gap-[60px]"
-      style={{
-        width: "130vw",
-        height: "130vh",
-        left: "-15vw",
-        top: "-15vh",
-      }}
+      className="fixed inset-0 z-[1] pointer-events-none overflow-hidden"
       aria-hidden="true"
     >
-      {tiles.map((tile, i) => {
-        const anim = (i % 6) + 1;
-        const dur = 50 + ((i * 7) % 45);
-        const delay = -((i * 13) % 90);
+      <div
+        className="grid grid-cols-4 md:grid-cols-6"
+        style={{
+          width: "160vw",
+          height: "160vh",
+          marginLeft: "-30vw",
+          marginTop: "-30vh",
+        }}
+      >
+        {tiles.map((tile, i) => {
+          const anim = (i % 8) + 1;
+          const dur = 70 + ((i * 11) % 60);   // 70–130 s
+          const delay = -((i * 17) % 120);     // stagger
 
-        return (
-          <div key={i} className="overflow-hidden">
+          return (
             <div
-              className={`wraith-image w-full h-full flex items-center justify-center ${padMap[tile.complexity]}`}
-              style={{
-                animation: `wraithDrift${anim} ${dur}s ease-in-out ${delay}s infinite`,
-                opacity: 0,
-              }}
+              key={i}
+              className="overflow-visible flex items-center justify-center"
             >
-              <Image
-                src={tile.src}
-                alt=""
-                width={tile.w}
-                height={tile.h}
-                className="max-w-full max-h-full object-contain"
-                loading="eager"
-                quality={40}
-              />
+              <div
+                className="wraith-image flex-shrink-0"
+                style={{
+                  width: sizeMap[tile.complexity],
+                  animation: `wraithSlide${anim} ${dur}s ease-in-out ${delay}s infinite`,
+                  opacity: 0,
+                }}
+              >
+                <Image
+                  src={tile.src}
+                  alt=""
+                  width={tile.w}
+                  height={tile.h}
+                  className="w-full h-auto"
+                  loading="eager"
+                  quality={40}
+                />
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

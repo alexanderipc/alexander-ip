@@ -68,87 +68,94 @@ body {
   opacity: 0;
 }
 
-/* Patent diagram wraith animations — 6 variants, each with wide opacity
-   swings (floors 1-3%, peaks 25-32%) and frequent oscillations (9-10 stops). */
+/* Patent diagram wraith slide animations — 8 variants.
+   Viewport-scale translations (±55 vw / ±40 vh) so images sweep on and
+   off the edges. High opacity peaks (38-50%) with near-invisible floors. */
 
-/* 1 · Right drift, three opacity peaks */
-@keyframes wraithDrift1 {
-  0%   { transform: translateX(0) translateY(0) rotate(0deg);       opacity: 0.02; }
-  12%  { transform: translateX(18px) translateY(-8px) rotate(0.3deg);  opacity: 0.28; }
-  24%  { transform: translateX(-8px) translateY(4px) rotate(-0.1deg);  opacity: 0.02; }
-  36%  { transform: translateX(25px) translateY(-14px) rotate(0.5deg); opacity: 0.32; }
-  50%  { transform: translateX(-5px) translateY(10px) rotate(0deg);    opacity: 0.01; }
-  62%  { transform: translateX(20px) translateY(-6px) rotate(-0.3deg); opacity: 0.27; }
-  75%  { transform: translateX(-18px) translateY(8px) rotate(0.2deg);  opacity: 0.02; }
-  88%  { transform: translateX(10px) translateY(-3px) rotate(0.4deg);  opacity: 0.18; }
-  100% { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.02; }
+/* 1 · Sweep left → right */
+@keyframes wraithSlide1 {
+  0%, 100% { transform: translate(-55vw, -5vh) rotate(-0.5deg);  opacity: 0.03; }
+  14%  { transform: translate(-20vw, 8vh) rotate(0.3deg);   opacity: 0.42; }
+  28%  { transform: translate(10vw, -3vh) rotate(-0.2deg);  opacity: 0.04; }
+  42%  { transform: translate(35vw, 6vh) rotate(0.4deg);    opacity: 0.48; }
+  58%  { transform: translate(55vw, -8vh) rotate(-0.3deg);  opacity: 0.03; }
+  72%  { transform: translate(25vw, 4vh) rotate(0.2deg);    opacity: 0.40; }
+  86%  { transform: translate(-10vw, -6vh) rotate(-0.4deg); opacity: 0.04; }
 }
 
-/* 2 · Left drift, offset peaks */
-@keyframes wraithDrift2 {
-  0%   { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.03; }
-  11%  { transform: translateX(-14px) translateY(10px) rotate(-0.3deg); opacity: 0.01; }
-  22%  { transform: translateX(-22px) translateY(-4px) rotate(0.2deg);  opacity: 0.30; }
-  35%  { transform: translateX(8px) translateY(6px) rotate(-0.1deg);    opacity: 0.02; }
-  48%  { transform: translateX(-28px) translateY(-10px) rotate(0.4deg); opacity: 0.26; }
-  60%  { transform: translateX(12px) translateY(8px) rotate(-0.2deg);   opacity: 0.01; }
-  72%  { transform: translateX(-10px) translateY(-6px) rotate(0.1deg);  opacity: 0.29; }
-  85%  { transform: translateX(5px) translateY(4px) rotate(-0.3deg);    opacity: 0.03; }
-  100% { transform: translateX(0) translateY(0) rotate(0deg);           opacity: 0.03; }
+/* 2 · Sweep right → left */
+@keyframes wraithSlide2 {
+  0%, 100% { transform: translate(55vw, 4vh) rotate(0.4deg);    opacity: 0.04; }
+  14%  { transform: translate(25vw, -7vh) rotate(-0.3deg);  opacity: 0.40; }
+  28%  { transform: translate(-10vw, 5vh) rotate(0.2deg);   opacity: 0.03; }
+  42%  { transform: translate(-40vw, -6vh) rotate(-0.4deg); opacity: 0.45; }
+  58%  { transform: translate(-55vw, 8vh) rotate(0.3deg);   opacity: 0.04; }
+  72%  { transform: translate(-20vw, -4vh) rotate(-0.2deg); opacity: 0.38; }
+  86%  { transform: translate(15vw, 6vh) rotate(0.4deg);    opacity: 0.03; }
 }
 
-/* 3 · Diagonal drift, four peaks */
-@keyframes wraithDrift3 {
-  0%   { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.01; }
-  10%  { transform: translateX(12px) translateY(8px) rotate(0.4deg);   opacity: 0.25; }
-  22%  { transform: translateX(20px) translateY(-6px) rotate(-0.2deg); opacity: 0.02; }
-  33%  { transform: translateX(-10px) translateY(-12px) rotate(0.3deg);opacity: 0.30; }
-  45%  { transform: translateX(-18px) translateY(4px) rotate(-0.4deg); opacity: 0.01; }
-  56%  { transform: translateX(8px) translateY(10px) rotate(0.2deg);   opacity: 0.28; }
-  68%  { transform: translateX(22px) translateY(-8px) rotate(-0.3deg); opacity: 0.03; }
-  80%  { transform: translateX(-6px) translateY(-4px) rotate(0.5deg);  opacity: 0.32; }
-  92%  { transform: translateX(-14px) translateY(6px) rotate(-0.1deg); opacity: 0.02; }
-  100% { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.01; }
+/* 3 · Sweep top → bottom */
+@keyframes wraithSlide3 {
+  0%, 100% { transform: translate(-5vw, -40vh) rotate(-0.3deg);  opacity: 0.03; }
+  14%  { transform: translate(8vw, -10vh) rotate(0.4deg);   opacity: 0.44; }
+  28%  { transform: translate(-3vw, 15vh) rotate(-0.2deg);  opacity: 0.04; }
+  42%  { transform: translate(6vw, 35vh) rotate(0.3deg);    opacity: 0.42; }
+  58%  { transform: translate(-8vw, 40vh) rotate(-0.4deg);  opacity: 0.03; }
+  72%  { transform: translate(4vw, 10vh) rotate(0.2deg);    opacity: 0.46; }
+  86%  { transform: translate(-6vw, -20vh) rotate(-0.3deg); opacity: 0.04; }
 }
 
-/* 4 · Gentle sway, late peaks */
-@keyframes wraithDrift4 {
-  0%   { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.02; }
-  14%  { transform: translateX(-16px) translateY(-6px) rotate(0.2deg); opacity: 0.03; }
-  28%  { transform: translateX(10px) translateY(8px) rotate(-0.3deg);  opacity: 0.01; }
-  40%  { transform: translateX(-20px) translateY(-10px) rotate(0.4deg);opacity: 0.26; }
-  52%  { transform: translateX(6px) translateY(4px) rotate(-0.1deg);   opacity: 0.02; }
-  64%  { transform: translateX(-12px) translateY(-8px) rotate(0.3deg); opacity: 0.30; }
-  76%  { transform: translateX(18px) translateY(6px) rotate(-0.4deg);  opacity: 0.01; }
-  88%  { transform: translateX(-8px) translateY(-4px) rotate(0.2deg);  opacity: 0.28; }
-  100% { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.02; }
+/* 4 · Sweep bottom → top */
+@keyframes wraithSlide4 {
+  0%, 100% { transform: translate(5vw, 40vh) rotate(0.3deg);    opacity: 0.04; }
+  14%  { transform: translate(-7vw, 15vh) rotate(-0.4deg);  opacity: 0.42; }
+  28%  { transform: translate(4vw, -10vh) rotate(0.2deg);   opacity: 0.03; }
+  42%  { transform: translate(-6vw, -30vh) rotate(-0.3deg); opacity: 0.48; }
+  58%  { transform: translate(8vw, -40vh) rotate(0.4deg);   opacity: 0.04; }
+  72%  { transform: translate(-4vw, -15vh) rotate(-0.2deg); opacity: 0.40; }
+  86%  { transform: translate(6vw, 10vh) rotate(0.3deg);    opacity: 0.03; }
 }
 
-/* 5 · Circular drift, three asymmetric peaks */
-@keyframes wraithDrift5 {
-  0%   { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.03; }
-  12%  { transform: translateX(15px) translateY(-12px) rotate(0.3deg); opacity: 0.27; }
-  25%  { transform: translateX(20px) translateY(6px) rotate(0.5deg);   opacity: 0.02; }
-  38%  { transform: translateX(-8px) translateY(14px) rotate(-0.2deg); opacity: 0.01; }
-  50%  { transform: translateX(-22px) translateY(4px) rotate(-0.4deg); opacity: 0.31; }
-  62%  { transform: translateX(-14px) translateY(-10px) rotate(-0.1deg);opacity: 0.02; }
-  75%  { transform: translateX(6px) translateY(-16px) rotate(0.4deg);  opacity: 0.25; }
-  88%  { transform: translateX(16px) translateY(-4px) rotate(0.2deg);  opacity: 0.03; }
-  100% { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.03; }
+/* 5 · Diagonal NW → SE */
+@keyframes wraithSlide5 {
+  0%, 100% { transform: translate(-45vw, -30vh) rotate(-0.4deg); opacity: 0.03; }
+  16%  { transform: translate(-15vw, -8vh) rotate(0.3deg);  opacity: 0.44; }
+  33%  { transform: translate(10vw, 10vh) rotate(-0.2deg);  opacity: 0.04; }
+  50%  { transform: translate(35vw, 25vh) rotate(0.4deg);   opacity: 0.46; }
+  66%  { transform: translate(45vw, 30vh) rotate(-0.3deg);  opacity: 0.03; }
+  83%  { transform: translate(15vw, 8vh) rotate(0.2deg);    opacity: 0.40; }
 }
 
-/* 6 · Zigzag drift, four quick peaks */
-@keyframes wraithDrift6 {
-  0%   { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.01; }
-  10%  { transform: translateX(20px) translateY(-4px) rotate(-0.3deg); opacity: 0.29; }
-  20%  { transform: translateX(-12px) translateY(8px) rotate(0.2deg);  opacity: 0.02; }
-  32%  { transform: translateX(-24px) translateY(-6px) rotate(0.4deg); opacity: 0.26; }
-  44%  { transform: translateX(8px) translateY(12px) rotate(-0.2deg);  opacity: 0.01; }
-  55%  { transform: translateX(18px) translateY(-10px) rotate(0.3deg); opacity: 0.32; }
-  66%  { transform: translateX(-6px) translateY(6px) rotate(-0.4deg);  opacity: 0.03; }
-  78%  { transform: translateX(-20px) translateY(-8px) rotate(0.1deg); opacity: 0.28; }
-  90%  { transform: translateX(10px) translateY(4px) rotate(-0.2deg);  opacity: 0.02; }
-  100% { transform: translateX(0) translateY(0) rotate(0deg);          opacity: 0.01; }
+/* 6 · Diagonal SE → NW */
+@keyframes wraithSlide6 {
+  0%, 100% { transform: translate(45vw, 30vh) rotate(0.4deg);   opacity: 0.04; }
+  16%  { transform: translate(15vw, 10vh) rotate(-0.3deg);  opacity: 0.42; }
+  33%  { transform: translate(-10vw, -5vh) rotate(0.2deg);  opacity: 0.03; }
+  50%  { transform: translate(-35vw, -20vh) rotate(-0.4deg);opacity: 0.50; }
+  66%  { transform: translate(-45vw, -30vh) rotate(0.3deg); opacity: 0.04; }
+  83%  { transform: translate(-10vw, -8vh) rotate(-0.2deg); opacity: 0.38; }
+}
+
+/* 7 · Diagonal NE → SW */
+@keyframes wraithSlide7 {
+  0%, 100% { transform: translate(40vw, -25vh) rotate(0.3deg);  opacity: 0.03; }
+  16%  { transform: translate(10vw, -5vh) rotate(-0.4deg);  opacity: 0.40; }
+  33%  { transform: translate(-15vw, 10vh) rotate(0.2deg);  opacity: 0.04; }
+  50%  { transform: translate(-40vw, 25vh) rotate(-0.3deg); opacity: 0.46; }
+  66%  { transform: translate(-30vw, 20vh) rotate(0.4deg);  opacity: 0.03; }
+  83%  { transform: translate(5vw, 5vh) rotate(-0.2deg);    opacity: 0.42; }
+}
+
+/* 8 · Elliptical orbit */
+@keyframes wraithSlide8 {
+  0%, 100% { transform: translate(0, -35vh) rotate(0deg);       opacity: 0.04; }
+  12%  { transform: translate(35vw, -15vh) rotate(0.3deg);  opacity: 0.38; }
+  25%  { transform: translate(45vw, 5vh) rotate(0.5deg);    opacity: 0.03; }
+  37%  { transform: translate(20vw, 25vh) rotate(0.3deg);   opacity: 0.44; }
+  50%  { transform: translate(0, 35vh) rotate(0deg);        opacity: 0.04; }
+  62%  { transform: translate(-30vw, 15vh) rotate(-0.3deg); opacity: 0.42; }
+  75%  { transform: translate(-45vw, -5vh) rotate(-0.5deg); opacity: 0.03; }
+  87%  { transform: translate(-20vw, -20vh) rotate(-0.3deg);opacity: 0.46; }
 }
 
 .wraith-image {
@@ -159,7 +166,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .wraith-image {
     animation: none !important;
-    opacity: 0.10 !important;
+    opacity: 0.25 !important;
   }
 }
 
