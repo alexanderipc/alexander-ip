@@ -290,6 +290,7 @@ export async function uploadDocument(
   formData: FormData
 ) {
   const { supabase, user } = await requireAdmin();
+  const adminClient = createAdminClient();
 
   const file = formData.get("file") as File;
   const documentType =
@@ -298,30 +299,33 @@ export async function uploadDocument(
 
   if (!file || file.size === 0) throw new Error("No file provided");
 
-  // Upload to Supabase Storage
+  // Upload to Supabase Storage using admin client (bypasses storage RLS)
   const filePath = `${projectId}/${Date.now()}-${file.name}`;
-  const { error: uploadError } = await supabase.storage
+  const arrayBuffer = await file.arrayBuffer();
+  const { error: uploadError } = await adminClient.storage
     .from("project-documents")
-    .upload(filePath, file);
+    .upload(filePath, Buffer.from(arrayBuffer), {
+      contentType: file.type,
+    });
 
   if (uploadError) {
     throw new Error(`Upload failed: ${uploadError.message}`);
   }
 
-  // Get the public URL (or signed URL for private buckets)
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("project-documents").getPublicUrl(filePath);
-
+  // Store the storage path (not a URL) — we'll generate signed URLs on demand
   // Create document record
-  await supabase.from("project_documents").insert({
+  const { error: insertError } = await supabase.from("project_documents").insert({
     project_id: projectId,
     filename: file.name,
-    file_url: publicUrl,
+    file_url: filePath,
     document_type: documentType as import("@/lib/supabase/types").DocumentType,
     client_visible: clientVisible,
     uploaded_by: user.id,
   });
+
+  if (insertError) {
+    throw new Error(`Failed to save document record: ${insertError.message}`);
+  }
 
   if (clientVisible) {
     console.log(

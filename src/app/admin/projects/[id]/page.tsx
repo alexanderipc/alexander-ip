@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getServiceLabel,
   getStatusLabel,
@@ -75,8 +76,19 @@ export default async function AdminProjectDetailPage({ params }: Props) {
   ]);
 
   const updates = updatesResult.data || [];
-  const documents = docsResult.data || [];
   const milestones = milestonesResult.data || [];
+
+  // Generate signed URLs for documents (bucket is private, use admin client)
+  const adminClient = createAdminClient();
+  const rawDocs = docsResult.data || [];
+  const documents = await Promise.all(
+    rawDocs.map(async (doc) => {
+      const { data } = await adminClient.storage
+        .from("project-documents")
+        .createSignedUrl(doc.file_url, 3600); // 1 hour expiry
+      return { ...doc, signed_url: data?.signedUrl || "#" };
+    })
+  );
   const percent = getProgressPercent(project.service_type, project.status);
   const nextStatus = getNextStatus(project.service_type, project.status);
   const complete = isComplete(project.status);
@@ -259,7 +271,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                   >
                     <div className="min-w-0">
                       <a
-                        href={doc.file_url}
+                        href={doc.signed_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm text-navy hover:text-blue-600 truncate block"

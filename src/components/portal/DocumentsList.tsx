@@ -14,7 +14,7 @@ const typeLabels: Record<string, string> = {
 };
 
 interface DocumentsListProps {
-  documents: ProjectDocument[];
+  documents: (ProjectDocument & { signed_url?: string })[];
 }
 
 export default function DocumentsList({ documents }: DocumentsListProps) {
@@ -31,7 +31,7 @@ export default function DocumentsList({ documents }: DocumentsListProps) {
       {documents.map((doc) => (
         <a
           key={doc.id}
-          href={doc.file_url}
+          href={doc.signed_url || doc.file_url}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors group"
