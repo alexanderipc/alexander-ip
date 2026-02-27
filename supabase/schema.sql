@@ -147,6 +147,15 @@ ALTER TABLE project_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_milestones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE linked_projects ENABLE ROW LEVEL SECURITY;
 
+-- Helper: check admin role without triggering RLS recursion on profiles
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
 -- ── Profiles ────────────────────────────────────────────────
 
 CREATE POLICY "Users can view own profile"
@@ -155,15 +164,11 @@ CREATE POLICY "Users can view own profile"
 
 CREATE POLICY "Admins can view all profiles"
   ON profiles FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  USING (is_admin());
 
 CREATE POLICY "Admins can insert profiles"
   ON profiles FOR INSERT
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  WITH CHECK (is_admin());
 
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
@@ -172,9 +177,7 @@ CREATE POLICY "Users can update own profile"
 
 CREATE POLICY "Admins can update all profiles"
   ON profiles FOR UPDATE
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  USING (is_admin());
 
 -- ── Projects ────────────────────────────────────────────────
 
@@ -184,9 +187,7 @@ CREATE POLICY "Clients can view own projects"
 
 CREATE POLICY "Admins can do everything on projects"
   ON projects FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  USING (is_admin());
 
 -- ── Project Updates ─────────────────────────────────────────
 
@@ -198,9 +199,7 @@ CREATE POLICY "Clients can view own project updates"
 
 CREATE POLICY "Admins can do everything on project_updates"
   ON project_updates FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  USING (is_admin());
 
 -- ── Project Documents ───────────────────────────────────────
 
@@ -213,9 +212,7 @@ CREATE POLICY "Clients can view visible documents"
 
 CREATE POLICY "Admins can do everything on documents"
   ON project_documents FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  USING (is_admin());
 
 -- ── Project Milestones ──────────────────────────────────────
 
@@ -228,9 +225,7 @@ CREATE POLICY "Clients can view visible milestones"
 
 CREATE POLICY "Admins can do everything on milestones"
   ON project_milestones FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  USING (is_admin());
 
 -- ── Linked Projects ─────────────────────────────────────────
 
@@ -246,9 +241,7 @@ CREATE POLICY "Clients can view linked projects"
 
 CREATE POLICY "Admins can do everything on linked_projects"
   ON linked_projects FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  USING (is_admin());
 
 -- ============================================================
 -- TRIGGERS
