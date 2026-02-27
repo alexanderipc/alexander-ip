@@ -20,6 +20,7 @@ const footerLinks = {
     { label: "Blog", href: "/blog" },
     { label: "Contact", href: "/contact" },
     { label: "Returning Clients", href: "/returning-clients" },
+    { label: "Client Portal", href: "/auth/login" },
   ],
   legal: [
     { label: "Privacy Policy", href: "/legal/privacy" },

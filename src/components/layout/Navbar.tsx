@@ -90,7 +90,13 @@ export default function Navbar() {
           </div>
 
           {/* CTA */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/auth/login"
+              className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-navy rounded-md hover:bg-slate-50 transition-colors"
+            >
+              Client Portal
+            </Link>
             <Button href="/contact" size="sm">
               Get Started
             </Button>
@@ -136,6 +142,13 @@ export default function Navbar() {
                 )}
               </div>
             ))}
+            <Link
+              href="/auth/login"
+              className="block px-3 py-2 text-base font-medium text-slate-500 hover:text-navy hover:bg-slate-50 rounded-md"
+              onClick={() => setMobileOpen(false)}
+            >
+              Client Portal
+            </Link>
             <div className="pt-3">
               <Button href="/contact" size="md" className="w-full">
                 Get Started
