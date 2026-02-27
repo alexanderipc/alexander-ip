@@ -87,9 +87,7 @@ export default async function AdminClientsPage() {
                   </td>
                   <td className="px-5 py-3">
                     <span className="text-sm text-slate-600">
-                      {/* We need to get email from auth, but profiles don't store it.
-                          Show what we have. */}
-                      {client.name || client.id.slice(0, 8)}
+                      {client.email || "—"}
                     </span>
                   </td>
                   <td className="px-5 py-3">

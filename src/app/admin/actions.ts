@@ -66,13 +66,10 @@ export async function createProject(formData: FormData) {
 
   if (existingUser) {
     clientId = existingUser.id;
-    // Update name if provided and different
-    if (clientName) {
-      await supabase
-        .from("profiles")
-        .update({ name: clientName })
-        .eq("id", clientId);
-    }
+    // Update name/email if provided
+    const updates: Record<string, string> = { email: clientEmail };
+    if (clientName) updates.name = clientName;
+    await supabase.from("profiles").update(updates).eq("id", clientId);
   } else {
     // Create new user (triggers auto-profile via DB trigger)
     const { data: newUser, error: createError } =

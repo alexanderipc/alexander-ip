@@ -57,6 +57,12 @@ export default async function AdminClientDetailPage({ params }: Props) {
           {client.name || "Unnamed Client"}
         </h1>
         <div className="flex flex-wrap gap-4 text-sm text-slate-600">
+          {client.email && (
+            <div className="flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-slate-400" />
+              {client.email}
+            </div>
+          )}
           {client.company && (
             <div className="flex items-center gap-1.5">
               <Building className="w-4 h-4 text-slate-400" />

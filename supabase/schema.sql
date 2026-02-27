@@ -53,6 +53,7 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   role user_role NOT NULL DEFAULT 'client',
   name TEXT,
+  email TEXT,
   company TEXT,
   phone TEXT,
   notes TEXT,
@@ -251,11 +252,12 @@ CREATE POLICY "Admins can do everything on linked_projects"
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, name, role)
+  INSERT INTO profiles (id, name, email, role)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
-    COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'client')
+    NEW.email,
+    'client'
   );
   RETURN NEW;
 END;

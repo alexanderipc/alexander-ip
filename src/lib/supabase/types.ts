@@ -41,6 +41,7 @@ export interface Profile {
   id: string;
   role: UserRole;
   name: string | null;
+  email: string | null;
   company: string | null;
   phone: string | null;
   notes: string | null;
