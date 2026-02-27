@@ -9,45 +9,70 @@ import type { ServiceType } from "@/lib/supabase/types";
 
 export const DRAFTING_STATUSES = [
   "payment_received",
-  "in_queue",
-  "research_and_analysis",
-  "drafting_in_progress",
-  "internal_review",
+  "research_and_drafting",
   "draft_delivered",
-  "client_review",
-  "revisions",
-  "final_version_ready",
   "filing",
-  "filed_awaiting_receipt",
+  "filed",
   "complete",
 ] as const;
 
 export const PROSECUTION_STATUSES = [
   "payment_received",
   "office_action_review",
-  "strategy_development",
-  "strategy_proposal_sent",
-  "client_decision_pending",
   "response_drafting",
-  "response_review",
   "response_filed",
   "awaiting_examiner",
-  "complete_granted",
+  "complete",
 ] as const;
 
 export const SEARCH_STATUSES = [
   "payment_received",
   "search_in_progress",
-  "analysis_and_reporting",
+  "report_writing",
   "report_delivered",
   "complete",
 ] as const;
 
-export const GENERIC_STATUSES = [
+export const CONSULTATION_STATUSES = [
   "payment_received",
-  "in_progress",
-  "review",
-  "delivered",
+  "consultation_scheduled",
+  "complete",
+] as const;
+
+export const FILING_STATUSES = [
+  "payment_received",
+  "application_preparation",
+  "filed",
+  "complete",
+] as const;
+
+export const INTERNATIONAL_FILING_STATUSES = [
+  "payment_received",
+  "application_preparation",
+  "national_phase_filed",
+  "awaiting_receipts",
+  "complete",
+] as const;
+
+export const FTO_STATUSES = [
+  "payment_received",
+  "analysis_in_progress",
+  "report_writing",
+  "report_delivered",
+  "complete",
+] as const;
+
+export const ILLUSTRATION_STATUSES = [
+  "payment_received",
+  "illustration_in_progress",
+  "figures_delivered",
+  "complete",
+] as const;
+
+export const VALUATION_STATUSES = [
+  "payment_received",
+  "valuation_analysis",
+  "report_delivered",
   "complete",
 ] as const;
 
@@ -57,12 +82,12 @@ export const STATUS_FLOWS: Record<ServiceType, readonly string[]> = {
   patent_drafting: DRAFTING_STATUSES,
   patent_prosecution: PROSECUTION_STATUSES,
   patent_search: SEARCH_STATUSES,
-  consultation: GENERIC_STATUSES,
-  international_filing: GENERIC_STATUSES,
-  fto: GENERIC_STATUSES,
-  illustrations: GENERIC_STATUSES,
-  filing: GENERIC_STATUSES,
-  ip_valuation: GENERIC_STATUSES,
+  consultation: CONSULTATION_STATUSES,
+  international_filing: INTERNATIONAL_FILING_STATUSES,
+  fto: FTO_STATUSES,
+  illustrations: ILLUSTRATION_STATUSES,
+  filing: FILING_STATUSES,
+  ip_valuation: VALUATION_STATUSES,
 };
 
 /* ── Default timelines (business days or calendar days) ──────── */
@@ -82,40 +107,42 @@ export const DEFAULT_TIMELINES: Record<ServiceType, number | null> = {
 /* ── Human-readable labels ───────────────────────────────────── */
 
 const STATUS_LABELS: Record<string, string> = {
-  // Drafting
+  // Shared
   payment_received: "Payment Received",
-  in_queue: "In Queue",
-  research_and_analysis: "Research & Analysis",
-  drafting_in_progress: "Drafting in Progress",
-  internal_review: "Internal Review",
-  draft_delivered: "Draft Delivered for Review",
-  client_review: "Client Review Period",
-  revisions: "Revisions",
-  final_version_ready: "Final Version Ready",
-  filing: "Filing",
-  filed_awaiting_receipt: "Filed — Awaiting Receipt",
   complete: "Complete",
 
-  // Prosecution
-  office_action_review: "Office Action Under Review",
-  strategy_development: "Strategy Development",
-  strategy_proposal_sent: "Strategy Proposal Sent",
-  client_decision_pending: "Client Decision Pending",
-  response_drafting: "Response Drafting",
-  response_review: "Response Under Review",
-  response_filed: "Response Filed",
-  awaiting_examiner: "Awaiting Examiner Reply",
-  complete_granted: "Complete — Patent Granted",
+  // Drafting
+  research_and_drafting: "Research & Drafting",
+  draft_delivered: "Draft Delivered",
+  filing: "Filing",
+  filed: "Filed",
 
-  // Search
+  // Prosecution
+  office_action_review: "Office Action Review",
+  response_drafting: "Response Drafting",
+  response_filed: "Response Filed",
+  awaiting_examiner: "Awaiting Examiner",
+
+  // Search & FTO
   search_in_progress: "Search in Progress",
-  analysis_and_reporting: "Analysis & Report Writing",
+  analysis_in_progress: "Analysis in Progress",
+  report_writing: "Report Writing",
   report_delivered: "Report Delivered",
 
-  // Generic
-  in_progress: "In Progress",
-  review: "Under Review",
-  delivered: "Delivered",
+  // Consultation
+  consultation_scheduled: "Consultation Scheduled",
+
+  // Filing & International
+  application_preparation: "Application Preparation",
+  national_phase_filed: "National Phase Filed",
+  awaiting_receipts: "Awaiting Receipts",
+
+  // Illustrations
+  illustration_in_progress: "Illustration in Progress",
+  figures_delivered: "Figures Delivered",
+
+  // Valuation
+  valuation_analysis: "Valuation Analysis",
 };
 
 export function getStatusLabel(status: string): string {
@@ -143,7 +170,7 @@ export function getServiceLabel(serviceType: ServiceType): string {
 /* ── Status utilities ────────────────────────────────────────── */
 
 export function getStatusFlow(serviceType: ServiceType): readonly string[] {
-  return STATUS_FLOWS[serviceType] || GENERIC_STATUSES;
+  return STATUS_FLOWS[serviceType] || CONSULTATION_STATUSES;
 }
 
 export function getStatusIndex(serviceType: ServiceType, status: string): number {
@@ -175,7 +202,7 @@ export function getPreviousStatus(serviceType: ServiceType, currentStatus: strin
 }
 
 export function isComplete(status: string): boolean {
-  return status === "complete" || status === "complete_granted";
+  return status === "complete";
 }
 
 /* ── Status colors for badges ────────────────────────────────── */
@@ -184,9 +211,8 @@ type StatusColor = "blue" | "teal" | "amber" | "green" | "red" | "slate";
 
 export function getStatusColor(status: string): StatusColor {
   if (isComplete(status)) return "green";
-  if (status === "payment_received" || status === "in_queue") return "slate";
-  if (status.includes("client") || status.includes("pending")) return "amber";
-  if (status.includes("delivered") || status.includes("ready") || status.includes("report_delivered")) return "teal";
+  if (status === "payment_received") return "slate";
+  if (status.includes("delivered") || status.includes("scheduled")) return "teal";
   if (status.includes("filed") || status.includes("awaiting")) return "blue";
   return "blue";
 }
