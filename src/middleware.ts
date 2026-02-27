@@ -43,8 +43,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages
-  if (user && isAuthRoute && pathname !== "/auth/signout") {
+  // Redirect authenticated users away from login pages (not callback/signout)
+  if (user && isAuthRoute && pathname === "/auth/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/portal";
     return NextResponse.redirect(url);
