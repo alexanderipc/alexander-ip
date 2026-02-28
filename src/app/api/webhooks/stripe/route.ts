@@ -277,8 +277,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     const hashedToken = linkData?.properties?.hashed_token;
     const portalUrl = hashedToken
-      ? `https://alexander-ip.com/auth/verify?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink`
-      : "https://alexander-ip.com/auth/login";
+      ? `https://www.alexander-ip.com/auth/verify?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink`
+      : "https://www.alexander-ip.com/auth/login";
 
     await sendProjectCreatedEmail(email, {
       title,

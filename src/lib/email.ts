@@ -224,7 +224,7 @@ function projectCreatedHtml(data: ProjectEmailData): string {
               </table>
 
               <p style="margin:28px 0 0;color:#64748b;font-size:14px;line-height:1.6;">
-                You&rsquo;ll receive updates as your project progresses. You can check back any time at <a href="https://alexander-ip.com/auth/login" style="color:#2563eb;text-decoration:none;font-weight:500;">alexander-ip.com/auth/login</a>.
+                You&rsquo;ll receive updates as your project progresses. You can check back any time at <a href="https://www.alexander-ip.com/auth/login" style="color:#2563eb;text-decoration:none;font-weight:500;">alexander-ip.com/auth/login</a>.
               </p>
             </td>
           </tr>

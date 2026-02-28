@@ -75,7 +75,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 /* Hardcoded base URL — avoids any env var issues */
-const BASE_URL = "https://alexander-ip.com";
+const BASE_URL = "https://www.alexander-ip.com";
 
 export async function POST(request: NextRequest) {
   try {
