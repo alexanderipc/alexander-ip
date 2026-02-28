@@ -155,7 +155,7 @@ export default function PatentSearchPage() {
                 }`}
               >
                 {tier.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="md:absolute md:-top-3 md:left-1/2 md:-translate-x-1/2 mb-3 md:mb-0 text-center">
                     <Badge variant="teal">Most Popular</Badge>
                   </div>
                 )}
