@@ -1,9 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Send, Loader2, CheckCircle2 } from "lucide-react";
+import { Send, Loader2, CheckCircle2, Paperclip, X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { getCurrencyFromBrowserLocale, convertPrice } from "@/lib/pricing";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+];
 
 const serviceOptionsBase = [
   { label: "Patent Consultation", slug: "consultation", usd: 125 },
@@ -48,6 +59,31 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
   const [budgetText, setBudgetText] = useState(
     "I understand that services start from $125 for consultations and typical patent drafting packages range from $995\u2013$2,370."
   );
+  const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFileError(null);
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    if (!ALLOWED_TYPES.includes(selected.type)) {
+      setFileError("Unsupported file type. Please upload a PDF, image, Word document, or text file.");
+      e.target.value = "";
+      return;
+    }
+    if (selected.size > MAX_FILE_SIZE) {
+      setFileError("File is too large. Maximum size is 10 MB.");
+      e.target.value = "";
+      return;
+    }
+    setFile(selected);
+  }
+
+  function removeFile() {
+    setFile(null);
+    setFileError(null);
+  }
 
   useEffect(() => {
     const currency = getCurrencyFromBrowserLocale();
@@ -74,13 +110,15 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
     setStatus("submitting");
 
     const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData);
+    // Attach the file if one was selected
+    if (file) {
+      formData.set("attachment", file);
+    }
 
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (res.ok) {
@@ -259,6 +297,48 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
         <label htmlFor="budget" className="text-sm text-slate-600">
           {budgetText}
         </label>
+      </div>
+
+      {/* File attachment */}
+      <div>
+        <label className="block text-sm font-medium text-navy mb-1.5">
+          Attach a File <span className="text-slate-400 font-normal">(optional)</span>
+        </label>
+        <p className="text-xs text-slate-500 mb-2">
+          Sketches, diagrams, or documents related to your invention. PDF, images, or Word files up to 10 MB.
+        </p>
+        {file ? (
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-blue/5 border border-blue/20 rounded-lg">
+            <Paperclip className="w-4 h-4 text-blue flex-shrink-0" />
+            <span className="text-sm text-navy truncate flex-1">
+              {file.name}
+            </span>
+            <span className="text-xs text-slate-400 flex-shrink-0">
+              {(file.size / 1024).toFixed(0)} KB
+            </span>
+            <button
+              type="button"
+              onClick={removeFile}
+              className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <label className="flex items-center gap-3 px-4 py-2.5 border border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-blue hover:bg-blue/5 transition-colors">
+            <Paperclip className="w-4 h-4 text-slate-400" />
+            <span className="text-sm text-slate-500">Choose a file...</span>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.txt"
+              className="hidden"
+            />
+          </label>
+        )}
+        {fileError && (
+          <p className="text-xs text-red-600 mt-1">{fileError}</p>
+        )}
       </div>
 
       {/* Submit */}
