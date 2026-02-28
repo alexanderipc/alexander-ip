@@ -14,6 +14,7 @@ import ProgressBar from "@/components/portal/ProgressBar";
 import ProjectTimeline from "@/components/portal/ProjectTimeline";
 import UpdatesFeed from "@/components/portal/UpdatesFeed";
 import DocumentsList from "@/components/portal/DocumentsList";
+import ClientDocumentUpload from "@/components/portal/ClientDocumentUpload";
 import MilestonesList from "@/components/portal/MilestonesList";
 import { ArrowLeft, Calendar, Globe, Clock } from "lucide-react";
 
@@ -191,6 +192,11 @@ export default async function ProjectDetailPage({ params }: Props) {
               Documents
             </h2>
             <DocumentsList documents={documents} />
+            {!complete && (
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <ClientDocumentUpload projectId={project.id} />
+              </div>
+            )}
           </div>
 
           {milestones.length > 0 && (

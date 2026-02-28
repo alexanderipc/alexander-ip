@@ -76,6 +76,13 @@ export const VALUATION_STATUSES = [
   "complete",
 ] as const;
 
+export const CUSTOM_STATUSES = [
+  "payment_received",
+  "in_progress",
+  "review",
+  "complete",
+] as const;
+
 /* ── Service type → status flow mapping ─────────────────────── */
 
 export const STATUS_FLOWS: Record<ServiceType, readonly string[]> = {
@@ -88,6 +95,7 @@ export const STATUS_FLOWS: Record<ServiceType, readonly string[]> = {
   illustrations: ILLUSTRATION_STATUSES,
   filing: FILING_STATUSES,
   ip_valuation: VALUATION_STATUSES,
+  custom: CUSTOM_STATUSES,
 };
 
 /* ── Default timelines (business days or calendar days) ──────── */
@@ -102,6 +110,7 @@ export const DEFAULT_TIMELINES: Record<ServiceType, number | null> = {
   illustrations: 14,
   filing: 5,
   ip_valuation: 30,
+  custom: null, // admin sets manually per project
 };
 
 /* ── Human-readable labels ───────────────────────────────────── */
@@ -143,6 +152,10 @@ const STATUS_LABELS: Record<string, string> = {
 
   // Valuation
   valuation_analysis: "Valuation Analysis",
+
+  // Custom
+  in_progress: "In Progress",
+  review: "Under Review",
 };
 
 export function getStatusLabel(status: string): string {
@@ -161,6 +174,7 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   illustrations: "Patent Illustrations",
   filing: "Patent Filing",
   ip_valuation: "IP Valuation",
+  custom: "Custom Project",
 };
 
 export function getServiceLabel(serviceType: ServiceType): string {
@@ -212,6 +226,8 @@ type StatusColor = "blue" | "teal" | "amber" | "green" | "red" | "slate";
 export function getStatusColor(status: string): StatusColor {
   if (isComplete(status)) return "green";
   if (status === "payment_received") return "slate";
+  if (status === "in_progress") return "blue";
+  if (status === "review") return "amber";
   if (status.includes("delivered") || status.includes("scheduled")) return "teal";
   if (status.includes("filed") || status.includes("awaiting")) return "blue";
   return "blue";

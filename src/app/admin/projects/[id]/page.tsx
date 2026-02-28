@@ -17,6 +17,8 @@ import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import AdminStatusAdvancer from "@/components/admin/StatusAdvancer";
 import AdminUpdateForm from "@/components/admin/UpdateForm";
 import AdminDocumentUpload from "@/components/admin/DocumentUpload";
+import MilestoneManager from "@/components/admin/MilestoneManager";
+import TimelineEditor from "@/components/admin/TimelineEditor";
 import { ArrowLeft, Calendar, Globe, User, CreditCard } from "lucide-react";
 
 interface Props {
@@ -287,6 +289,32 @@ export default async function AdminProjectDetailPage({ params }: Props) {
               </div>
             )}
           </div>
+
+          {/* Milestones / Phases */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+              Milestones ({milestones.length})
+            </h2>
+            <MilestoneManager
+              projectId={project.id}
+              milestones={milestones}
+            />
+          </div>
+
+          {/* Timeline / Delivery */}
+          {!complete && (
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+                Timeline
+              </h2>
+              <TimelineEditor
+                projectId={project.id}
+                startDate={project.start_date}
+                currentDays={project.default_timeline_days}
+                currentDeliveryDate={project.estimated_delivery_date}
+              />
+            </div>
+          )}
 
           {/* Client info */}
           {client && (

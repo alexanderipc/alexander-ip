@@ -15,7 +15,8 @@ export type ServiceType =
   | "fto"
   | "illustrations"
   | "filing"
-  | "ip_valuation";
+  | "ip_valuation"
+  | "custom";
 
 export type DocumentType =
   | "patent_application"

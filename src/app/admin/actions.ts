@@ -361,3 +361,97 @@ export async function addMilestone(
 
   return { success: true };
 }
+
+/* ── Complete Milestone ─────────────────────────────────── */
+
+export async function completeMilestone(
+  milestoneId: string,
+  projectId: string
+) {
+  const { supabase } = await requireAdmin();
+
+  const today = new Date().toISOString().split("T")[0];
+  await supabase
+    .from("project_milestones")
+    .update({ completed_date: today })
+    .eq("id", milestoneId);
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/portal/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Uncomplete Milestone ───────────────────────────────── */
+
+export async function uncompleteMilestone(
+  milestoneId: string,
+  projectId: string
+) {
+  const { supabase } = await requireAdmin();
+
+  await supabase
+    .from("project_milestones")
+    .update({ completed_date: null })
+    .eq("id", milestoneId);
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/portal/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Delete Milestone ───────────────────────────────────── */
+
+export async function deleteMilestone(
+  milestoneId: string,
+  projectId: string
+) {
+  const { supabase } = await requireAdmin();
+
+  await supabase
+    .from("project_milestones")
+    .delete()
+    .eq("id", milestoneId);
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/portal/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Update Timeline Days ───────────────────────────────── */
+
+export async function updateTimelineDays(
+  projectId: string,
+  timelineDays: number | null
+) {
+  const { supabase } = await requireAdmin();
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("start_date")
+    .eq("id", projectId)
+    .single();
+
+  if (!project) throw new Error("Project not found");
+
+  const estimatedDelivery =
+    timelineDays && project.start_date
+      ? calculateDeliveryDate(project.start_date, timelineDays)
+      : null;
+
+  await supabase
+    .from("projects")
+    .update({
+      default_timeline_days: timelineDays,
+      estimated_delivery_date: estimatedDelivery,
+    })
+    .eq("id", projectId);
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/portal/projects/${projectId}`);
+  revalidatePath("/admin");
+
+  return { success: true };
+}

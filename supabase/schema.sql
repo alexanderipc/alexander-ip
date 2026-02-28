@@ -18,6 +18,7 @@ CREATE TYPE service_type AS ENUM (
   'patent_drafting',
   'patent_prosecution',
   'international_filing',
+  'custom',
   'fto',
   'illustrations',
   'filing',

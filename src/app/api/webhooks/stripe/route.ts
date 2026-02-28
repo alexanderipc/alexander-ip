@@ -59,7 +59,7 @@ const SERVICE_MAP: Record<string, ServiceMapping> = {
     title: "FTO (Complex)",
   },
   custom: {
-    serviceType: "consultation",
+    serviceType: "custom",
     title: "Custom Project",
   },
 };

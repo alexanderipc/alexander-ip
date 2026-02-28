@@ -116,6 +116,7 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   illustrations: "Patent Illustrations",
   filing: "Patent Filing",
   ip_valuation: "IP Valuation",
+  custom: "Custom Project",
 };
 
 interface ProjectEmailData {

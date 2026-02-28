@@ -23,6 +23,7 @@ const SERVICE_OPTIONS: ServiceType[] = [
   "illustrations",
   "filing",
   "ip_valuation",
+  "custom",
 ];
 
 const CURRENCY_OPTIONS = [
