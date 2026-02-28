@@ -7,7 +7,6 @@ import {
   getStatusLabel,
   getProgressPercent,
   getNextStatus,
-  getDaysRemaining,
   isComplete,
 } from "@/lib/portal/status";
 import StatusBadge from "@/components/portal/StatusBadge";
@@ -59,26 +58,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
     phone: string | null;
   } | null;
 
-  // Fetch related data
-  const [updatesResult, docsResult, milestonesResult] = await Promise.all([
-    supabase
-      .from("project_updates")
-      .select("*")
-      .eq("project_id", id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("project_documents")
-      .select("*")
-      .eq("project_id", id)
-      .order("uploaded_at", { ascending: false }),
-    supabase
-      .from("project_milestones")
-      .select("*")
-      .eq("project_id", id)
-      .order("target_date", { ascending: true }),
-  ]);
-
-  // Fetch messages separately — table may be newly created
+  // Fetch related data — each query is individually safe
   interface Msg {
     id: string;
     body: string;
@@ -88,7 +68,41 @@ export default async function AdminProjectDetailPage({ params }: Props) {
     sender_id: string;
     project_id: string;
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let updates: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rawDocs: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let milestones: any[] = [];
   let messages: Msg[] = [];
+
+  try {
+    const [updatesResult, docsResult, milestonesResult] = await Promise.all([
+      supabase
+        .from("project_updates")
+        .select("*")
+        .eq("project_id", id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("project_documents")
+        .select("*")
+        .eq("project_id", id)
+        .order("uploaded_at", { ascending: false }),
+      supabase
+        .from("project_milestones")
+        .select("*")
+        .eq("project_id", id)
+        .order("target_date", { ascending: true }),
+    ]);
+    updates = updatesResult.data || [];
+    rawDocs = docsResult.data || [];
+    milestones = milestonesResult.data || [];
+  } catch (fetchErr) {
+    console.error("[Admin] Failed to fetch project data:", fetchErr);
+  }
+
+  // Fetch messages separately — table may not exist yet
   try {
     const messagesResult = await supabase
       .from("project_messages")
@@ -100,19 +114,22 @@ export default async function AdminProjectDetailPage({ params }: Props) {
     messages = [];
   }
 
-  const updates = updatesResult.data || [];
-  const milestones = milestonesResult.data || [];
   const unreadMessages = messages.filter((m) => !m.is_admin && !m.read_at).length;
 
   // Generate signed URLs for documents (bucket is private, use admin client)
+  // Each URL is generated individually so one failure doesn't crash the page
   const adminClient = createAdminClient();
-  const rawDocs = docsResult.data || [];
   const documents = await Promise.all(
     rawDocs.map(async (doc) => {
-      const { data } = await adminClient.storage
-        .from("project-documents")
-        .createSignedUrl(doc.file_url, 3600); // 1 hour expiry
-      return { ...doc, signed_url: data?.signedUrl || "#" };
+      try {
+        const { data } = await adminClient.storage
+          .from("project-documents")
+          .createSignedUrl(doc.file_url, 3600);
+        return { ...doc, signed_url: data?.signedUrl || "#" };
+      } catch (urlErr) {
+        console.error("[Admin] Failed to create signed URL for", doc.file_url, urlErr);
+        return { ...doc, signed_url: "#" };
+      }
     })
   );
   const percent = getProgressPercent(project.service_type, project.status);
