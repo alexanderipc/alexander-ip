@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Container from "@/components/ui/Container";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, CalendarDays, LogOut, Settings } from "lucide-react";
 
 export const metadata = {
-  title: "Client Portal — Alexander IP",
+  title: "My Projects — Alexander IP",
   description: "Track your patent projects, view documents, and stay updated.",
 };
 
@@ -44,6 +44,13 @@ export default async function PortalLayout({
               >
                 <LayoutDashboard className="w-4 h-4" />
                 My Projects
+              </Link>
+              <Link
+                href="/portal/calendar"
+                className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-navy transition-colors"
+              >
+                <CalendarDays className="w-4 h-4" />
+                Calendar
               </Link>
               <Link
                 href="/portal/settings"

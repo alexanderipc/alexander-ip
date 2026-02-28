@@ -25,7 +25,7 @@ const faqItems = [
   {
     question: "What happens after I pay?",
     answer:
-      "Your project is created automatically in your client portal. You\u2019ll receive a confirmation email with a link to track progress. Work begins within 1\u20132 business days.",
+      "Your project is created automatically in your account. You\u2019ll receive a confirmation email with a link to track progress. Work begins within 1\u20132 business days.",
   },
   {
     question: "Can I get a refund?",
@@ -48,7 +48,7 @@ export default function CustomProjectPage() {
             <p className="text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
               Been quoted a custom price? Enter the agreed amount, describe your
               project, and pay securely. Your project will be set up
-              automatically in your client portal.
+              automatically in your account.
             </p>
           </div>
         </Container>
@@ -82,7 +82,7 @@ export default function CustomProjectPage() {
               {
                 icon: Clock,
                 title: "Project created instantly",
-                desc: "Your project appears in your client portal within seconds of payment.",
+                desc: "Your project appears in your account within seconds of payment.",
               },
               {
                 icon: MessageSquare,

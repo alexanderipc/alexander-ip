@@ -15,7 +15,7 @@ const navLinks = [
       { label: "Patent Consultation", href: "/services/consultation" },
       { label: "Patent Search", href: "/services/patent-search" },
       { label: "Patent Drafting", href: "/services/patent-drafting" },
-      { label: "Patent Prosecution", href: "/services/patent-prosecution" },
+      { label: "Office Correspondence", href: "/services/patent-prosecution" },
       { label: "International Filing", href: "/services/international-filing" },
       { label: "FTO / Infringement Check", href: "/services/fto" },
       { label: "Custom Project", href: "/services/custom" },
@@ -55,9 +55,9 @@ export default function Navbar() {
             <Image
               src="/images/logo-original.jpg"
               alt="Alexander IP"
-              width={180}
-              height={36}
-              className="h-9 w-auto"
+              width={270}
+              height={54}
+              className="h-[54px] w-auto"
               priority
             />
           </Link>
@@ -131,7 +131,7 @@ export default function Navbar() {
               href="/auth/login"
               className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-navy rounded-md hover:bg-slate-50 transition-colors"
             >
-              Client Portal
+              My Projects
             </Link>
             <Button href="/contact" size="sm">
               Get Started
@@ -208,7 +208,7 @@ export default function Navbar() {
               className="block px-3 py-2 text-base font-medium text-slate-500 hover:text-navy hover:bg-slate-50 rounded-md"
               onClick={() => setMobileOpen(false)}
             >
-              Client Portal
+              My Projects
             </Link>
             <div className="pt-3">
               <Button href="/contact" size="md" className="w-full">

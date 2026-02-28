@@ -2,5 +2,5 @@
   <text x="0" y="34" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="700" fill="#ffffff" letter-spacing="-0.5">
     Alexander IP
   </text>
-  <line x1="0" y1="23" x2="220" y2="23" stroke="#ffffff" stroke-width="2.5" />
+  <line x1="0" y1="39" x2="220" y2="39" stroke="#ffffff" stroke-width="2.5" />
 </svg>

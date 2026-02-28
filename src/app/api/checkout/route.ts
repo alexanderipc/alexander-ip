@@ -170,6 +170,7 @@ export async function POST(request: NextRequest) {
               description: productDescription,
             },
             unit_amount: unitAmount,
+            tax_behavior: "exclusive",
           },
           quantity: 1,
         },
@@ -179,6 +180,7 @@ export async function POST(request: NextRequest) {
       cancel_url: cancelUrl,
       customer_creation: "always",
       billing_address_collection: "required",
+      automatic_tax: { enabled: true },
       metadata,
       allow_promotion_codes: true,
     });

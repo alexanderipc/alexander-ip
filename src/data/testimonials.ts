@@ -52,7 +52,7 @@ export const testimonials: Testimonial[] = [
     quote:
       "The quality of his analysis is better than most people I know in the profession.",
     attribution: "Practising US Attorney",
-    service: "Patent Prosecution",
+    service: "Office Correspondence",
     highlight: "better than most",
   },
 ];

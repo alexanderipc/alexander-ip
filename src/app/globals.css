@@ -102,6 +102,15 @@ main section:not([class*="bg-navy"]):not([class*="from-navy"])::before {
   -webkit-backdrop-filter: blur(2px);
 }
 
+/* Mobile: remove frosting/blur so wraith drawings show crisp and clear */
+@media (max-width: 768px) {
+  main section:not([class*="bg-navy"]):not([class*="from-navy"])::before {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 /* Ensure section content sits above the frost pseudo-element */
 main section:not([class*="bg-navy"]):not([class*="from-navy"]) > * {
   position: relative;

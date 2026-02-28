@@ -56,7 +56,7 @@ const journey1Steps = [
   },
   {
     icon: Scale,
-    title: "Prosecution",
+    title: "Correspondence",
     description:
       "After filing, the patent office will examine your application and may raise objections, request amendments, or issue other correspondence. We handle all of this — developing a strategy and drafting formal responses to get your patent granted.",
     timeline: "12\u201324 months after filing",

@@ -66,22 +66,43 @@ const tiles: TileDef[] = [
   { src: "/images/diagrams/wheel-assembly.webp", w: 600, h: 523, complexity: "medium" },
 ];
 
-const sizeVwMap: Record<Complexity, number> = {
+const sizeVwDesktop: Record<Complexity, number> = {
   complex: 57,
   medium: 37,
   simple: 27,
 };
 
+/* Mobile: bigger diagrams so they're recognisable, not blurry blobs */
+const sizeVwMobile: Record<Complexity, number> = {
+  complex: 85,
+  medium: 65,
+  simple: 50,
+};
+
+function getSizeVwMap(): Record<Complexity, number> {
+  if (typeof window === "undefined") return sizeVwDesktop;
+  return window.innerWidth <= 768 ? sizeVwMobile : sizeVwDesktop;
+}
+
 /* ── Tuning ────────────────────────────────────────────────── */
 const SPEED = 0.12;         // px / frame @ 60 fps  (~7 px/sec)
 const OP_PEAK_LO = 0.40;
 const OP_PEAK_HI = 0.55;
+/* Mobile: lower opacity so diagrams are visible but not overwhelming */
+const OP_PEAK_LO_MOBILE = 0.22;
+const OP_PEAK_HI_MOBILE = 0.32;
 const FADE_IN_LO = 3000;   const FADE_IN_HI = 5000;
 const HOLD_LO = 16000;     const HOLD_HI = 30000;
 const FADE_OUT_LO = 3000;  const FADE_OUT_HI = 5000;
 const COOL_LO = 20000;     const COOL_HI = 40000;
 const MIN_VISIBLE = 3;
 const EDGE_MARGIN = 40;    // px inside viewport edge to start fade-out
+
+function peakRange(): [number, number] {
+  if (typeof window !== "undefined" && window.innerWidth <= 768)
+    return [OP_PEAK_LO_MOBILE, OP_PEAK_HI_MOBILE];
+  return [OP_PEAK_LO, OP_PEAK_HI];
+}
 
 /* ── States ────────────────────────────────────────────────── */
 const HIDDEN = 0;
@@ -126,7 +147,7 @@ function tick(p: Particle, now: number) {
     p.state = FADING_OUT; p.stateT = now;
   } else if (p.state === FADING_OUT && dt >= p.fadeOut) {
     p.state = COOLDOWN; p.stateT = now;
-    p.peak = rand(OP_PEAK_LO, OP_PEAK_HI);
+    p.peak = rand(...peakRange());
     p.fadeIn = rand(FADE_IN_LO, FADE_IN_HI);
     p.hold = rand(HOLD_LO, HOLD_HI);
     p.fadeOut = rand(FADE_OUT_LO, FADE_OUT_HI);
@@ -203,6 +224,7 @@ export default function PatentDiagramBackground() {
 
   const sizes = useCallback(() => {
     const vw = window.innerWidth;
+    const sizeVwMap = getSizeVwMap();
     return tiles.map((t) => {
       const pw = (sizeVwMap[t.complexity] / 100) * vw;
       return { pw, ph: pw * (t.h / t.w) };
@@ -222,7 +244,7 @@ export default function PatentDiagramBackground() {
         pw, ph,
         state: HIDDEN as number,
         stateT: now,
-        peak: rand(OP_PEAK_LO, OP_PEAK_HI),
+        peak: rand(...peakRange()),
         fadeIn: rand(FADE_IN_LO, FADE_IN_HI),
         hold: rand(HOLD_LO, HOLD_HI),
         fadeOut: rand(FADE_OUT_LO, FADE_OUT_HI),
@@ -437,7 +459,7 @@ export default function PatentDiagramBackground() {
           key={i}
           ref={(el) => { tileRefs.current[i] = el; }}
           className="absolute top-0 left-0 will-change-[transform,opacity]"
-          style={{ width: `${sizeVwMap[tile.complexity]}vw`, opacity: 0 }}
+          style={{ width: `${sizeVwDesktop[tile.complexity]}vw`, opacity: 0 }}
         >
           <Image
             src={tile.src}

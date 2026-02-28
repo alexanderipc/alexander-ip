@@ -170,7 +170,7 @@ export default function AboutPage() {
               intellectual property firms and a long-standing Legal 500 name.
               There I earned a Certificate in Intellectual Property from Queen
               Mary University of London and focused on software and
-              telecommunications patents, handling European patent prosecution
+              telecommunications patents, handling European patent office correspondence
               for clients including Research in Motion (BlackBerry) and Cisco.
             </p>
 
@@ -191,7 +191,7 @@ export default function AboutPage() {
             {/* 4. The career path */}
             <p>
               After Kilburn &amp; Strode, I moved between firms to broaden my
-              experience across drafting, prosecution, filing strategy, and
+              experience across drafting, office correspondence, filing strategy, and
               portfolio management. By 2020, I had passed the pre-EQE and was
               on track to sit the European Patent Attorney qualifying exams.
               Then COVID-19 cancelled all exam sittings.

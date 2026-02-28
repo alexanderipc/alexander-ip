@@ -39,7 +39,7 @@ const serviceCards = [
   },
   {
     icon: Scale,
-    title: "Prosecution",
+    title: "Correspondence",
     description:
       "Strategic handling of patent office correspondence — examiner objections, claim amendments, and appeals — to get your patent granted.",
     priceLabel: "Quoted per case",
@@ -73,7 +73,7 @@ export default function ServicesOverview() {
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Most clients start with a consultation or search, then move to
-            drafting and filing, and come back for prosecution when the patent
+            drafting and filing, and come back for office correspondence when the patent
             office responds. Every service has a clear, fixed fee &mdash; no
             hidden costs, no hourly billing.
           </p>
@@ -90,7 +90,7 @@ export default function ServicesOverview() {
           <ArrowRight className="w-3 h-3" />
           <span>File</span>
           <ArrowRight className="w-3 h-3" />
-          <span>Prosecute</span>
+          <span>Correspond</span>
           <ArrowRight className="w-3 h-3" />
           <span>Grant</span>
         </div>

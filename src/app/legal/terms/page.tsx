@@ -31,7 +31,7 @@ export default function TermsPage() {
           </h2>
           <p>
             Alexander IPC Ltd provides patent consulting services including
-            patent drafting, patent prosecution, prior art searches, patent
+            patent drafting, patent office correspondence, prior art searches, patent
             filing, international filing coordination, IP valuations, and
             strategic consultations. The specific scope of each engagement is
             agreed in writing before work commences.

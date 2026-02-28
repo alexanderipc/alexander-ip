@@ -7,7 +7,7 @@ import type { NotificationPreferences } from "@/lib/supabase/types";
 import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/supabase/types";
 
 export const metadata = {
-  title: "Settings — Alexander IP Portal",
+  title: "Settings — Alexander IP",
   description: "Manage your notification preferences and data rights.",
 };
 

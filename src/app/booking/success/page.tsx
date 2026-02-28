@@ -87,7 +87,7 @@ export default async function BookingSuccessPage(props: {
                   <p className="text-slate-500 text-sm">
                     {isConsultation
                       ? "You\u2019ll receive a receipt from Stripe and a personal email from us within 24 hours."
-                      : "You\u2019ll receive a receipt from Stripe and a welcome email with a link to your client portal."}
+                      : "You\u2019ll receive a receipt from Stripe and a welcome email with a link to your account."}
                   </p>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default async function BookingSuccessPage(props: {
                         Project Created
                       </p>
                       <p className="text-slate-500 text-sm">
-                        Your project has been set up in your client portal. You
+                        Your project has been set up in your account. You
                         can track progress and receive updates in real time.
                       </p>
                     </>
@@ -157,12 +157,12 @@ export default async function BookingSuccessPage(props: {
           </div>
 
           <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
-            To access your client portal, use the sign-in link in your welcome
+            To access your projects, use the sign-in link in your welcome
             email, or enter the email you used at checkout below.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button href="/auth/login">Sign In to Portal</Button>
+            <Button href="/auth/login">Sign In</Button>
             <Button href="/" variant="outline">
               Return to Homepage
             </Button>

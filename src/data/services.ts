@@ -37,7 +37,7 @@ export const services: Service[] = [
     description:
       "Expert advice on patentability, filing strategy, and IP protection — whether you're exploring an initial idea or need guidance on more advanced matters like multi-jurisdiction strategy.",
     longDescription:
-      "A paid consultation covering patentability assessments, filing strategy, portfolio planning, and general IP guidance. Whether you're at the early stages wondering if your idea is worth protecting, or you need advice on more advanced matters like filing strategy across multiple jurisdictions, prosecution approach, or portfolio prioritisation — this is the place to start. It is not a patent search and does not result in any official document — rather, it's a platform for expert advice tailored to your situation. If we're unable to provide value, you'll receive a full refund.",
+      "A paid consultation covering patentability assessments, filing strategy, portfolio planning, and general IP guidance. Whether you're at the early stages wondering if your idea is worth protecting, or you need advice on more advanced matters like filing strategy across multiple jurisdictions, office correspondence approach, or portfolio prioritisation — this is the place to start. It is not a patent search and does not result in any official document — rather, it's a platform for expert advice tailored to your situation. If we're unable to provide value, you'll receive a full refund.",
     startingPrice: "$125",
     currency: "USD",
     delivery: "14 days",
@@ -263,12 +263,12 @@ export const services: Service[] = [
   },
   {
     slug: "patent-prosecution",
-    title: "Patent Prosecution (Office Actions & Amendments)",
-    shortTitle: "Prosecution",
+    title: "Office Correspondence (Office Actions & Amendments)",
+    shortTitle: "Correspondence",
     description:
       "Strategic handling of patent office correspondence — from examiner objections and amendments to restriction requirements and appeals.",
     longDescription:
-      "Patent prosecution covers everything that happens between filing your application and getting it granted. This includes responding to examiner objections (office actions), amending claims, arguing patentability, handling restriction requirements, and navigating procedural issues. Every case is different, so prosecution is quoted on a case-by-case basis after reviewing your specific situation. Get in touch with your office action or application details and we'll provide a tailored quote.",
+      "Office correspondence covers everything that happens between filing your application and getting it granted. This includes responding to examiner objections (office actions), amending claims, arguing patentability, handling restriction requirements, and navigating procedural issues. Every case is different, so office correspondence is quoted on a case-by-case basis after reviewing your specific situation. Get in touch with your office action or application details and we'll provide a tailored quote.",
     startingPrice: "Quote",
     currency: "USD",
     delivery: "14\u201321 days",
@@ -283,7 +283,7 @@ export const services: Service[] = [
     ],
     pricing: [
       {
-        name: "Prosecution Response",
+        name: "Correspondence Response",
         price: "Quoted per case",
         description: "Tailored to the complexity of your specific office action",
         features: [
@@ -297,19 +297,19 @@ export const services: Service[] = [
     ],
     whoIsItFor: [
       "Patent applicants who have received correspondence from a patent office",
-      "Those with existing applications that need expert prosecution",
+      "Those with existing applications that need expert office correspondence",
       "Anyone whose patent application needs strategic amendments or responses",
     ],
     faq: [
       {
-        question: "Why is prosecution quoted per case?",
+        question: "Why is office correspondence quoted per case?",
         answer:
-          "Prosecution work varies enormously depending on the type and number of objections, the technical complexity, and the prosecution history. A simple formality response is very different from a complex \u00a7103 obviousness argument. Quoting per case ensures you only pay for what your specific situation requires.",
+          "Office correspondence work varies enormously depending on the type and number of objections, the technical complexity, and the prosecution history. A simple formality response is very different from a complex \u00a7103 obviousness argument. Quoting per case ensures you only pay for what your specific situation requires.",
       },
       {
         question: "What if my patent was previously rejected?",
         answer:
-          "We handle all stages of prosecution including responses to final office actions, Requests for Continued Examination (RCEs), after-final amendments, and appeals strategy. Many patents that receive initial rejections go on to be granted with the right response.",
+          "We handle all stages of office correspondence including responses to final office actions, Requests for Continued Examination (RCEs), after-final amendments, and appeals strategy. Many patents that receive initial rejections go on to be granted with the right response.",
       },
     ],
   },

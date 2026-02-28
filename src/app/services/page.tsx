@@ -24,7 +24,7 @@ import { services, rushSurcharges } from "@/data/services";
 export const metadata: Metadata = {
   title: "Services & Pricing | Alexander IP",
   description:
-    "Transparent, fixed-fee patent services from a Legal 500-trained specialist. Consultation, search, drafting, prosecution, international filing, and FTO analysis. No hidden costs.",
+    "Transparent, fixed-fee patent services from a Legal 500-trained specialist. Consultation, search, drafting, office correspondence, international filing, and FTO analysis. No hidden costs.",
 };
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -87,7 +87,7 @@ export default function ServicesPage() {
             <p className="text-lg text-slate-600 leading-relaxed mb-4">
               Every service has a fixed fee &mdash; no hourly billing, no hidden
               costs. Most clients start with a consultation or search, then move
-              to drafting and filing, and come back for prosecution when the
+              to drafting and filing, and come back for office correspondence when the
               patent office responds.
             </p>
             <p className="text-slate-500 mb-8">
@@ -114,7 +114,7 @@ export default function ServicesPage() {
             <ArrowRight className="w-3 h-3" />
             <span>File</span>
             <ArrowRight className="w-3 h-3" />
-            <span>Prosecute</span>
+            <span>Correspond</span>
             <ArrowRight className="w-3 h-3" />
             <span className="font-semibold text-navy">Grant</span>
           </div>

@@ -20,7 +20,7 @@ const serviceOptionsBase = [
   { label: "Patent Consultation", slug: "consultation", usd: 125 },
   { label: "Patent Search", slug: "patent-search", usd: 335 },
   { label: "Patent Drafting", slug: "patent-drafting", usd: 995 },
-  { label: "Patent Prosecution", slug: "patent-prosecution", usd: null },
+  { label: "Office Correspondence", slug: "patent-prosecution", usd: null },
   { label: "International Filing / PCT", slug: "international-filing", usd: 600 },
   { label: "FTO / Infringement Check", slug: "fto", usd: 600 },
   { label: "Portfolio Management", slug: "portfolio-management", usd: null },

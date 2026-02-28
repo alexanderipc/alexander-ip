@@ -9,7 +9,7 @@ const footerLinks = {
     { label: "Patent Consultation", href: "/services/consultation" },
     { label: "Patent Search", href: "/services/patent-search" },
     { label: "Patent Drafting", href: "/services/patent-drafting" },
-    { label: "Patent Prosecution", href: "/services/patent-prosecution" },
+    { label: "Office Correspondence", href: "/services/patent-prosecution" },
     { label: "International Filing", href: "/services/international-filing" },
     { label: "FTO / Infringement Check", href: "/services/fto" },
     { label: "Custom Project", href: "/services/custom" },
@@ -20,7 +20,7 @@ const footerLinks = {
     { label: "FAQ", href: "/faq" },
     { label: "Contact", href: "/contact" },
     { label: "Returning Clients", href: "/returning-clients" },
-    { label: "Client Portal", href: "/auth/login" },
+    { label: "My Projects", href: "/auth/login" },
   ],
   legal: [
     { label: "Privacy Policy", href: "/legal/privacy" },

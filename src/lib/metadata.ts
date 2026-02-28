@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const siteConfig = {
   name: "Alexander IP Consulting",
   description:
-    "Expert patent drafting, prosecution, and IP strategy. Top-tier training, accessible pricing. Patents granted across the US, UK, Europe, and 140+ jurisdictions via PCT.",
+    "Expert patent drafting, office correspondence, and IP strategy. Top-tier training, accessible pricing. Patents granted across the US, UK, Europe, and 140+ jurisdictions via PCT.",
   url: "https://alexander-ip.com",
   author: "Alexander Rowley",
   company: "Alexander IPC Ltd",

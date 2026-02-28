@@ -176,6 +176,89 @@ export async function markMessagesRead(projectId: string) {
   return { success: true };
 }
 
+/* ── Client Calendar Data ─────────────────────────────────────── */
+
+export interface ClientCalendarEvent {
+  id: string;
+  title: string;
+  projectId: string;
+  date: string;
+  type: "deadline" | "milestone";
+}
+
+export async function getClientCalendarData(year: number, month: number) {
+  const { supabase, user } = await requireClient();
+
+  // Build date range for the month (with padding for calendar display)
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const endDate =
+    month === 12
+      ? `${year + 1}-01-31`
+      : `${year}-${String(month + 1).padStart(2, "0")}-31`;
+
+  const events: ClientCalendarEvent[] = [];
+
+  // Fetch this client's projects with delivery dates in range (non-complete)
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("id, title, estimated_delivery_date, status")
+    .eq("client_id", user.id)
+    .gte("estimated_delivery_date", startDate)
+    .lte("estimated_delivery_date", endDate)
+    .not("status", "in", '("complete","complete_granted")');
+
+  if (projects) {
+    for (const p of projects) {
+      if (!p.estimated_delivery_date) continue;
+      events.push({
+        id: `deadline-${p.id}`,
+        title: p.title,
+        projectId: p.id,
+        date: p.estimated_delivery_date,
+        type: "deadline",
+      });
+    }
+  }
+
+  // Fetch client-visible incomplete milestones with target dates in range
+  const projectIds = projects?.map((p) => p.id) || [];
+
+  // Also get all client's active project IDs (milestones might belong to projects outside date range)
+  const { data: allProjects } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("client_id", user.id);
+
+  const allProjectIds = allProjects?.map((p) => p.id) || [];
+
+  if (allProjectIds.length > 0) {
+    const { data: milestones } = await supabase
+      .from("project_milestones")
+      .select("id, title, target_date, project_id, projects(title)")
+      .in("project_id", allProjectIds)
+      .eq("is_client_visible", true)
+      .gte("target_date", startDate)
+      .lte("target_date", endDate)
+      .is("completed_date", null);
+
+    if (milestones) {
+      for (const m of milestones) {
+        if (!m.target_date) continue;
+        const project = m.projects as unknown as { title: string } | null;
+        events.push({
+          id: `milestone-${m.id}`,
+          title: `${m.title} — ${project?.title || "Unknown project"}`,
+          projectId: m.project_id,
+          date: m.target_date,
+          type: "milestone",
+        });
+      }
+    }
+  }
+
+  return events;
+}
+
 /* ── Update Notification Preferences ─────────────────────────── */
 
 export async function updateNotificationPreferences(

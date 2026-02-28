@@ -41,10 +41,10 @@ export default function PrivacyPage() {
             </li>
           </ul>
           <p>
-            When you make a payment through our website, a client portal
-            account is automatically created using the email address you
-            provided. This account allows you to track your project, receive
-            updates, and communicate with Alexander IP.
+            When you make a payment through our website, an account is
+            automatically created using the email address you provided. This
+            account allows you to track your project, receive updates, and
+            communicate with Alexander IP.
           </p>
 
           <h2 className="text-xl font-semibold text-navy">
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
             <li>
               Send email notifications about project status changes, document
               uploads, and messages (you can manage your email preferences in
-              your portal settings or unsubscribe via links in each email)
+              your account settings or unsubscribe via links in each email)
             </li>
             <li>Process payments for our services</li>
             <li>Comply with legal obligations</li>
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc pl-6 space-y-1">
             <li>
-              Patent offices (as required for filing and prosecution of your
+              Patent offices (as required for filing and office correspondence of your
               applications)
             </li>
             <li>

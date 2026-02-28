@@ -17,7 +17,7 @@ export async function sendMagicLinkEmail(
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
-      subject: "Sign in to Alexander IP Portal",
+      subject: "Sign in to Alexander IP",
       html: magicLinkHtml(magicLinkUrl),
     });
 
@@ -53,13 +53,13 @@ function magicLinkHtml(url: string): string {
           <tr>
             <td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
-              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Client Portal</p>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">My Projects</p>
             </td>
           </tr>
           <!-- Body -->
           <tr>
             <td style="padding:36px 32px 40px;">
-              <h2 style="margin:0 0 12px;color:#0f1729;font-size:22px;font-weight:700;">Sign in to your portal</h2>
+              <h2 style="margin:0 0 12px;color:#0f1729;font-size:22px;font-weight:700;">Sign in to your account</h2>
               <p style="margin:0 0 32px;color:#334155;font-size:16px;line-height:1.6;">
                 Tap the button below to securely access your project dashboard. This link expires in 1 hour.
               </p>
@@ -68,11 +68,11 @@ function magicLinkHtml(url: string): string {
                   <td align="center">
                     <!--[if mso]>
                     <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="${url}" style="height:56px;v-text-anchor:middle;width:280px;" arcsize="14%" fillcolor="#2563eb">
-                      <center style="color:#ffffff;font-family:sans-serif;font-size:17px;font-weight:bold;">Sign in to Portal &rarr;</center>
+                      <center style="color:#ffffff;font-family:sans-serif;font-size:17px;font-weight:bold;">Sign in &rarr;</center>
                     </v:roundrect>
                     <![endif]-->
                     <a href="${url}" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:17px;font-weight:700;padding:16px 48px;border-radius:10px;letter-spacing:0.2px;mso-hide:all;">
-                      Sign in to Portal &rarr;
+                      Sign in &rarr;
                     </a>
                   </td>
                 </tr>
@@ -92,7 +92,7 @@ function magicLinkHtml(url: string): string {
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
-                Alexander IP &mdash; Patent Drafting &amp; Prosecution
+                Alexander IP &mdash; Patent Drafting &amp; Office Correspondence
               </p>
               <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
                 <a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
@@ -113,7 +113,7 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   consultation: "Patent Consultation",
   patent_search: "Patent Search",
   patent_drafting: "Patent Drafting",
-  patent_prosecution: "Patent Prosecution",
+  patent_prosecution: "Office Correspondence",
   international_filing: "International Filing",
   fto: "FTO / Infringement Check",
   illustrations: "Patent Illustrations",
@@ -219,7 +219,7 @@ function statusUpdateHtml(data: StatusUpdateEmailData): string {
           <tr>
             <td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
-              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Client Portal</p>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">My Projects</p>
             </td>
           </tr>
           <!-- Body -->
@@ -268,7 +268,7 @@ function statusUpdateHtml(data: StatusUpdateEmailData): string {
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
-                Alexander IP &mdash; Patent Drafting &amp; Prosecution
+                Alexander IP &mdash; Patent Drafting &amp; Office Correspondence
               </p>
               <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
                 ${data.unsubscribeUrl ? `<a href="${data.unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a> &bull; ` : ""}<a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
@@ -336,7 +336,7 @@ function documentUploadedHtml(data: DocumentEmailData): string {
           <tr>
             <td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
-              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Client Portal</p>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">My Projects</p>
             </td>
           </tr>
           <!-- Body -->
@@ -359,7 +359,7 @@ function documentUploadedHtml(data: DocumentEmailData): string {
                 <tr>
                   <td align="center">
                     <a href="${data.portalUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:17px;font-weight:700;padding:16px 48px;border-radius:10px;letter-spacing:0.2px;">
-                      View in Portal &rarr;
+                      View Document &rarr;
                     </a>
                   </td>
                 </tr>
@@ -370,7 +370,7 @@ function documentUploadedHtml(data: DocumentEmailData): string {
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
-                Alexander IP &mdash; Patent Drafting &amp; Prosecution
+                Alexander IP &mdash; Patent Drafting &amp; Office Correspondence
               </p>
               <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
                 ${data.unsubscribeUrl ? `<a href="${data.unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a> &bull; ` : ""}<a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
@@ -445,7 +445,7 @@ function newMessageHtml(data: MessageEmailData): string {
           <tr>
             <td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
-              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Client Portal</p>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">My Projects</p>
             </td>
           </tr>
           <!-- Body -->
@@ -480,7 +480,7 @@ function newMessageHtml(data: MessageEmailData): string {
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
-                Alexander IP &mdash; Patent Drafting &amp; Prosecution
+                Alexander IP &mdash; Patent Drafting &amp; Office Correspondence
               </p>
               <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
                 ${data.unsubscribeUrl ? `<a href="${data.unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a> &bull; ` : ""}<a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
@@ -522,7 +522,7 @@ function projectCreatedHtml(data: ProjectEmailData): string {
           <tr>
             <td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
-              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Client Portal</p>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">My Projects</p>
             </td>
           </tr>
           <!-- Body -->
@@ -530,7 +530,7 @@ function projectCreatedHtml(data: ProjectEmailData): string {
             <td style="padding:36px 32px 40px;">
               <h2 style="margin:0 0 8px;color:#0f1729;font-size:22px;font-weight:700;">Your project is ready</h2>
               <p style="margin:0 0 28px;color:#334155;font-size:16px;line-height:1.6;">
-                Thank you for your payment. Your project has been created and you can track its progress in your client portal.
+                Thank you for your payment. Your project has been created and you can track its progress in your account.
               </p>
 
               <!-- Project details card -->
@@ -577,7 +577,7 @@ function projectCreatedHtml(data: ProjectEmailData): string {
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
-                Alexander IP &mdash; Patent Drafting &amp; Prosecution
+                Alexander IP &mdash; Patent Drafting &amp; Office Correspondence
               </p>
               <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
                 <a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>

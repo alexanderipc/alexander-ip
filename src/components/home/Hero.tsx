@@ -33,7 +33,7 @@ export default function Hero() {
             </p>
 
             <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">
-              Patent drafting, prosecution, and strategy &mdash; from first idea
+              Patent drafting, office correspondence, and strategy &mdash; from first idea
               to granted patent. Legal&nbsp;500 training, transparent pricing,
               and communication you can actually understand.
             </p>

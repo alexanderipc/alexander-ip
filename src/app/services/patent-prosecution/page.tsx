@@ -21,7 +21,7 @@ export default function PatentProsecutionPage() {
       <section className="py-16 lg:py-24 bg-gradient-to-b from-slate-50 to-white">
         <Container>
           <div className="max-w-3xl">
-            <Badge className="mb-6">Patent Prosecution</Badge>
+            <Badge className="mb-6">Office Correspondence</Badge>
             <h1 className="text-4xl sm:text-5xl font-bold text-navy leading-tight mb-6">
               {service.title}
             </h1>
@@ -29,7 +29,7 @@ export default function PatentProsecutionPage() {
               {service.longDescription}
             </p>
             <Button href="/contact?service=patent-prosecution" size="lg">
-              Get a Prosecution Quote
+              Get a Quote
             </Button>
           </div>
         </Container>
@@ -43,7 +43,7 @@ export default function PatentProsecutionPage() {
               What We Handle
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Every prosecution case is different. Here&apos;s the range of
+              Every case is different. Here&apos;s the range of
               issues we routinely deal with.
             </p>
           </div>
@@ -69,7 +69,7 @@ export default function PatentProsecutionPage() {
               Quote-Based Pricing
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Prosecution work varies enormously — a simple formality response is
+              Office correspondence work varies enormously — a simple formality response is
               very different from a complex obviousness argument with multiple
               prior art references. Rather than a one-size-fits-all price,
               we quote each case individually so you only pay for what your

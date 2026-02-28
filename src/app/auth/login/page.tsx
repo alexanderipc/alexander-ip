@@ -90,7 +90,7 @@ function LoginForm() {
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-navy mb-2">
-          Client Portal
+          My Projects
         </h1>
         <p className="text-slate-500">
           Track your projects, view documents, and stay updated.

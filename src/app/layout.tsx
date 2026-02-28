@@ -14,12 +14,12 @@ export const metadata: Metadata = {
   title:
     "Alexander IP — Patent Consultancy for Inventors and Innovators",
   description:
-    "Alexander IP is a patent consultancy built for inventors and innovators, not corporations. Legal 500-trained specialist offering patent drafting, prosecution, and international filing with transparent pricing and communication you can actually understand.",
+    "Alexander IP is a patent consultancy built for inventors and innovators, not corporations. Legal 500-trained specialist offering patent drafting, office correspondence, and international filing with transparent pricing and communication you can actually understand.",
   metadataBase: new URL("https://alexander-ip.com"),
   openGraph: {
     title: "Alexander IP — Patent Consultancy for Inventors and Innovators",
     description:
-      "Legal 500-trained patent consultancy offering drafting, prosecution, and international filing. Built for inventors and innovators, not behemoths.",
+      "Legal 500-trained patent consultancy offering drafting, office correspondence, and international filing. Built for inventors and innovators, not behemoths.",
     url: "https://alexander-ip.com",
     siteName: "Alexander IP",
     type: "website",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Alexander IP — Patent Consultancy for Inventors and Innovators",
     description:
-      "Legal 500-trained patent consultancy offering drafting, prosecution, and international filing. Built for inventors and innovators, not behemoths.",
+      "Legal 500-trained patent consultancy offering drafting, office correspondence, and international filing. Built for inventors and innovators, not behemoths.",
   },
   robots: { index: true, follow: true },
 };
