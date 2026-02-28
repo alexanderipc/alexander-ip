@@ -22,7 +22,19 @@ export default function StatusAdvancer({
   const [internalNote, setInternalNote] = useState("");
   const [notifyClient, setNotifyClient] = useState(true);
 
+  const isCompleting =
+    nextStatus === "complete" || nextStatus === "complete_granted";
+
   function handleAdvance() {
+    if (
+      isCompleting &&
+      !confirm(
+        "Mark this project as complete? The client will be notified and this cannot be easily undone."
+      )
+    ) {
+      return;
+    }
+
     startTransition(async () => {
       await advanceStatus(
         projectId,

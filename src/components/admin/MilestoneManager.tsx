@@ -66,7 +66,8 @@ export default function MilestoneManager({
     });
   }
 
-  function handleDelete(milestoneId: string) {
+  function handleDelete(milestoneId: string, title: string) {
+    if (!confirm(`Delete milestone "${title}"? This cannot be undone.`)) return;
     startTransition(async () => {
       await deleteMilestone(milestoneId, projectId);
     });
@@ -155,7 +156,7 @@ export default function MilestoneManager({
                 )}
                 <button
                   type="button"
-                  onClick={() => handleDelete(m.id)}
+                  onClick={() => handleDelete(m.id, m.title)}
                   className="text-slate-400 hover:text-red-500 p-1"
                   title="Delete milestone"
                 >

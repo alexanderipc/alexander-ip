@@ -161,11 +161,14 @@ export default function CustomProjectForm() {
             id="project-description"
             rows={4}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value.length <= 500) setDescription(e.target.value);
+            }}
+            maxLength={500}
             placeholder="e.g. Patent drafting for a solar panel mounting bracket, with UK and US filing..."
             className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-navy placeholder:text-slate-400 resize-none"
           />
-          <p className="text-xs text-slate-400 mt-1 text-right">
+          <p className={`text-xs mt-1 text-right ${description.length >= 480 ? "text-amber-500 font-medium" : "text-slate-400"}`}>
             {description.length} / 500
           </p>
         </div>
