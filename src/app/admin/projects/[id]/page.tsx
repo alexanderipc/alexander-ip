@@ -60,7 +60,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
   } | null;
 
   // Fetch related data
-  const [updatesResult, docsResult, milestonesResult, messagesResult] = await Promise.all([
+  const [updatesResult, docsResult, milestonesResult] = await Promise.all([
     supabase
       .from("project_updates")
       .select("*")
@@ -76,16 +76,32 @@ export default async function AdminProjectDetailPage({ params }: Props) {
       .select("*")
       .eq("project_id", id)
       .order("target_date", { ascending: true }),
-    supabase
+  ]);
+
+  // Fetch messages separately — table may be newly created
+  interface Msg {
+    id: string;
+    body: string;
+    is_admin: boolean;
+    read_at: string | null;
+    created_at: string;
+    sender_id: string;
+    project_id: string;
+  }
+  let messages: Msg[] = [];
+  try {
+    const messagesResult = await supabase
       .from("project_messages")
       .select("*")
       .eq("project_id", id)
-      .order("created_at", { ascending: true }),
-  ]);
+      .order("created_at", { ascending: true });
+    messages = (messagesResult.data as Msg[]) || [];
+  } catch {
+    messages = [];
+  }
 
   const updates = updatesResult.data || [];
   const milestones = milestonesResult.data || [];
-  const messages = messagesResult.data || [];
   const unreadMessages = messages.filter((m) => !m.is_admin && !m.read_at).length;
 
   // Generate signed URLs for documents (bucket is private, use admin client)

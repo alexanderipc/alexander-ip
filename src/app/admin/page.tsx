@@ -29,16 +29,22 @@ export default async function AdminDashboard() {
 
   // Fetch unread client messages (is_admin = false, unread)
   const activeIds = active.map((p) => p.id);
-  const { data: unreadMsgs } = activeIds.length
-    ? await supabase
-        .from("project_messages")
-        .select("project_id")
-        .in("project_id", activeIds)
-        .eq("is_admin", false)
-        .is("read_at", null)
-    : { data: [] };
+  let unreadMsgs: Array<{ project_id: string }> = [];
+  try {
+    const result = activeIds.length
+      ? await supabase
+          .from("project_messages")
+          .select("project_id")
+          .in("project_id", activeIds)
+          .eq("is_admin", false)
+          .is("read_at", null)
+      : { data: [] };
+    unreadMsgs = (result.data as Array<{ project_id: string }>) || [];
+  } catch {
+    unreadMsgs = [];
+  }
   const unreadMap: Record<string, number> = {};
-  (unreadMsgs || []).forEach((m) => {
+  unreadMsgs.forEach((m) => {
     unreadMap[m.project_id] = (unreadMap[m.project_id] || 0) + 1;
   });
   const overdue = active.filter(
