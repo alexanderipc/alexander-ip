@@ -101,6 +101,16 @@ export interface ProjectMilestone {
   created_at: string;
 }
 
+export interface ProjectMessage {
+  id: string;
+  project_id: string;
+  sender_id: string;
+  body: string;
+  is_admin: boolean;
+  read_at: string | null;
+  created_at: string;
+}
+
 export interface LinkedProject {
   id: string;
   project_a_id: string;

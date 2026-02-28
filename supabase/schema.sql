@@ -117,6 +117,17 @@ CREATE TABLE project_milestones (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Project messages (direct messaging between admin and client)
+CREATE TABLE project_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES profiles(id),
+  body TEXT NOT NULL,
+  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  read_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Linked projects
 CREATE TABLE linked_projects (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -137,6 +148,8 @@ CREATE INDEX idx_projects_delivery ON projects(estimated_delivery_date);
 CREATE INDEX idx_project_updates_project_id ON project_updates(project_id);
 CREATE INDEX idx_project_documents_project_id ON project_documents(project_id);
 CREATE INDEX idx_project_milestones_project_id ON project_milestones(project_id);
+CREATE INDEX idx_project_messages_project_id ON project_messages(project_id);
+CREATE INDEX idx_project_messages_created_at ON project_messages(created_at);
 
 -- ============================================================
 -- ROW LEVEL SECURITY
@@ -147,6 +160,7 @@ ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_updates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE linked_projects ENABLE ROW LEVEL SECURITY;
 
 -- Helper: check admin role without triggering RLS recursion on profiles
@@ -227,6 +241,36 @@ CREATE POLICY "Clients can view visible milestones"
 
 CREATE POLICY "Admins can do everything on milestones"
   ON project_milestones FOR ALL
+  USING (is_admin());
+
+-- ── Project Messages ──────────────────────────────────────────
+
+CREATE POLICY "Clients can view own project messages"
+  ON project_messages FOR SELECT
+  USING (
+    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
+  );
+
+CREATE POLICY "Clients can send messages on own projects"
+  ON project_messages FOR INSERT
+  WITH CHECK (
+    sender_id = auth.uid() AND
+    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
+  );
+
+CREATE POLICY "Clients can mark admin messages as read"
+  ON project_messages FOR UPDATE
+  USING (
+    is_admin = TRUE AND
+    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
+  )
+  WITH CHECK (
+    is_admin = TRUE AND
+    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
+  );
+
+CREATE POLICY "Admins can do everything on messages"
+  ON project_messages FOR ALL
   USING (is_admin());
 
 -- ── Linked Projects ─────────────────────────────────────────

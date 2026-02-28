@@ -374,6 +374,112 @@ function documentUploadedHtml(data: DocumentEmailData): string {
 </html>`;
 }
 
+/* ── New Message Notification Email ─────────────────────────── */
+
+interface MessageEmailData {
+  projectTitle: string;
+  senderName: string;
+  messagePreview: string;
+  portalUrl: string;
+}
+
+export async function sendNewMessageEmail(
+  to: string,
+  data: MessageEmailData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `New message — ${data.projectTitle}`,
+      html: newMessageHtml(data),
+    });
+
+    if (error) {
+      console.error("Resend error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Email send failed:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function newMessageHtml(data: MessageEmailData): string {
+  // Truncate preview to 200 chars
+  const preview =
+    data.messagePreview.length > 200
+      ? data.messagePreview.slice(0, 200) + "..."
+      : data.messagePreview;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Client Portal</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 32px 40px;">
+              <h2 style="margin:0 0 12px;color:#0f1729;font-size:22px;font-weight:700;">New message</h2>
+              <p style="margin:0 0 8px;color:#64748b;font-size:14px;">
+                <strong style="color:#0f1729;">${data.senderName}</strong> sent a message on <strong style="color:#0f1729;">${data.projectTitle}</strong>
+              </p>
+
+              <!-- Message preview -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin:20px 0 28px;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0;color:#334155;font-size:15px;line-height:1.6;font-style:italic;">${preview.replace(/\n/g, "<br>")}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${data.portalUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:17px;font-weight:700;padding:16px 48px;border-radius:10px;letter-spacing:0.2px;">
+                      View &amp; Reply &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
+              <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
+                Alexander IP &mdash; Patent Drafting &amp; Prosecution
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 /* ── Project Created Email (HTML) ──────────────────────────── */
 
 function projectCreatedHtml(data: ProjectEmailData): string {

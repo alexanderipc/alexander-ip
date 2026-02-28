@@ -14,6 +14,7 @@ import {
   sendProjectCreatedEmail,
   sendStatusUpdateEmail,
   sendDocumentUploadedEmail,
+  sendNewMessageEmail,
 } from "@/lib/email";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
@@ -526,6 +527,77 @@ export async function updateTimelineDays(
   revalidatePath(`/admin/projects/${projectId}`);
   revalidatePath(`/portal/projects/${projectId}`);
   revalidatePath("/admin");
+
+  return { success: true };
+}
+
+/* ── Send Message (Admin) ─────────────────────────────────── */
+
+export async function sendAdminMessage(projectId: string, body: string) {
+  const { supabase, user } = await requireAdmin();
+
+  if (!body.trim()) throw new Error("Message cannot be empty");
+  if (body.length > 2000) throw new Error("Message too long (max 2000 characters)");
+
+  // Fetch project info for email
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, title, client_id")
+    .eq("id", projectId)
+    .single();
+
+  if (!project) throw new Error("Project not found");
+
+  // Insert message
+  const { error } = await supabase.from("project_messages").insert({
+    project_id: projectId,
+    sender_id: user.id,
+    body: body.trim(),
+    is_admin: true,
+  });
+
+  if (error) throw new Error(`Failed to send message: ${error.message}`);
+
+  // Notify client via email
+  try {
+    const { data: clientProfile } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("id", project.client_id)
+      .single();
+
+    if (clientProfile?.email) {
+      await sendNewMessageEmail(clientProfile.email, {
+        projectTitle: project.title,
+        senderName: "Alexander IP",
+        messagePreview: body.trim(),
+        portalUrl: PORTAL_URL,
+      });
+    }
+  } catch (emailErr) {
+    console.error("Failed to send message notification email:", emailErr);
+  }
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/portal/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Mark Messages Read (Admin) ───────────────────────────── */
+
+export async function markAdminMessagesRead(projectId: string) {
+  const { supabase } = await requireAdmin();
+
+  // Mark client messages (is_admin = false) as read
+  await supabase
+    .from("project_messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("project_id", projectId)
+    .eq("is_admin", false)
+    .is("read_at", null);
+
+  revalidatePath(`/admin/projects/${projectId}`);
 
   return { success: true };
 }

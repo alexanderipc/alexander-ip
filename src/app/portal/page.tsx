@@ -27,8 +27,24 @@ export default async function PortalDashboard() {
   const active = allProjects.filter((p) => !isComplete(p.status));
   const completed = allProjects.filter((p) => isComplete(p.status));
 
-  // Fetch upcoming milestones across all projects
+  // Fetch unread message counts (admin messages not yet read by client)
   const projectIds = allProjects.map((p) => p.id);
+  const { data: unreadMsgs } = projectIds.length
+    ? await supabase
+        .from("project_messages")
+        .select("project_id")
+        .in("project_id", projectIds)
+        .eq("is_admin", true)
+        .is("read_at", null)
+    : { data: [] };
+
+  // Build a map of projectId -> unread count
+  const unreadMap: Record<string, number> = {};
+  (unreadMsgs || []).forEach((m) => {
+    unreadMap[m.project_id] = (unreadMap[m.project_id] || 0) + 1;
+  });
+
+  // Fetch upcoming milestones across all projects
   const { data: milestones } = projectIds.length
     ? await supabase
         .from("project_milestones")
@@ -61,6 +77,7 @@ export default async function PortalDashboard() {
                 key={project.id}
                 project={project}
                 href={`/portal/projects/${project.id}`}
+                unreadMessages={unreadMap[project.id] || 0}
               />
             ))}
           </div>
@@ -127,6 +144,7 @@ export default async function PortalDashboard() {
                 key={project.id}
                 project={project}
                 href={`/portal/projects/${project.id}`}
+                unreadMessages={unreadMap[project.id] || 0}
               />
             ))}
           </div>

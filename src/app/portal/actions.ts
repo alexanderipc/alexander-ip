@@ -3,6 +3,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { sendNewMessageEmail } from "@/lib/email";
+
+const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
 /* ── Helpers ──────────────────────────────────────────────── */
 
@@ -84,6 +87,90 @@ export async function clientUploadDocument(
 
   revalidatePath(`/portal/projects/${projectId}`);
   revalidatePath(`/admin/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Send Message (Client) ─────────────────────────────────── */
+
+export async function sendClientMessage(projectId: string, body: string) {
+  const { supabase, user } = await requireClient();
+
+  if (!body.trim()) throw new Error("Message cannot be empty");
+  if (body.length > 2000) throw new Error("Message too long (max 2000 characters)");
+
+  // Verify client owns this project
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, client_id, title")
+    .eq("id", projectId)
+    .single();
+
+  if (!project || project.client_id !== user.id) {
+    throw new Error("Project not found");
+  }
+
+  // Insert message
+  const { error } = await supabase.from("project_messages").insert({
+    project_id: projectId,
+    sender_id: user.id,
+    body: body.trim(),
+    is_admin: false,
+  });
+
+  if (error) throw new Error(`Failed to send message: ${error.message}`);
+
+  // Notify admin via email
+  try {
+    const { data: clientProfile } = await supabase
+      .from("profiles")
+      .select("name, email")
+      .eq("id", user.id)
+      .single();
+
+    const senderName = clientProfile?.name || clientProfile?.email || "Client";
+
+    await sendNewMessageEmail("alexanderip.contact@gmail.com", {
+      projectTitle: project.title,
+      senderName,
+      messagePreview: body.trim(),
+      portalUrl: PORTAL_URL,
+    });
+  } catch (emailErr) {
+    console.error("Failed to send message notification email:", emailErr);
+  }
+
+  revalidatePath(`/portal/projects/${projectId}`);
+  revalidatePath(`/admin/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Mark Messages Read (Client) ───────────────────────────── */
+
+export async function markMessagesRead(projectId: string) {
+  const { supabase, user } = await requireClient();
+
+  // Verify ownership
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, client_id")
+    .eq("id", projectId)
+    .single();
+
+  if (!project || project.client_id !== user.id) {
+    throw new Error("Project not found");
+  }
+
+  // Mark admin messages (is_admin = true) as read
+  await supabase
+    .from("project_messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("project_id", projectId)
+    .eq("is_admin", true)
+    .is("read_at", null);
+
+  revalidatePath(`/portal/projects/${projectId}`);
 
   return { success: true };
 }

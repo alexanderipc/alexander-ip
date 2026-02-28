@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, MessageCircle } from "lucide-react";
 import type { Project } from "@/lib/supabase/types";
 import { getServiceLabel, getProgressPercent, getDaysRemaining, isComplete } from "@/lib/portal/status";
 import StatusBadge from "./StatusBadge";
@@ -8,9 +8,10 @@ import ProgressBar from "./ProgressBar";
 interface ProjectCardProps {
   project: Project;
   href: string;
+  unreadMessages?: number;
 }
 
-export default function ProjectCard({ project, href }: ProjectCardProps) {
+export default function ProjectCard({ project, href, unreadMessages = 0 }: ProjectCardProps) {
   const percent = getProgressPercent(project.service_type, project.status);
   const complete = isComplete(project.status);
   const daysLeft = project.estimated_delivery_date
@@ -34,8 +35,14 @@ export default function ProjectCard({ project, href }: ProjectCardProps) {
         <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500 transition-colors shrink-0 mt-1" />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 flex items-center gap-2">
         <StatusBadge status={project.status} size="sm" />
+        {unreadMessages > 0 && (
+          <span className="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <MessageCircle className="w-3 h-3" />
+            {unreadMessages} new
+          </span>
+        )}
       </div>
 
       <div className="mb-3">

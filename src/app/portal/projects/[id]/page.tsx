@@ -16,7 +16,8 @@ import UpdatesFeed from "@/components/portal/UpdatesFeed";
 import DocumentsList from "@/components/portal/DocumentsList";
 import ClientDocumentUpload from "@/components/portal/ClientDocumentUpload";
 import MilestonesList from "@/components/portal/MilestonesList";
-import { ArrowLeft, Calendar, Globe, Clock } from "lucide-react";
+import MessageThread from "@/components/portal/MessageThread";
+import { ArrowLeft, Calendar, Globe, Clock, MessageCircle } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -41,7 +42,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   if (error || !project) notFound();
 
   // Fetch related data in parallel
-  const [updatesResult, docsResult, milestonesResult] = await Promise.all([
+  const [updatesResult, docsResult, milestonesResult, messagesResult] = await Promise.all([
     supabase
       .from("project_updates")
       .select("*")
@@ -59,10 +60,17 @@ export default async function ProjectDetailPage({ params }: Props) {
       .eq("project_id", id)
       .eq("is_client_visible", true)
       .order("target_date", { ascending: true }),
+    supabase
+      .from("project_messages")
+      .select("*")
+      .eq("project_id", id)
+      .order("created_at", { ascending: true }),
   ]);
 
   const updates = updatesResult.data || [];
   const milestones = milestonesResult.data || [];
+  const messages = messagesResult.data || [];
+  const unreadMessages = messages.filter((m) => m.is_admin && !m.read_at).length;
 
   // Generate signed URLs for documents (bucket is private, use admin client)
   const adminClient = createAdminClient();
@@ -175,14 +183,35 @@ export default async function ProjectDetailPage({ params }: Props) {
         />
       </div>
 
-      {/* Two-column grid: Updates + Sidebar */}
+      {/* Two-column grid: Updates + Messages | Sidebar */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Updates */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
-            Updates
-          </h2>
-          <UpdatesFeed updates={updates} />
+        {/* Main content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Messages */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" />
+              Messages
+              {unreadMessages > 0 && (
+                <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  {unreadMessages}
+                </span>
+              )}
+            </h2>
+            <MessageThread
+              projectId={project.id}
+              messages={messages}
+              userId={user.id}
+            />
+          </div>
+
+          {/* Updates */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+              Updates
+            </h2>
+            <UpdatesFeed updates={updates} />
+          </div>
         </div>
 
         {/* Sidebar: Documents + Milestones */}

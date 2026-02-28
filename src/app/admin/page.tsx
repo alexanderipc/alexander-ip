@@ -9,7 +9,7 @@ import {
 } from "@/lib/portal/status";
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
-import { Plus, AlertTriangle, Clock, FolderOpen } from "lucide-react";
+import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle } from "lucide-react";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -26,6 +26,21 @@ export default async function AdminDashboard() {
 
   const all = projects || [];
   const active = all.filter((p) => !isComplete(p.status));
+
+  // Fetch unread client messages (is_admin = false, unread)
+  const activeIds = active.map((p) => p.id);
+  const { data: unreadMsgs } = activeIds.length
+    ? await supabase
+        .from("project_messages")
+        .select("project_id")
+        .in("project_id", activeIds)
+        .eq("is_admin", false)
+        .is("read_at", null)
+    : { data: [] };
+  const unreadMap: Record<string, number> = {};
+  (unreadMsgs || []).forEach((m) => {
+    unreadMap[m.project_id] = (unreadMap[m.project_id] || 0) + 1;
+  });
   const overdue = active.filter(
     (p) =>
       p.estimated_delivery_date &&
@@ -126,9 +141,15 @@ export default async function AdminDashboard() {
                     <td className="px-5 py-3">
                       <Link
                         href={`/admin/projects/${p.id}`}
-                        className="text-sm font-medium text-navy hover:text-blue-600 transition-colors"
+                        className="text-sm font-medium text-navy hover:text-blue-600 transition-colors inline-flex items-center gap-2"
                       >
                         {p.title}
+                        {(unreadMap[p.id] || 0) > 0 && (
+                          <span className="inline-flex items-center gap-0.5 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                            <MessageCircle className="w-2.5 h-2.5" />
+                            {unreadMap[p.id]}
+                          </span>
+                        )}
                       </Link>
                     </td>
                     <td className="px-5 py-3">

@@ -19,7 +19,8 @@ import AdminUpdateForm from "@/components/admin/UpdateForm";
 import AdminDocumentUpload from "@/components/admin/DocumentUpload";
 import MilestoneManager from "@/components/admin/MilestoneManager";
 import TimelineEditor from "@/components/admin/TimelineEditor";
-import { ArrowLeft, Calendar, Globe, User, CreditCard } from "lucide-react";
+import AdminMessageThread from "@/components/admin/MessageThread";
+import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -59,7 +60,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
   } | null;
 
   // Fetch related data
-  const [updatesResult, docsResult, milestonesResult] = await Promise.all([
+  const [updatesResult, docsResult, milestonesResult, messagesResult] = await Promise.all([
     supabase
       .from("project_updates")
       .select("*")
@@ -75,10 +76,17 @@ export default async function AdminProjectDetailPage({ params }: Props) {
       .select("*")
       .eq("project_id", id)
       .order("target_date", { ascending: true }),
+    supabase
+      .from("project_messages")
+      .select("*")
+      .eq("project_id", id)
+      .order("created_at", { ascending: true }),
   ]);
 
   const updates = updatesResult.data || [];
   const milestones = milestonesResult.data || [];
+  const messages = messagesResult.data || [];
+  const unreadMessages = messages.filter((m) => !m.is_admin && !m.read_at).length;
 
   // Generate signed URLs for documents (bucket is private, use admin client)
   const adminClient = createAdminClient();
@@ -188,10 +196,28 @@ export default async function AdminProjectDetailPage({ params }: Props) {
         />
       </div>
 
-      {/* Three column: Updates | Documents | Actions */}
+      {/* Three column: Messages + Updates | Sidebar */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Updates feed */}
+        {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Messages */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" />
+              Messages
+              {unreadMessages > 0 && (
+                <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  {unreadMessages} new
+                </span>
+              )}
+            </h2>
+            <AdminMessageThread
+              projectId={project.id}
+              messages={messages}
+              clientName={client?.name || client?.email || "Client"}
+            />
+          </div>
+
           {/* Add update form */}
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
