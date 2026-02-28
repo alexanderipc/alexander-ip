@@ -156,8 +156,13 @@ export default async function BookingSuccessPage(props: {
             </div>
           </div>
 
+          <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+            To access your client portal, use the sign-in link in your welcome
+            email, or enter the email you used at checkout below.
+          </p>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button href="/auth/login">Go to Client Portal</Button>
+            <Button href="/auth/login">Sign In to Portal</Button>
             <Button href="/" variant="outline">
               Return to Homepage
             </Button>

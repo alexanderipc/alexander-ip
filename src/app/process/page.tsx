@@ -7,7 +7,6 @@ import {
   Scale,
   Award,
   Globe,
-  ArrowDown,
   Clock,
   DollarSign,
 } from "lucide-react";

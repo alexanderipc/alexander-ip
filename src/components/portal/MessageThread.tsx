@@ -130,7 +130,7 @@ export default function MessageThread({
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          rows={1}
+          rows={2}
           maxLength={2000}
           className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
@@ -138,18 +138,25 @@ export default function MessageThread({
           type="button"
           onClick={handleSend}
           disabled={!body.trim() || isPending}
-          className="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          className="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0 self-end"
         >
           <Send className="w-4 h-4" />
         </button>
       </div>
 
+      <div className="flex items-center justify-between mt-1">
+        <p className="text-[11px] text-slate-400">
+          {isPending ? "Sending..." : "Enter to send \u00B7 Shift+Enter for new line"}
+        </p>
+        {body.length > 1800 && (
+          <p className={`text-[11px] ${body.length >= 2000 ? "text-red-500" : "text-slate-400"}`}>
+            {body.length}/2000
+          </p>
+        )}
+      </div>
+
       {error && (
         <p className="text-xs text-red-500 mt-1">{error}</p>
-      )}
-
-      {isPending && (
-        <p className="text-xs text-slate-400 mt-1">Sending...</p>
       )}
     </div>
   );

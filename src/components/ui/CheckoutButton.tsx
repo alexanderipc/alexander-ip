@@ -22,6 +22,7 @@ export default function CheckoutButton({
   label = "Book & Pay",
 }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [priceDisplay, setPriceDisplay] = useState<string | null>(null);
 
   // Detect localised price instantly from browser locale
@@ -32,6 +33,7 @@ export default function CheckoutButton({
 
   async function handleCheckout() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -45,16 +47,16 @@ export default function CheckoutButton({
         window.location.href = data.url;
       } else {
         console.error("Checkout error:", data);
-        alert(
+        setError(
           data.error
-            ? `Checkout error: ${data.error}${data.code ? ` (${data.code})` : ""}`
+            ? `${data.error}${data.code ? ` (${data.code})` : ""}`
             : "Something went wrong. Please try again."
         );
         setLoading(false);
       }
     } catch (err) {
       console.error("Checkout fetch error:", err);
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please check your connection and try again.");
       setLoading(false);
     }
   }
@@ -62,25 +64,32 @@ export default function CheckoutButton({
   // If explicit children are provided, use them (backward-compatible)
   const buttonContent = children ?? (
     <>
-      {label} — {priceDisplay || "…"}
+      {label} &mdash; {priceDisplay || "\u2026"}
     </>
   );
 
   return (
-    <Button
-      onClick={handleCheckout}
-      size={size}
-      className={className}
-      disabled={loading}
-    >
-      {loading ? (
-        <>
-          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          Redirecting to payment…
-        </>
-      ) : (
-        buttonContent
+    <div>
+      <Button
+        onClick={handleCheckout}
+        size={size}
+        className={className}
+        disabled={loading}
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Redirecting to payment&hellip;
+          </>
+        ) : (
+          buttonContent
+        )}
+      </Button>
+      {error && (
+        <p className="text-sm text-red-600 mt-2 bg-red-50 px-4 py-2 rounded-lg">
+          {error}
+        </p>
       )}
-    </Button>
+    </div>
   );
 }

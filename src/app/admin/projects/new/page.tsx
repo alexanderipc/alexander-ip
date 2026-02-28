@@ -266,14 +266,14 @@ export default function NewProjectPage() {
                   htmlFor="price_paid"
                   className="block text-sm font-medium text-slate-700 mb-1"
                 >
-                  Price (smallest unit)
+                  Price (pence/cents)
                 </label>
                 <input
                   id="price_paid"
                   name="price_paid"
                   type="number"
                   min="0"
-                  placeholder="e.g., 250000"
+                  placeholder="e.g., 99500 = £995.00"
                   className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>

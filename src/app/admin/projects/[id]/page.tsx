@@ -138,7 +138,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
             </p>
             <h1 className="text-2xl font-bold text-navy">{project.title}</h1>
             {project.description && (
-              <p className="text-slate-500 mt-1">{project.description}</p>
+              <p className="text-slate-500 mt-1 line-clamp-3">{project.description}</p>
             )}
           </div>
           <div className="flex items-center gap-3">

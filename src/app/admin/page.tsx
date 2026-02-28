@@ -97,8 +97,8 @@ export default async function AdminDashboard() {
 
       {/* Projects table */}
       {active.length > 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-8">
-          <table className="w-full">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-8 overflow-x-auto">
+          <table className="w-full min-w-[640px]">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">

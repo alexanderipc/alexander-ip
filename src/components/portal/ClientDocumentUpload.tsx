@@ -41,6 +41,16 @@ export default function ClientDocumentUpload({
     if (file.size > MAX_SIZE) {
       setError("File is too large (max 10 MB)");
       setFileName(null);
+      e.target.value = "";
+      return;
+    }
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      setError(
+        `File type not allowed. Accepted: ${ALLOWED_EXTENSIONS.join(", ")}`
+      );
+      setFileName(null);
+      e.target.value = "";
       return;
     }
     setFileName(file.name);

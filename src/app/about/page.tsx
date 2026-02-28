@@ -99,7 +99,7 @@ export default function AboutPage() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src="/images/alexander-headshot.png"
-                  alt="Alexander Rowley &mdash; Patent Consultant"
+                  alt="Alexander Rowley \u2014 Patent Consultant"
                   width={600}
                   height={600}
                   className="w-full h-auto object-cover"

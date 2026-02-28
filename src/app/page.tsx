@@ -1,5 +1,5 @@
 import Hero from "@/components/home/Hero";
-import VideoSection from "@/components/home/VideoSection";
+import ProcessPreview from "@/components/home/ProcessPreview";
 import TrustBar from "@/components/home/TrustBar";
 import WhoIsThisFor from "@/components/home/WhoIsThisFor";
 import ServicesOverview from "@/components/home/ServicesOverview";
@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <VideoSection />
+      <ProcessPreview />
       <TrustBar />
       <WhoIsThisFor />
       <ServicesOverview />

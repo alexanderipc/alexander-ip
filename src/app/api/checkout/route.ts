@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
     }
 
     const successUrl = `${BASE_URL}/booking/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${BASE_URL}/booking/cancelled`;
+    const cancelUrl = `${BASE_URL}/booking/cancelled?service=${encodeURIComponent(service)}`;
 
     const metadata: Record<string, string> = {
       service,

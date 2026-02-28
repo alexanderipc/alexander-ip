@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { CheckCircle2, Zap, Clock, Plus, ChevronDown } from "lucide-react";
+import { CheckCircle2, Zap, Clock, Plus } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, ChevronDown } from "lucide-react";
@@ -24,12 +24,27 @@ const navLinks = [
   { label: "How It Works", href: "/process" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
-  { label: "Blog", href: "/blog" },
 ];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close desktop dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setServicesOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
@@ -54,23 +69,43 @@ export default function Navbar() {
                 <div
                   key={link.label}
                   className="relative"
+                  ref={dropdownRef}
                   onMouseEnter={() => setServicesOpen(true)}
                   onMouseLeave={() => setServicesOpen(false)}
                 >
-                  <Link
-                    href={link.href}
+                  <button
+                    type="button"
+                    onClick={() => setServicesOpen(!servicesOpen)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setServicesOpen(!servicesOpen);
+                      }
+                      if (e.key === "Escape") setServicesOpen(false);
+                    }}
+                    aria-expanded={servicesOpen}
+                    aria-haspopup="true"
                     className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-600 hover:text-navy rounded-md hover:bg-slate-50 transition-colors"
                   >
                     {link.label}
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </Link>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform ${
+                        servicesOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
                   {servicesOpen && (
-                    <div className="absolute top-full left-0 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-2 mt-0.5">
+                    <div
+                      className="absolute top-full left-0 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-2 mt-0.5 z-50"
+                      role="menu"
+                    >
                       {link.children.map((child) => (
                         <Link
                           key={child.href}
                           href={child.href}
+                          role="menuitem"
                           className="block px-4 py-2 text-sm text-slate-600 hover:text-navy hover:bg-slate-50 transition-colors"
+                          onClick={() => setServicesOpen(false)}
                         >
                           {child.label}
                         </Link>
@@ -108,8 +143,13 @@ export default function Navbar() {
             className="md:hidden p-2 text-slate-600 hover:text-navy"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
@@ -120,26 +160,46 @@ export default function Navbar() {
           <div className="px-4 py-4 space-y-1">
             {navLinks.map((link) => (
               <div key={link.label}>
-                <Link
-                  href={link.href}
-                  className="block px-3 py-2 text-base font-medium text-slate-600 hover:text-navy hover:bg-slate-50 rounded-md"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-                {link.children && (
-                  <div className="ml-4 space-y-1">
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className="block px-3 py-1.5 text-sm text-slate-500 hover:text-navy hover:bg-slate-50 rounded-md"
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
+                {link.children ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setMobileServicesOpen(!mobileServicesOpen)
+                      }
+                      className="flex items-center justify-between w-full px-3 py-2 text-base font-medium text-slate-600 hover:text-navy hover:bg-slate-50 rounded-md"
+                      aria-expanded={mobileServicesOpen}
+                    >
+                      {link.label}
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          mobileServicesOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {mobileServicesOpen && (
+                      <div className="ml-4 space-y-1 mt-1">
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className="block px-3 py-1.5 text-sm text-slate-500 hover:text-navy hover:bg-slate-50 rounded-md"
+                            onClick={() => setMobileOpen(false)}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={link.href}
+                    className="block px-3 py-2 text-base font-medium text-slate-600 hover:text-navy hover:bg-slate-50 rounded-md"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
                 )}
               </div>
             ))}
