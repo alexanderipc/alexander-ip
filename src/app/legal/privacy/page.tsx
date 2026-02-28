@@ -35,7 +35,17 @@ export default function PrivacyPage() {
               your enquiry)
             </li>
             <li>Referral source and timeline preferences</li>
+            <li>
+              Payment information (processed securely by Stripe &mdash; we do
+              not store card details)
+            </li>
           </ul>
+          <p>
+            When you make a payment through our website, a client portal
+            account is automatically created using the email address you
+            provided. This account allows you to track your project, receive
+            updates, and communicate with Alexander IP.
+          </p>
 
           <h2 className="text-xl font-semibold text-navy">
             3. How We Use Your Information
@@ -44,9 +54,21 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-6 space-y-1">
             <li>Respond to your enquiries and provide our services</li>
             <li>Communicate with you about your patent applications</li>
+            <li>
+              Send email notifications about project status changes, document
+              uploads, and messages (you can manage your email preferences in
+              your portal settings or unsubscribe via links in each email)
+            </li>
             <li>Process payments for our services</li>
             <li>Comply with legal obligations</li>
           </ul>
+          <p>
+            The lawful basis for processing your data is contractual necessity
+            (Article 6(1)(b) UK GDPR) for the services you have purchased, and
+            legitimate interests (Article 6(1)(f)) for responding to enquiries.
+            For the contact form, we rely on the consent you provide when
+            submitting your enquiry (Article 6(1)(a)).
+          </p>
 
           <h2 className="text-xl font-semibold text-navy">
             4. Data Sharing
@@ -63,6 +85,23 @@ export default function PrivacyPage() {
               Payment processors (Stripe) for handling payments securely
             </li>
             <li>Local patent representatives in relevant jurisdictions</li>
+          </ul>
+          <p>
+            We use the following sub-processors to deliver our services:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>
+              <strong>Stripe</strong> &mdash; payment processing (US-based,
+              Privacy Shield / SCCs)
+            </li>
+            <li>
+              <strong>Supabase</strong> &mdash; database and authentication
+              hosting (EU region)
+            </li>
+            <li>
+              <strong>Resend</strong> &mdash; transactional email delivery
+              (US-based, SCCs)
+            </li>
           </ul>
 
           <h2 className="text-xl font-semibold text-navy">

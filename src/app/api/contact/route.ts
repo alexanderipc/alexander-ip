@@ -17,12 +17,20 @@ export async function POST(request: NextRequest) {
     const referral = (formData.get("referral") as string) || "";
     const timeline = (formData.get("timeline") as string) || "";
     const budgetAware = formData.get("budget_aware") === "on";
+    const privacyConsent = formData.get("privacy_consent") === "on";
     const attachment = formData.get("attachment") as File | null;
 
     // Validate required fields
     if (!name || !email || !service || !description) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    if (!privacyConsent) {
+      return NextResponse.json(
+        { error: "Privacy consent is required" },
         { status: 400 }
       );
     }
@@ -75,6 +83,7 @@ Prior Search: ${priorSearch || "Not specified"}
 Timeline: ${timeline || "Not specified"}
 Referral Source: ${referral || "Not specified"}
 Budget Aware: ${budgetAware ? "Yes" : "No"}
+Privacy Consent: ${privacyConsent ? "Yes" : "No"} (${new Date().toISOString()})
 ${attachmentLine}
 Invention Description:
 ${description}

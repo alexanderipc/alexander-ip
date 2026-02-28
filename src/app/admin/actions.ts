@@ -9,13 +9,15 @@ import {
   calculateDeliveryDate,
   DEFAULT_TIMELINES,
 } from "@/lib/portal/status";
-import type { ServiceType } from "@/lib/supabase/types";
+import type { ServiceType, NotificationPreferences } from "@/lib/supabase/types";
+import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/supabase/types";
 import {
   sendProjectCreatedEmail,
   sendStatusUpdateEmail,
   sendDocumentUploadedEmail,
   sendNewMessageEmail,
 } from "@/lib/email";
+import { buildUnsubscribeUrl } from "@/lib/unsubscribe";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
@@ -215,11 +217,14 @@ export async function advanceStatus(
     try {
       const { data: clientProfile } = await supabase
         .from("profiles")
-        .select("email")
+        .select("email, notification_preferences")
         .eq("id", project.client_id)
         .single();
 
-      if (clientProfile?.email) {
+      const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
+
+      if (clientProfile?.email && prefs.status_updates) {
+        const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "status_updates");
         await sendStatusUpdateEmail(clientProfile.email, {
           title: project.title,
           serviceType: project.service_type as ServiceType,
@@ -227,6 +232,7 @@ export async function advanceStatus(
           statusLabel: getStatusLabel(nextStatus),
           note: note || null,
           portalUrl: PORTAL_URL,
+          unsubscribeUrl,
         });
       }
     } catch (emailErr) {
@@ -274,11 +280,14 @@ export async function addUpdate(
     try {
       const { data: clientProfile } = await supabase
         .from("profiles")
-        .select("email")
+        .select("email, notification_preferences")
         .eq("id", project.client_id)
         .single();
 
-      if (clientProfile?.email) {
+      const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
+
+      if (clientProfile?.email && prefs.status_updates) {
+        const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "status_updates");
         await sendStatusUpdateEmail(clientProfile.email, {
           title: project.title,
           serviceType: project.service_type as ServiceType,
@@ -286,6 +295,7 @@ export async function addUpdate(
           statusLabel: getStatusLabel(project.status),
           note,
           portalUrl: PORTAL_URL,
+          unsubscribeUrl,
         });
       }
     } catch (emailErr) {
@@ -391,15 +401,19 @@ export async function uploadDocument(
       if (project) {
         const { data: clientProfile } = await supabase
           .from("profiles")
-          .select("email")
+          .select("email, notification_preferences")
           .eq("id", project.client_id)
           .single();
 
-        if (clientProfile?.email) {
+        const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
+
+        if (clientProfile?.email && prefs.document_uploads) {
+          const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "document_uploads");
           await sendDocumentUploadedEmail(clientProfile.email, {
             title: project.title,
             filename: file.name,
             portalUrl: PORTAL_URL,
+            unsubscribeUrl,
           });
         }
       }
@@ -562,16 +576,20 @@ export async function sendAdminMessage(projectId: string, body: string) {
   try {
     const { data: clientProfile } = await supabase
       .from("profiles")
-      .select("email")
+      .select("email, notification_preferences")
       .eq("id", project.client_id)
       .single();
 
-    if (clientProfile?.email) {
+    const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
+
+    if (clientProfile?.email && prefs.new_messages) {
+      const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "new_messages");
       await sendNewMessageEmail(clientProfile.email, {
         projectTitle: project.title,
         senderName: "Alexander IP",
         messagePreview: body.trim(),
         portalUrl: PORTAL_URL,
+        unsubscribeUrl,
       });
     }
   } catch (emailErr) {
@@ -600,4 +618,84 @@ export async function markAdminMessagesRead(projectId: string) {
   revalidatePath(`/admin/projects/${projectId}`);
 
   return { success: true };
+}
+
+/* ── Calendar Data ────────────────────────────────────────── */
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  projectId: string;
+  date: string;
+  type: "deadline" | "milestone";
+  clientName: string;
+}
+
+export async function getCalendarData(year: number, month: number) {
+  const { supabase } = await requireAdmin();
+
+  // Build date range for the month (with padding for calendar display)
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const endDate =
+    month === 12
+      ? `${year + 1}-01-31`
+      : `${year}-${String(month + 1).padStart(2, "0")}-31`;
+
+  const events: CalendarEvent[] = [];
+
+  // Fetch projects with delivery dates in range (non-complete only)
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("id, title, estimated_delivery_date, status, client_id, profiles(name, email)")
+    .gte("estimated_delivery_date", startDate)
+    .lte("estimated_delivery_date", endDate)
+    .not("status", "in", '("complete","complete_granted")');
+
+  if (projects) {
+    for (const p of projects) {
+      if (!p.estimated_delivery_date) continue;
+      const profile = p.profiles as unknown as {
+        name: string | null;
+        email: string;
+      } | null;
+      events.push({
+        id: `deadline-${p.id}`,
+        title: p.title,
+        projectId: p.id,
+        date: p.estimated_delivery_date,
+        type: "deadline",
+        clientName: profile?.name || profile?.email || "Unknown",
+      });
+    }
+  }
+
+  // Fetch incomplete milestones with target dates in range
+  const { data: milestones } = await supabase
+    .from("project_milestones")
+    .select("id, title, target_date, project_id, projects(title, client_id, profiles(name, email))")
+    .gte("target_date", startDate)
+    .lte("target_date", endDate)
+    .is("completed_date", null);
+
+  if (milestones) {
+    for (const m of milestones) {
+      if (!m.target_date) continue;
+      const project = m.projects as unknown as {
+        title: string;
+        client_id: string;
+        profiles: { name: string | null; email: string } | null;
+      } | null;
+      events.push({
+        id: `milestone-${m.id}`,
+        title: `${m.title} — ${project?.title || "Unknown project"}`,
+        projectId: m.project_id,
+        date: m.target_date,
+        type: "milestone",
+        clientName:
+          project?.profiles?.name || project?.profiles?.email || "Unknown",
+      });
+    }
+  }
+
+  return events;
 }

@@ -58,6 +58,7 @@ CREATE TABLE profiles (
   company TEXT,
   phone TEXT,
   notes TEXT,
+  notification_preferences JSONB NOT NULL DEFAULT '{"status_updates": true, "document_uploads": true, "new_messages": true}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -36,6 +36,20 @@ export type RelationshipType =
   | "related"
   | "search_then_draft";
 
+/* ── Notification preferences ──────────────────────────────── */
+
+export interface NotificationPreferences {
+  status_updates: boolean;
+  document_uploads: boolean;
+  new_messages: boolean;
+}
+
+export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  status_updates: true,
+  document_uploads: true,
+  new_messages: true,
+};
+
 /* ── Row types ─────────────────────────────────────────────── */
 
 export interface Profile {
@@ -46,6 +60,7 @@ export interface Profile {
   company: string | null;
   phone: string | null;
   notes: string | null;
+  notification_preferences: NotificationPreferences;
   created_at: string;
   updated_at: string;
 }

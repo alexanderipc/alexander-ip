@@ -9,7 +9,7 @@ import {
 } from "@/lib/portal/status";
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
-import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle } from "lucide-react";
+import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle, CalendarDays } from "lucide-react";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -68,13 +68,22 @@ export default async function AdminDashboard() {
             {active.length} active project{active.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Link
-          href="/admin/projects/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          New Project
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/calendar"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"
+          >
+            <CalendarDays className="w-4 h-4" />
+            Calendar
+          </Link>
+          <Link
+            href="/admin/projects/new"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            New Project
+          </Link>
+        </div>
       </div>
 
       {/* Alerts */}

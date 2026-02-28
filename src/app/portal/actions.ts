@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { sendNewMessageEmail } from "@/lib/email";
+import type { NotificationPreferences } from "@/lib/supabase/types";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
@@ -171,6 +172,34 @@ export async function markMessagesRead(projectId: string) {
     .is("read_at", null);
 
   revalidatePath(`/portal/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Update Notification Preferences ─────────────────────────── */
+
+export async function updateNotificationPreferences(
+  prefs: NotificationPreferences
+) {
+  const { supabase, user } = await requireClient();
+
+  // Validate shape
+  if (
+    typeof prefs.status_updates !== "boolean" ||
+    typeof prefs.document_uploads !== "boolean" ||
+    typeof prefs.new_messages !== "boolean"
+  ) {
+    throw new Error("Invalid preferences format");
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ notification_preferences: prefs })
+    .eq("id", user.id);
+
+  if (error) throw new Error(`Failed to update preferences: ${error.message}`);
+
+  revalidatePath("/portal/settings");
 
   return { success: true };
 }

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Container from "@/components/ui/Container";
 import Link from "next/link";
-import { LayoutDashboard, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings } from "lucide-react";
 
 export const metadata = {
   title: "Client Portal — Alexander IP",
@@ -44,6 +44,13 @@ export default async function PortalLayout({
               >
                 <LayoutDashboard className="w-4 h-4" />
                 My Projects
+              </Link>
+              <Link
+                href="/portal/settings"
+                className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-navy transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
               </Link>
               {profile?.role === "admin" && (
                 <Link

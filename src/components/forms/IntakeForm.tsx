@@ -299,6 +299,29 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
         </label>
       </div>
 
+      {/* Privacy consent (required) */}
+      <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          id="privacy_consent"
+          name="privacy_consent"
+          required
+          className="mt-1 w-4 h-4 text-blue border-slate-300 rounded focus:ring-blue"
+        />
+        <label htmlFor="privacy_consent" className="text-sm text-slate-600">
+          I agree to the{" "}
+          <a
+            href="/legal/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue hover:text-blue-dark underline"
+          >
+            Privacy Policy
+          </a>{" "}
+          and consent to Alexander IP processing my personal data to respond to this enquiry. *
+        </label>
+      </div>
+
       {/* File attachment */}
       <div>
         <label className="block text-sm font-medium text-navy mb-1.5">

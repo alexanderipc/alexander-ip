@@ -94,6 +94,9 @@ function magicLinkHtml(url: string): string {
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
                 Alexander IP &mdash; Patent Drafting &amp; Prosecution
               </p>
+              <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
+                <a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
+              </p>
             </td>
           </tr>
         </table>
@@ -162,6 +165,7 @@ interface StatusUpdateEmailData {
   statusLabel: string;
   note: string | null;
   portalUrl: string;
+  unsubscribeUrl?: string;
 }
 
 export async function sendStatusUpdateEmail(
@@ -266,6 +270,9 @@ function statusUpdateHtml(data: StatusUpdateEmailData): string {
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
                 Alexander IP &mdash; Patent Drafting &amp; Prosecution
               </p>
+              <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
+                ${data.unsubscribeUrl ? `<a href="${data.unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a> &bull; ` : ""}<a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
+              </p>
             </td>
           </tr>
         </table>
@@ -282,6 +289,7 @@ interface DocumentEmailData {
   title: string;
   filename: string;
   portalUrl: string;
+  unsubscribeUrl?: string;
 }
 
 export async function sendDocumentUploadedEmail(
@@ -364,6 +372,9 @@ function documentUploadedHtml(data: DocumentEmailData): string {
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
                 Alexander IP &mdash; Patent Drafting &amp; Prosecution
               </p>
+              <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
+                ${data.unsubscribeUrl ? `<a href="${data.unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a> &bull; ` : ""}<a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
+              </p>
             </td>
           </tr>
         </table>
@@ -381,6 +392,7 @@ interface MessageEmailData {
   senderName: string;
   messagePreview: string;
   portalUrl: string;
+  unsubscribeUrl?: string;
 }
 
 export async function sendNewMessageEmail(
@@ -469,6 +481,9 @@ function newMessageHtml(data: MessageEmailData): string {
             <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
                 Alexander IP &mdash; Patent Drafting &amp; Prosecution
+              </p>
+              <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
+                ${data.unsubscribeUrl ? `<a href="${data.unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a> &bull; ` : ""}<a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
               </p>
             </td>
           </tr>
@@ -563,6 +578,9 @@ function projectCreatedHtml(data: ProjectEmailData): string {
             <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
               <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
                 Alexander IP &mdash; Patent Drafting &amp; Prosecution
+              </p>
+              <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
+                <a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
               </p>
             </td>
           </tr>
