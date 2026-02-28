@@ -1,16 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, Star, ExternalLink } from "lucide-react";
 import Container from "@/components/ui/Container";
 import { testimonials } from "@/data/testimonials";
 
 export default function Testimonials() {
   const [current, setCurrent] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
-  const next = () => setCurrent((c) => (c + 1) % testimonials.length);
-  const prev = () =>
-    setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length);
+  const next = useCallback(
+    () => setCurrent((c) => (c + 1) % testimonials.length),
+    []
+  );
+  const prev = useCallback(
+    () => setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length),
+    []
+  );
+
+  // Keyboard navigation
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "ArrowLeft") prev();
+    if (e.key === "ArrowRight") next();
+  }
+
+  // Touch swipe handlers
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) next();
+      else prev();
+    }
+    touchStartX.current = null;
+  }
 
   return (
     <section className="py-20 bg-slate-50">
@@ -42,14 +70,23 @@ export default function Testimonials() {
         </div>
 
         {/* Testimonial card */}
-        <div className="max-w-3xl mx-auto">
+        <div
+          className="max-w-3xl mx-auto"
+          onKeyDown={handleKeyDown}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          tabIndex={0}
+          role="region"
+          aria-label="Client testimonials"
+          aria-roledescription="carousel"
+        >
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-10 relative">
             {/* Quote mark */}
             <div className="absolute top-6 left-8 text-6xl text-blue/10 font-serif leading-none">
               &ldquo;
             </div>
 
-            <blockquote className="relative z-10">
+            <blockquote className="relative z-10" aria-live="polite">
               <p className="text-lg md:text-xl text-slate-700 leading-relaxed italic mb-6">
                 &ldquo;{testimonials[current].quote}&rdquo;
               </p>
@@ -95,6 +132,17 @@ export default function Testimonials() {
               />
             ))}
           </div>
+
+          {/* Returning clients nudge */}
+          <p className="text-center text-sm text-slate-500 mt-6">
+            Worked with us on Fiverr?{" "}
+            <Link
+              href="/returning-clients"
+              className="text-blue hover:text-blue-dark font-medium"
+            >
+              See benefits of working direct &rarr;
+            </Link>
+          </p>
         </div>
       </Container>
     </section>

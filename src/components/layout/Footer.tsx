@@ -18,7 +18,6 @@ const footerLinks = {
     { label: "About", href: "/about" },
     { label: "How It Works", href: "/process" },
     { label: "FAQ", href: "/faq" },
-    { label: "Blog", href: "/blog" },
     { label: "Contact", href: "/contact" },
     { label: "Returning Clients", href: "/returning-clients" },
     { label: "Client Portal", href: "/auth/login" },
