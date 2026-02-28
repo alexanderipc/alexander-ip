@@ -74,7 +74,7 @@ export default function Footer() {
             <div className="space-y-2 text-sm text-slate-400">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 flex-shrink-0" />
-                <span>Bristol, United Kingdom</span>
+                <span>61 Bridge Street, Kington, HR5 3DJ</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 flex-shrink-0" />
@@ -165,7 +165,7 @@ export default function Footer() {
             16080164. All rights reserved.
           </p>
           <p className="text-xs text-slate-600">
-            4 Victoria Square, Bristol, England, BS8 4EU
+            61 Bridge Street, Kington, England, HR5 3DJ
           </p>
         </div>
       </Container>

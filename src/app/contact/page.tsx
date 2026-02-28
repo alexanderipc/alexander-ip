@@ -63,7 +63,7 @@ export default async function ContactPage({
                   <div>
                     <h3 className="font-semibold text-navy">Location</h3>
                     <p className="text-sm text-slate-600">
-                      Bristol, United Kingdom (work with clients worldwide)
+                      Kington, United Kingdom (work with clients worldwide)
                     </p>
                   </div>
                 </div>

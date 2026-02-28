@@ -19,8 +19,8 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-semibold text-navy">1. Who We Are</h2>
           <p>
             This website is operated by Alexander IPC Ltd (Company No.
-            16080164), registered at 4 Victoria Square, Bristol, England, BS8
-            4EU (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;).
+            16080164), registered at 61 Bridge Street, Kington, England, HR5
+            3DJ (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;).
           </p>
 
           <h2 className="text-xl font-semibold text-navy">

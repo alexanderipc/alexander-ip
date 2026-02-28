@@ -22,8 +22,8 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold text-navy">1. Overview</h2>
           <p>
             These terms govern the provision of patent consulting services by
-            Alexander IPC Ltd (Company No. 16080164), registered at 4 Victoria
-            Square, Bristol, England, BS8 4EU.
+            Alexander IPC Ltd (Company No. 16080164), registered at 61 Bridge
+            Street, Kington, England, HR5 3DJ.
           </p>
 
           <h2 className="text-xl font-semibold text-navy">
