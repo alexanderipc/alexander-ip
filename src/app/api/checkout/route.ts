@@ -60,6 +60,18 @@ const serviceConfig: Record<string, { name: string; description: string }> = {
     description:
       "Full freedom-to-operate search and report with detailed claims analysis for complex, multi-technology products. 45-day delivery.",
   },
+  /* Custom project — client sets their own quoted price */
+  custom: {
+    name: "Custom Project",
+    description: "Custom IP project at a pre-agreed price.",
+  },
+};
+
+/* Currency symbols for custom amount display */
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  gbp: "£",
+  usd: "$",
+  eur: "€",
 };
 
 /* Hardcoded base URL — avoids any env var issues */
@@ -75,7 +87,8 @@ export async function POST(request: NextRequest) {
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const { service = "consultation" } = await request.json();
+    const body = await request.json();
+    const { service = "consultation", customAmount, description } = body;
 
     const config = serviceConfig[service];
     if (!config) {
@@ -87,29 +100,72 @@ export async function POST(request: NextRequest) {
 
     const country = request.headers.get("x-vercel-ip-country");
     const currencyKey = getCurrencyForCountry(country);
-    const prices = currencyPrices[service];
-    const price = prices?.[currencyKey] || prices?.[DEFAULT_CURRENCY];
 
-    if (!price) {
-      return NextResponse.json(
-        { error: "Pricing not available" },
-        { status: 500 }
-      );
+    let unitAmount: number;
+    let currency: string;
+    let productName: string;
+    let productDescription: string;
+
+    if (service === "custom") {
+      // Custom project: client provides the amount
+      if (!customAmount || typeof customAmount !== "number" || customAmount < 50) {
+        return NextResponse.json(
+          { error: "Invalid amount. Minimum is 0.50." },
+          { status: 400 }
+        );
+      }
+
+      unitAmount = Math.round(customAmount);
+      currency = currencyKey.toLowerCase();
+      const symbol = CURRENCY_SYMBOLS[currency] || "$";
+      const displayAmount = (unitAmount / 100).toFixed(2);
+      productName = `Custom Project — ${symbol}${displayAmount}`;
+      productDescription = description
+        ? String(description).slice(0, 500)
+        : "Custom IP project at a pre-agreed price.";
+    } else {
+      // Standard service: use hardcoded pricing
+      const prices = currencyPrices[service];
+      const price = prices?.[currencyKey] || prices?.[DEFAULT_CURRENCY];
+
+      if (!price) {
+        return NextResponse.json(
+          { error: "Pricing not available" },
+          { status: 500 }
+        );
+      }
+
+      unitAmount = price.amount;
+      currency = price.currency;
+      productName = config.name;
+      productDescription = config.description;
     }
 
     const successUrl = `${BASE_URL}/booking/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${BASE_URL}/booking/cancelled`;
 
+    const metadata: Record<string, string> = {
+      service,
+      source: "alexander-ip.com",
+      detected_country: country || "unknown",
+      currency,
+    };
+
+    // Store description in metadata for custom projects (webhook uses this)
+    if (service === "custom" && description) {
+      metadata.description = String(description).slice(0, 500);
+    }
+
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
           price_data: {
-            currency: price.currency,
+            currency,
             product_data: {
-              name: config.name,
-              description: config.description,
+              name: productName,
+              description: productDescription,
             },
-            unit_amount: price.amount,
+            unit_amount: unitAmount,
           },
           quantity: 1,
         },
@@ -119,12 +175,7 @@ export async function POST(request: NextRequest) {
       cancel_url: cancelUrl,
       customer_creation: "always",
       billing_address_collection: "required",
-      metadata: {
-        service,
-        source: "alexander-ip.com",
-        detected_country: country || "unknown",
-        currency: price.currency,
-      },
+      metadata,
       allow_promotion_codes: true,
     });
 

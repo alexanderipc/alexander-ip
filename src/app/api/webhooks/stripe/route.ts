@@ -58,6 +58,10 @@ const SERVICE_MAP: Record<string, ServiceMapping> = {
     serviceType: "fto",
     title: "FTO (Complex)",
   },
+  custom: {
+    serviceType: "consultation",
+    title: "Custom Project",
+  },
 };
 
 /* ── Webhook handler ─────────────────────────────────────────── */
@@ -145,7 +149,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     throw new Error(`Unknown service: ${stripeServiceId}`);
   }
 
-  const { serviceType, title } = mapping;
+  const { serviceType } = mapping;
+
+  // For custom projects, use description from metadata as title
+  const isCustom = stripeServiceId === "custom";
+  const customDescription = session.metadata?.description || null;
+  const title = isCustom && customDescription
+    ? customDescription.length > 80
+      ? customDescription.slice(0, 77) + "..."
+      : customDescription
+    : mapping.title;
 
   // 3. Idempotency: check if project already exists for this payment
   if (paymentIntentId) {
@@ -218,6 +231,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       client_id: clientId,
       service_type: serviceType,
       title,
+      description: isCustom ? customDescription : null,
       status: "payment_received",
       jurisdictions: [],
       start_date: startDate,

@@ -12,6 +12,7 @@ import {
   Zap,
   AlertCircle,
   HelpCircle,
+  Wrench,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Card from "@/components/ui/Card";
@@ -191,6 +192,28 @@ export default function ServicesPage() {
               );
             })}
           </div>
+
+          {/* Custom project CTA */}
+          <Link href="/services/custom" className="group block mt-8">
+            <div className="flex items-center gap-5 p-6 bg-slate-50 rounded-xl border border-slate-200 hover:border-blue/30 hover:shadow-md transition-all">
+              <div className="flex-shrink-0 w-12 h-12 bg-blue/10 rounded-lg flex items-center justify-center group-hover:bg-blue/20 transition-colors">
+                <Wrench className="w-6 h-6 text-blue" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-navy">
+                  Custom Project
+                </h3>
+                <p className="text-slate-500 text-sm">
+                  Been quoted a custom price? Set your amount and describe
+                  your project to get started.
+                </p>
+              </div>
+              <span className="hidden sm:flex items-center gap-1 text-sm text-blue font-medium group-hover:gap-2 transition-all">
+                Get started
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            </div>
+          </Link>
         </Container>
       </section>
 
