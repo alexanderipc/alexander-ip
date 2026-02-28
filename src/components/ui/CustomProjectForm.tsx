@@ -16,6 +16,9 @@ const SLIDER_DEFAULT = 500;
 
 export default function CustomProjectForm() {
   const [amount, setAmount] = useState(SLIDER_DEFAULT);
+  const [displayValue, setDisplayValue] = useState(
+    SLIDER_DEFAULT.toFixed(2)
+  );
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,32 +31,52 @@ export default function CustomProjectForm() {
   const { symbol, code } = CURRENCY_CONFIG[currencyKey] || CURRENCY_CONFIG.GBP;
 
   function handleSliderChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setAmount(Number(e.target.value));
+    const val = Number(e.target.value);
+    setAmount(val);
+    setDisplayValue(val.toFixed(2));
+    if (error) setError(null);
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
-    // Allow empty input while typing
-    if (val === "") {
-      setAmount(0);
-      return;
-    }
-    // Parse as float and round to 2 decimal places
-    const num = parseFloat(val);
-    if (!isNaN(num) && num >= 0) {
-      setAmount(Math.round(num * 100) / 100);
+    // Allow typing freely — only valid decimal patterns update the display
+    if (/^\d*\.?\d{0,2}$/.test(val) || val === "") {
+      setDisplayValue(val);
+      if (val === "" || val === ".") {
+        setAmount(0);
+      } else {
+        const num = parseFloat(val);
+        if (!isNaN(num) && num >= 0) {
+          setAmount(Math.round(num * 100) / 100);
+        }
+      }
+      if (error) setError(null);
     }
   }
 
   function handleInputBlur() {
-    // Enforce minimum on blur
-    if (amount < 0.5) setAmount(0.5);
+    // Enforce minimum on blur and format with leading zero
+    const finalAmount = amount < 0.5 ? 0.5 : amount;
+    setAmount(finalAmount);
+    setDisplayValue(finalAmount.toFixed(2));
+  }
+
+  function handleDescriptionChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    if (e.target.value.length <= 500) {
+      setDescription(e.target.value);
+      if (error) setError(null);
+    }
   }
 
   // Slider position as percentage for the filled track
   const sliderPercent = Math.min(
     100,
-    Math.max(0, ((Math.min(amount, SLIDER_MAX) - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN)) * 100)
+    Math.max(
+      0,
+      ((Math.min(amount, SLIDER_MAX) - SLIDER_MIN) /
+        (SLIDER_MAX - SLIDER_MIN)) *
+        100
+    )
   );
 
   async function handleCheckout() {
@@ -108,13 +131,12 @@ export default function CustomProjectForm() {
           <div className="flex items-center justify-center gap-2 mb-6">
             <span className="text-3xl font-bold text-slate-400">{symbol}</span>
             <input
-              type="number"
-              min="0.50"
-              step="0.01"
-              value={amount || ""}
+              type="text"
+              inputMode="decimal"
+              value={displayValue}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
-              className="text-5xl font-bold text-navy text-center w-56 bg-transparent border-none outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="text-5xl font-bold text-navy text-center w-56 bg-transparent border-none outline-none focus:ring-0"
               placeholder="0.00"
             />
           </div>
@@ -132,7 +154,7 @@ export default function CustomProjectForm() {
               min={SLIDER_MIN}
               max={SLIDER_MAX}
               step={5}
-              value={Math.min(amount, SLIDER_MAX)}
+              value={Math.max(SLIDER_MIN, Math.min(amount, SLIDER_MAX))}
               onChange={handleSliderChange}
               className="absolute inset-0 w-full h-3 opacity-0 cursor-pointer"
             />
@@ -140,10 +162,24 @@ export default function CustomProjectForm() {
 
           {/* Slider labels */}
           <div className="flex justify-between mt-2 text-xs text-slate-400 font-medium">
-            <span>{symbol}{SLIDER_MIN}</span>
-            <span>{symbol}{(SLIDER_MAX / 2).toLocaleString()}</span>
-            <span>{symbol}{SLIDER_MAX.toLocaleString()}</span>
+            <span>
+              {symbol}
+              {SLIDER_MIN}
+            </span>
+            <span>
+              {symbol}
+              {(SLIDER_MAX / 2).toLocaleString()}
+            </span>
+            <span>
+              {symbol}
+              {SLIDER_MAX.toLocaleString()}
+            </span>
           </div>
+
+          {/* Hint for amounts below slider range */}
+          <p className="text-center text-xs text-slate-400 mt-2">
+            Use the slider or type any amount directly.
+          </p>
         </div>
 
         {/* Description */}
@@ -155,20 +191,21 @@ export default function CustomProjectForm() {
             Project description
           </label>
           <p className="text-sm text-slate-500 mb-3">
-            Briefly describe the work you need — this helps us set up your project.
+            Briefly describe the work you need — this helps us set up your
+            project.
           </p>
           <textarea
             id="project-description"
             rows={4}
             value={description}
-            onChange={(e) => {
-              if (e.target.value.length <= 500) setDescription(e.target.value);
-            }}
+            onChange={handleDescriptionChange}
             maxLength={500}
             placeholder="e.g. Patent drafting for a solar panel mounting bracket, with UK and US filing..."
             className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-navy placeholder:text-slate-400 resize-none"
           />
-          <p className={`text-xs mt-1 text-right ${description.length >= 480 ? "text-amber-500 font-medium" : "text-slate-400"}`}>
+          <p
+            className={`text-xs mt-1 text-right ${description.length >= 480 ? "text-amber-500 font-medium" : "text-slate-400"}`}
+          >
             {description.length} / 500
           </p>
         </div>
@@ -195,7 +232,12 @@ export default function CustomProjectForm() {
             <>
               <CreditCard className="w-5 h-5" />
               Pay {symbol}
-              {amount >= 0.5 ? amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
+              {amount >= 0.5
+                ? amount.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
+                : "—"}
             </>
           )}
         </button>

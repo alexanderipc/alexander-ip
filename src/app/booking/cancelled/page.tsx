@@ -51,9 +51,8 @@ export default async function BookingCancelledPage({
           </p>
 
           <p className="text-slate-500 mb-10 max-w-md mx-auto">
-            If you&apos;d prefer to discuss your situation before committing,
-            feel free to get in touch via the contact form or email us directly
-            at{" "}
+            Not ready to commit? You can enquire first &mdash; no
+            obligation. Or email us directly at{" "}
             <a
               href="mailto:alexanderip.contact@gmail.com"
               className="text-blue hover:text-blue-dark"
@@ -70,7 +69,7 @@ export default async function BookingCancelledPage({
             </Button>
             <Button href="/contact" variant="outline">
               <Mail className="w-4 h-4 mr-2" />
-              Get in Touch
+              Enquire First — No Obligation
             </Button>
           </div>
         </div>

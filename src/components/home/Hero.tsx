@@ -33,9 +33,9 @@ export default function Hero() {
             </p>
 
             <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">
-              Patent drafting, office correspondence, and strategy &mdash; from first idea
-              to granted patent. Legal&nbsp;500 training, transparent pricing,
-              and communication you can actually understand.
+              From first idea to granted patent &mdash; drafting, filing, and
+              fighting for your claims. Legal&nbsp;500 training, transparent
+              pricing, and communication you can actually understand.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
