@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const body = await request.json();
-    const { service = "consultation", customAmount, description } = body;
+    const { service = "consultation", customAmount, description, currency: bodyCurrency } = body;
 
     const config = serviceConfig[service];
     if (!config) {
@@ -116,7 +116,11 @@ export async function POST(request: NextRequest) {
       }
 
       unitAmount = Math.round(customAmount);
-      currency = currencyKey.toLowerCase();
+      // Use client-specified currency if valid, otherwise fall back to country detection
+      const validCurrencies = ["gbp", "usd", "eur"];
+      currency = bodyCurrency && validCurrencies.includes(String(bodyCurrency).toLowerCase())
+        ? String(bodyCurrency).toLowerCase()
+        : currencyKey.toLowerCase();
       const symbol = CURRENCY_SYMBOLS[currency] || "$";
       const displayAmount = (unitAmount / 100).toFixed(2);
       productName = `Custom Project — ${symbol}${displayAmount}`;
