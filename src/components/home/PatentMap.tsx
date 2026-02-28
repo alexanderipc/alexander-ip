@@ -40,7 +40,7 @@ function patentUrl(pubNumber: string) {
     const docId = pubNumber.replace(/[A-Z]\d$/, "");
     return `https://patentscope.wipo.int/search/en/detail.jsf?docId=${docId}`;
   }
-  // Use Espacenet for all other jurisdictions (US, GB, EP, AU, NZ)
+  // Use Espacenet for all other jurisdictions (US, GB, EP, AU)
   return `https://worldwide.espacenet.com/patent/search?q=pn%3D${pubNumber}`;
 }
 
@@ -149,24 +149,6 @@ const jurisdictions: Jurisdiction[] = [
     ],
   },
   {
-    id: "nz",
-    name: "New Zealand",
-    color: "#1a56db",
-    hoverColor: "#1540a8",
-    countryCodes: ["554"],
-    patents: [
-      { number: "NZ799057A", label: "NZ 799057 A", url: patentUrl("NZ799057A") },
-    ],
-  },
-  {
-    id: "ca",
-    name: "Canada",
-    color: "#1a56db",
-    hoverColor: "#1540a8",
-    countryCodes: ["124"],
-    patents: [],
-  },
-  {
     id: "pct",
     name: "PCT (155 Contracting States)",
     color: PCT_GREEN,
@@ -258,106 +240,107 @@ function PatentMap() {
           </p>
         </div>
 
+        {/* Map — nearly full-width */}
+        <div className="max-w-7xl mx-auto mb-8">
+          <div className="relative bg-gradient-to-br from-[#eef3fb] to-[#e4eaf5] rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <ComposableMap
+              projectionConfig={{
+                rotate: [-10, 0, 0] as any,
+                scale: 155,
+              }}
+              style={{ width: "100%", height: "auto" }}
+            >
+              <Geographies geography={worldData}>
+                {({ geographies }) =>
+                  geographies.map((geo) => {
+                    const countryId = geo.id as string;
+                    const j = getJurisdictionForCountry(countryId);
+
+                    return (
+                      <Geography
+                        key={geo.rsmKey ?? geo.id ?? countryId}
+                        geography={geo}
+                        fill={getFill(countryId)}
+                        stroke={getStroke(countryId)}
+                        strokeWidth={getStrokeWidth(countryId)}
+                        style={{
+                          default: {
+                            outline: "none",
+                            opacity: getOpacity(countryId),
+                            transition: "all 250ms ease",
+                          },
+                          hover: {
+                            outline: "none",
+                            fill: j ? j.hoverColor : PCT_GREEN_HOVER,
+                            opacity: 1,
+                            cursor: "pointer",
+                            transition: "all 150ms ease",
+                          },
+                          pressed: {
+                            outline: "none",
+                          },
+                        }}
+                        onMouseEnter={() => {
+                          setActiveJurisdiction(j ? j.id : "pct");
+                        }}
+                        onClick={() => {
+                          const target = j ? j.id : "pct";
+                          setActiveJurisdiction(
+                            activeJurisdiction === target ? null : target
+                          );
+                        }}
+                      />
+                    );
+                  })
+                }
+              </Geographies>
+            </ComposableMap>
+          </div>
+        </div>
+
+        {/* Jurisdictions — horizontal row underneath the map */}
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
-            {/* Map */}
-            <div className="relative bg-gradient-to-br from-[#eef3fb] to-[#e4eaf5] rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <ComposableMap
-                projectionConfig={{
-                  rotate: [-10, 0, 0] as any,
-                  scale: 155,
-                }}
-                style={{ width: "100%", height: "auto" }}
-              >
-                <Geographies geography={worldData}>
-                  {({ geographies }) =>
-                    geographies.map((geo) => {
-                      const countryId = geo.id as string;
-                      const j = getJurisdictionForCountry(countryId);
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {jurisdictions.map((j) => {
+              const isActive = activeJurisdiction === j.id;
+              const grantCount = j.patents.filter((p) =>
+                /B\d?$/.test(p.label.trim())
+              ).length;
+              const pubCount = j.patents.length - grantCount;
 
-                      return (
-                        <Geography
-                          key={geo.rsmKey ?? geo.id ?? countryId}
-                          geography={geo}
-                          fill={getFill(countryId)}
-                          stroke={getStroke(countryId)}
-                          strokeWidth={getStrokeWidth(countryId)}
-                          style={{
-                            default: {
-                              outline: "none",
-                              opacity: getOpacity(countryId),
-                              transition: "all 250ms ease",
-                            },
-                            hover: {
-                              outline: "none",
-                              fill: j ? j.hoverColor : PCT_GREEN_HOVER,
-                              opacity: 1,
-                              cursor: "pointer",
-                              transition: "all 150ms ease",
-                            },
-                            pressed: {
-                              outline: "none",
-                            },
-                          }}
-                          onMouseEnter={() => {
-                            setActiveJurisdiction(j ? j.id : "pct");
-                          }}
-                          onClick={() => {
-                            const target = j ? j.id : "pct";
-                            setActiveJurisdiction(
-                              activeJurisdiction === target ? null : target
-                            );
-                          }}
-                        />
-                      );
-                    })
-                  }
-                </Geographies>
-              </ComposableMap>
-            </div>
+              return (
+                <div key={j.id}>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 ${
+                      isActive
+                        ? "bg-blue/10 border-blue/40 shadow-sm"
+                        : "bg-white border-slate-200 hover:border-blue/30 hover:bg-slate-50"
+                    }`}
+                    onMouseEnter={() => setActiveJurisdiction(j.id)}
+                    onClick={() =>
+                      setActiveJurisdiction(isActive ? null : j.id)
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: j.color }}
+                      />
+                      <span className="font-semibold text-navy text-sm">
+                        {j.name}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5 ml-5">
+                      {j.patents.length === 0 && "Patents granted"}
+                      {grantCount > 0 && `${grantCount} granted`}
+                      {grantCount > 0 && pubCount > 0 && " \u00B7 "}
+                      {pubCount > 0 && `${pubCount} published`}
+                    </p>
+                  </button>
 
-            {/* Sidebar */}
-            <div className="lg:sticky lg:top-24 space-y-2">
-              {jurisdictions.map((j) => {
-                const isActive = activeJurisdiction === j.id;
-                const grantCount = j.patents.filter((p) =>
-                  /B\d?$/.test(p.label.trim())
-                ).length;
-                const pubCount = j.patents.length - grantCount;
-
-                return (
-                  <div key={j.id}>
-                    <button
-                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 ${
-                        isActive
-                          ? "bg-blue/10 border-blue/40 shadow-sm"
-                          : "bg-white border-slate-200 hover:border-blue/30 hover:bg-slate-50"
-                      }`}
-                      onMouseEnter={() => setActiveJurisdiction(j.id)}
-                      onClick={() =>
-                        setActiveJurisdiction(isActive ? null : j.id)
-                      }
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: j.color }}
-                        />
-                        <span className="font-semibold text-navy text-sm">
-                          {j.name}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5 ml-5">
-                        {j.patents.length === 0 && "Patents granted"}
-                        {grantCount > 0 && `${grantCount} granted`}
-                        {grantCount > 0 && pubCount > 0 && " · "}
-                        {pubCount > 0 && `${pubCount} published`}
-                      </p>
-                    </button>
-
-                    {/* Expandable patent list */}
-                    {j.patents.length > 0 && (
+                  {/* Expandable patent list */}
+                  {j.patents.length > 0 && (
                     <div
                       className={`overflow-hidden transition-all duration-300 ${
                         isActive
@@ -365,7 +348,7 @@ function PatentMap() {
                           : "max-h-0 opacity-0"
                       }`}
                     >
-                      <div className="bg-white border border-slate-200 rounded-lg p-3 ml-2 shadow-sm">
+                      <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
                         <ul className="space-y-0.5 max-h-[280px] overflow-y-auto">
                           {j.patents.map((p) => (
                             <li key={p.number}>
@@ -383,18 +366,17 @@ function PatentMap() {
                         </ul>
                       </div>
                     </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {!activeData && (
-                <p className="text-xs text-slate-400 px-4 pt-2 text-center lg:text-left">
-                  Hover or tap a region to view selected publications
-                </p>
-              )}
-            </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+
+          {!activeData && (
+            <p className="text-xs text-slate-400 pt-3 text-center">
+              Hover or tap a region to view selected publications
+            </p>
+          )}
 
           <p className="text-center text-sm text-slate-400 mt-8">
             Selected examples only &mdash; full portfolio and client

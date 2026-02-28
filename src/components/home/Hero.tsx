@@ -29,7 +29,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-xl text-slate-500 font-medium mb-6 max-w-xl">
-              Built for inventors and innovators, not behemoths.
+              Built for inventors and innovators, not corporate behemoths.
             </p>
 
             <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">

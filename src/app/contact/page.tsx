@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Mail, MapPin, Clock, Shield } from "lucide-react";
+import { Mail, MapPin, Shield } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import IntakeForm from "@/components/forms/IntakeForm";
@@ -41,20 +41,6 @@ export default async function ContactPage({
             {/* Right: Info */}
             <div className="space-y-8 lg:pl-8">
               <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-blue" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-navy">
-                      Response Time
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      Typically within 24\u201348 hours
-                    </p>
-                  </div>
-                </div>
-
                 <div className="flex gap-4">
                   <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Mail className="w-5 h-5 text-blue" />

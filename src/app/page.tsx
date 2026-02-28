@@ -14,10 +14,10 @@ export default function Home() {
       <Hero />
       <ProcessPreview />
       <TrustBar />
-      <WhoIsThisFor />
       <ServicesOverview />
-      <WhyAlexanderIPC />
       <PatentMap />
+      <WhoIsThisFor />
+      <WhyAlexanderIPC />
       <Testimonials />
       <CTASection />
     </>
