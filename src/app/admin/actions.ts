@@ -10,6 +10,13 @@ import {
   DEFAULT_TIMELINES,
 } from "@/lib/portal/status";
 import type { ServiceType } from "@/lib/supabase/types";
+import {
+  sendProjectCreatedEmail,
+  sendStatusUpdateEmail,
+  sendDocumentUploadedEmail,
+} from "@/lib/email";
+
+const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
 /* ── Helpers ──────────────────────────────────────────────── */
 
@@ -141,10 +148,17 @@ export async function createProject(formData: FormData) {
     notify_client: true,
   });
 
-  // TODO: Send email notification via Resend when configured
-  console.log(
-    `[EMAIL] Project created for ${clientEmail}: "${title}" (${serviceType})`
-  );
+  // Send welcome email to client
+  try {
+    await sendProjectCreatedEmail(clientEmail, {
+      title,
+      serviceType,
+      estimatedDelivery,
+      portalUrl: PORTAL_URL,
+    });
+  } catch (emailErr) {
+    console.error("Failed to send project created email:", emailErr);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/portal");
@@ -195,11 +209,28 @@ export async function advanceStatus(
     notify_client: notifyClient,
   });
 
-  // TODO: Send email if notifyClient
+  // Send email notification
   if (notifyClient) {
-    console.log(
-      `[EMAIL] Status advanced for project ${projectId}: ${project.status} → ${nextStatus}`
-    );
+    try {
+      const { data: clientProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", project.client_id)
+        .single();
+
+      if (clientProfile?.email) {
+        await sendStatusUpdateEmail(clientProfile.email, {
+          title: project.title,
+          serviceType: project.service_type as ServiceType,
+          newStatus: nextStatus,
+          statusLabel: getStatusLabel(nextStatus),
+          note: note || null,
+          portalUrl: PORTAL_URL,
+        });
+      }
+    } catch (emailErr) {
+      console.error("Failed to send status update email:", emailErr);
+    }
   }
 
   revalidatePath(`/admin/projects/${projectId}`);
@@ -222,7 +253,7 @@ export async function addUpdate(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("status")
+    .select("status, title, service_type, client_id")
     .eq("id", projectId)
     .single();
 
@@ -237,8 +268,28 @@ export async function addUpdate(
     notify_client: notifyClient,
   });
 
+  // Send email notification
   if (notifyClient) {
-    console.log(`[EMAIL] Update added for project ${projectId}`);
+    try {
+      const { data: clientProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", project.client_id)
+        .single();
+
+      if (clientProfile?.email) {
+        await sendStatusUpdateEmail(clientProfile.email, {
+          title: project.title,
+          serviceType: project.service_type as ServiceType,
+          newStatus: project.status,
+          statusLabel: getStatusLabel(project.status),
+          note,
+          portalUrl: PORTAL_URL,
+        });
+      }
+    } catch (emailErr) {
+      console.error("Failed to send update email:", emailErr);
+    }
   }
 
   revalidatePath(`/admin/projects/${projectId}`);
@@ -327,10 +378,33 @@ export async function uploadDocument(
     throw new Error(`Failed to save document record: ${insertError.message}`);
   }
 
+  // Send email notification for client-visible documents
   if (clientVisible) {
-    console.log(
-      `[EMAIL] Document uploaded for project ${projectId}: ${file.name}`
-    );
+    try {
+      const { data: project } = await supabase
+        .from("projects")
+        .select("title, client_id")
+        .eq("id", projectId)
+        .single();
+
+      if (project) {
+        const { data: clientProfile } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("id", project.client_id)
+          .single();
+
+        if (clientProfile?.email) {
+          await sendDocumentUploadedEmail(clientProfile.email, {
+            title: project.title,
+            filename: file.name,
+            portalUrl: PORTAL_URL,
+          });
+        }
+      }
+    } catch (emailErr) {
+      console.error("Failed to send document email:", emailErr);
+    }
   }
 
   revalidatePath(`/admin/projects/${projectId}`);
