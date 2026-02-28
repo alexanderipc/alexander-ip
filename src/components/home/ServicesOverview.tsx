@@ -105,7 +105,7 @@ export default function ServicesOverview() {
                 <h3 className="text-xl font-semibold text-navy mb-2">
                   {service.title}
                 </h3>
-                <p className="text-slate-600 text-sm leading-relaxed mb-4 flex-1">
+                <p className="text-slate-600 text-[15px] leading-relaxed mb-4 flex-1">
                   {service.description}
                 </p>
                 <div className="flex items-center justify-between">

@@ -55,7 +55,7 @@ export default function WhoIsThisFor() {
                   <h3 className="text-lg font-semibold text-navy mb-2">
                     {item.title}
                   </h3>
-                  <p className="text-slate-600 leading-relaxed text-sm">
+                  <p className="text-slate-600 leading-relaxed text-[15px]">
                     {item.description}
                   </p>
                 </div>

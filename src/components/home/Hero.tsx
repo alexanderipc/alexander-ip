@@ -12,15 +12,15 @@ export default function Hero() {
       </div>
 
       <Container className="relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid md:grid-cols-5 lg:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-center">
           {/* Left: Text content */}
-          <div className="animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-blue/10 text-blue-dark rounded-full px-4 py-1.5 text-sm font-medium mb-6">
-              <span className="w-2 h-2 bg-blue rounded-full" />
-              MSc Physics &middot; Legal 500 Trained &middot; 800+ five-star reviews &middot; 50+ patents granted
+          <div className="md:col-span-3 lg:col-span-1 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 flex-wrap bg-blue/10 text-blue-dark rounded-2xl sm:rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium mb-6">
+              <span className="w-2 h-2 bg-blue rounded-full flex-shrink-0" />
+              MSc Physics &middot; Legal 500 Trained &middot; 800+ five-star reviews &middot; 50+ patents granted (23&nbsp;US)
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-navy leading-[1.1] mb-4">
+            <h1 className="text-4xl lg:text-5xl xl:text-[3.5rem] font-bold text-navy leading-[1.1] mb-4">
               The patent consultancy
               <br />
               <span className="text-blue">that actually explains</span>
@@ -49,8 +49,8 @@ export default function Hero() {
           </div>
 
           {/* Right: Photo */}
-          <div className="animate-fade-in-up-delay-2">
-            <div className="relative">
+          <div className="md:col-span-2 lg:col-span-1 animate-fade-in-up-delay-2">
+            <div className="relative max-w-sm md:max-w-none mx-auto">
               {/* Headshot with decorative frame */}
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
