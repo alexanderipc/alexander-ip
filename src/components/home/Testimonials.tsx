@@ -94,9 +94,17 @@ export default function Testimonials() {
                 <div>
                   <cite className="not-italic font-semibold text-navy block">
                     {testimonials[current].attribution}
+                    <span className="font-normal text-slate-400 ml-1.5 text-sm">
+                      {testimonials[current].country}
+                    </span>
                   </cite>
                   <span className="text-sm text-slate-500">
                     {testimonials[current].service}
+                    {testimonials[current].isRepeat && (
+                      <span className="ml-2 text-xs text-blue/70">
+                        Repeat client
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -119,18 +127,11 @@ export default function Testimonials() {
             </blockquote>
           </div>
 
-          {/* Dots */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            {testimonials.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  i === current ? "bg-blue w-6" : "bg-slate-300"
-                }`}
-                aria-label={`Go to testimonial ${i + 1}`}
-              />
-            ))}
+          {/* Counter */}
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <span className="text-sm text-slate-400 tabular-nums">
+              {current + 1} / {testimonials.length}
+            </span>
           </div>
 
           {/* Returning clients nudge */}
