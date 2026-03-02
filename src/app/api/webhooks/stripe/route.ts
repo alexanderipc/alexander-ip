@@ -169,9 +169,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .maybeSingle();
 
     if (existing) {
-      console.log(
-        `Project already exists for payment ${paymentIntentId}, skipping`
-      );
       return;
     }
   }
@@ -291,7 +288,4 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error("Failed to send welcome email:", emailErr);
   }
 
-  console.log(
-    `[WEBHOOK] Project created: "${title}" for ${email} (${paymentIntentId})`
-  );
 }
