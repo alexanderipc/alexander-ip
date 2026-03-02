@@ -96,14 +96,43 @@ const timelines: Timeline[] = [
   { key: "7", name: "Emergency", days: 7, surchargeUsd: null },
 ];
 
-/* ── Line types ──────────────────────────────────────────── */
+/* ── Flow line types & helpers ────────────────────────────── */
 
-interface Line {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
+interface FlowLine {
+  path: string; // SVG path d attribute
   active: boolean;
+}
+
+function buildOrthogonalPath(
+  srcX: number,
+  srcY: number,
+  dstX: number,
+  dstY: number,
+  midY: number
+): string {
+  return `M ${srcX} ${srcY} L ${srcX} ${midY} L ${dstX} ${midY} L ${dstX} ${dstY}`;
+}
+
+function getMidpointY(
+  sourceRefs: (HTMLDivElement | null)[],
+  destRefs: (HTMLDivElement | null)[],
+  containerRect: DOMRect
+): number {
+  let maxSourceBottom = 0;
+  for (const el of sourceRefs) {
+    if (el) {
+      const bottom = el.getBoundingClientRect().bottom - containerRect.top;
+      if (bottom > maxSourceBottom) maxSourceBottom = bottom;
+    }
+  }
+  let minDestTop = Infinity;
+  for (const el of destRefs) {
+    if (el) {
+      const top = el.getBoundingClientRect().top - containerRect.top;
+      if (top < minDestTop) minDestTop = top;
+    }
+  }
+  return (maxSourceBottom + minDestTop) / 2;
 }
 
 /* ── Component ───────────────────────────────────────────── */
@@ -123,15 +152,15 @@ export default function PackageBuilder() {
   const complexityRefs = useRef<(HTMLDivElement | null)[]>([]);
   const extrasRefs = useRef<(HTMLDivElement | null)[]>([]);
   const timelineRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [lines1, setLines1] = useState<Line[]>([]);
-  const [lines2, setLines2] = useState<Line[]>([]);
+  const [lines1, setLines1] = useState<FlowLine[]>([]);
+  const [lines2, setLines2] = useState<FlowLine[]>([]);
 
   /* Detect currency */
   useEffect(() => {
     setCurrency(getCurrencyFromBrowserLocale());
   }, []);
 
-  /* Calculate line positions */
+  /* Calculate orthogonal line positions */
   const updateLines = useCallback(() => {
     if (!containerRef.current || !complexity) {
       setLines1([]);
@@ -150,69 +179,60 @@ export default function PackageBuilder() {
     const srcX = srcRect.left + srcRect.width / 2 - containerRect.left;
     const srcY = srcRect.bottom - containerRect.top;
 
-    /* Lines from complexity to extras */
-    const newLines1: Line[] = [];
+    /* Midpoint Y between complexity row and extras row */
+    const midY1 = getMidpointY(
+      complexityRefs.current,
+      extrasRefs.current,
+      containerRect
+    );
+
+    /* Orthogonal lines from complexity to extras */
+    const newLines1: FlowLine[] = [];
     extrasRefs.current.forEach((el, i) => {
       if (!el) return;
       const rect = el.getBoundingClientRect();
+      const dstX = rect.left + rect.width / 2 - containerRect.left;
+      const dstY = rect.top - containerRect.top;
       newLines1.push({
-        x1: srcX,
-        y1: srcY,
-        x2: rect.left + rect.width / 2 - containerRect.left,
-        y2: rect.top - containerRect.top,
+        path: buildOrthogonalPath(srcX, srcY, dstX, dstY, midY1),
         active: selectedExtras.has(extras[i].key),
       });
     });
     setLines1(newLines1);
 
-    /* Lines from extras (or complexity if no extras) to timeline */
-    const newLines2: Line[] = [];
+    /* Lines from extras (or complexity) to timeline */
     const activeExtrasEls = extrasRefs.current.filter(
       (_, i) => selectedExtras.has(extras[i].key)
     );
     const sourceEls =
       activeExtrasEls.length > 0 ? activeExtrasEls : [selectedEl];
+    const midSource = sourceEls[Math.floor(sourceEls.length / 2)];
+    if (!midSource) return;
 
-    timelineRefs.current.forEach((el) => {
-      if (!el) return;
-      const tRect = el.getBoundingClientRect();
-      const tX = tRect.left + tRect.width / 2 - containerRect.left;
-      const tY = tRect.top - containerRect.top;
+    const mRect = midSource.getBoundingClientRect();
+    const mX = mRect.left + mRect.width / 2 - containerRect.left;
+    const mY = mRect.bottom - containerRect.top;
 
-      /* Draw one line from the center-most source */
-      const midSource = sourceEls[Math.floor(sourceEls.length / 2)];
-      if (!midSource) return;
-      const mRect = midSource.getBoundingClientRect();
-      newLines2.push({
-        x1: mRect.left + mRect.width / 2 - containerRect.left,
-        y1: mRect.bottom - containerRect.top,
-        x2: tX,
-        y2: tY,
-        active: timeline === timelines[timelineRefs.current.indexOf(el)]?.key,
-      });
-    });
+    /* Midpoint Y between extras row and timeline row */
+    const midY2 = getMidpointY(
+      extrasRefs.current,
+      timelineRefs.current,
+      containerRect
+    );
 
-    /* Fix: use index-based lookup */
-    const fixedLines2: Line[] = [];
+    const newLines2: FlowLine[] = [];
     timelines.forEach((tl, i) => {
       const el = timelineRefs.current[i];
       if (!el) return;
       const tRect = el.getBoundingClientRect();
       const tX = tRect.left + tRect.width / 2 - containerRect.left;
       const tY = tRect.top - containerRect.top;
-
-      const midSource = sourceEls[Math.floor(sourceEls.length / 2)];
-      if (!midSource) return;
-      const mRect = midSource.getBoundingClientRect();
-      fixedLines2.push({
-        x1: mRect.left + mRect.width / 2 - containerRect.left,
-        y1: mRect.bottom - containerRect.top,
-        x2: tX,
-        y2: tY,
+      newLines2.push({
+        path: buildOrthogonalPath(mX, mY, tX, tY, midY2),
         active: timeline === tl.key,
       });
     });
-    setLines2(fixedLines2);
+    setLines2(newLines2);
   }, [complexity, selectedExtras, timeline]);
 
   useEffect(() => {
@@ -331,29 +351,27 @@ export default function PackageBuilder() {
         style={{ overflow: "visible" }}
       >
         {lines1.map((line, i) => (
-          <line
+          <path
             key={`l1-${i}`}
-            x1={line.x1}
-            y1={line.y1}
-            x2={line.x2}
-            y2={line.y2}
+            d={line.path}
+            fill="none"
             stroke={line.active ? "#14b8a6" : "#94a3b8"}
             strokeWidth={line.active ? 2.5 : 1.5}
             strokeDasharray={line.active ? "none" : "6 4"}
-            className="transition-all duration-300"
+            strokeLinejoin="round"
+            className="transition-colors duration-300"
           />
         ))}
         {lines2.map((line, i) => (
-          <line
+          <path
             key={`l2-${i}`}
-            x1={line.x1}
-            y1={line.y1}
-            x2={line.x2}
-            y2={line.y2}
+            d={line.path}
+            fill="none"
             stroke={line.active ? "#14b8a6" : "#94a3b8"}
             strokeWidth={line.active ? 2.5 : 1.5}
             strokeDasharray={line.active ? "none" : "6 4"}
-            className="transition-all duration-300"
+            strokeLinejoin="round"
+            className="transition-colors duration-300"
           />
         ))}
       </svg>
@@ -382,18 +400,18 @@ export default function PackageBuilder() {
               }`}
             >
               {/* Thumbnail images */}
-              <div className="flex justify-center gap-3 mb-4">
+              <div className="flex flex-col gap-3 mb-4">
                 {tier.images.map((img) => (
                   <div
                     key={img}
-                    className="w-20 h-16 relative rounded-lg overflow-hidden bg-slate-100 border border-slate-200"
+                    className="w-full aspect-[4/3] relative rounded-lg overflow-hidden bg-slate-50 border border-slate-200"
                   >
                     <Image
                       src={`/images/diagrams/${img}`}
                       alt={`${tier.name} example`}
                       fill
-                      className="object-cover"
-                      sizes="80px"
+                      className="object-contain p-2"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
                   </div>
                 ))}
