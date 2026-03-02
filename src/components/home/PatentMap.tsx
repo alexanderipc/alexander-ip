@@ -84,11 +84,12 @@ const jurisdictions: Jurisdiction[] = [
       // Published applications
       { number: "US20260018000A1", label: "US 2026/0018000 A1", title: "Smart Package Pod", url: patentUrl("US20260018000A1") },
       { number: "US20260052163A1", label: "US 2026/0052163 A1", title: "Cybersecurity Honeypot", url: patentUrl("US20260052163A1") },
-      { number: "US2025383183A1", label: "US 2025/383183 A1", title: "Dual-Profile Mounting Rail", url: patentUrl("US2025383183A1") },
       { number: "US2024270289A1", label: "US 2024/270289 A1", title: "Gondola Transport System", url: patentUrl("US2024270289A1") },
-      { number: "US2025380670A1", label: "US 2025/380670 A1", title: "Smart Pet Collar", url: patentUrl("US2025380670A1") },
-      { number: "US2025006043A1", label: "US 2025/006043 A1", title: "Wearable Controller", url: patentUrl("US2025006043A1") },
-      { number: "US20260033674A1", label: "US 2026/0033674 A1", title: "Cutting Board", url: patentUrl("US20260033674A1") },
+      { number: "US20260016255A1", label: "US 2026/0016255 A1", title: "Modular Archery Bow", url: patentUrl("US20260016255A1") },
+      { number: "US2025191492A1", label: "US 2025/191492 A1", title: "VR Medical Training", url: patentUrl("US2025191492A1") },
+      { number: "US2025256054A1", label: "US 2025/256054 A1", title: "Baby Patting Device", url: patentUrl("US2025256054A1") },
+      { number: "US2025366786A1", label: "US 2025/366786 A1", title: "Health Monitoring Diaper", url: patentUrl("US2025366786A1") },
+      { number: "US20260021372A1", label: "US 2026/0021372 A1", title: "Snowboard Boot Stabilizer", url: patentUrl("US20260021372A1") },
     ],
   },
   {
@@ -98,12 +99,12 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#0a2d66",
     countryCodes: ["826"],
     patents: [
-      { number: "GB2623310B", label: "GB 2,623,310 B", title: "Valve Control System", url: patentUrl("GB2623310B") },
       { number: "GB2547098A", label: "GB 2,547,098 A", title: "Inflatable Luggage Frame", url: patentUrl("GB2547098A") },
       { number: "GB2600049A", label: "GB 2,600,049 A", title: "Acoustic Wall Rail System", url: patentUrl("GB2600049A") },
       { number: "GB2515443A", label: "GB 2,515,443 A", title: "Steering Wheel Mount", url: patentUrl("GB2515443A") },
       { number: "GB2506730A", label: "GB 2,506,730 A", title: "Recessed Window Panel", url: patentUrl("GB2506730A") },
       { number: "GB2600621A", label: "GB 2,600,621 A", title: "Pet Hair Removal", url: patentUrl("GB2600621A") },
+      { number: "GB2515546A", label: "GB 2,515,546 A", title: "Adaptive VR System", url: patentUrl("GB2515546A") },
     ],
   },
   {
@@ -118,9 +119,7 @@ const jurisdictions: Jurisdiction[] = [
     ],
     patents: [
       { number: "EP4576048B1", label: "EP 4,576,048 B1", title: "Spatial Memory Aid", url: patentUrl("EP4576048B1") },
-      { number: "EP4476126B1", label: "EP 4,476,126 B1", url: patentUrl("EP4476126B1") },
       { number: "EP4655775A1", label: "EP 4,655,775 A1", title: "Modular Smart Frame", url: patentUrl("EP4655775A1") },
-      { number: "EP4430020A1", label: "EP 4,430,020 A1", title: "Vehicle Docking Module", url: patentUrl("EP4430020A1") },
     ],
   },
   {
@@ -130,12 +129,8 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1540a8",
     countryCodes: ["036"],
     patents: [
-      { number: "AU2023361441B2", label: "AU 2023361441 B2", title: "Valve Control System", url: patentUrl("AU2023361441B2") },
       { number: "AU2022440230B2", label: "AU 2022440230 B2", title: "Vehicle Docking System", url: patentUrl("AU2022440230B2") },
-      { number: "AU2020471661B2", label: "AU 2020471661 B2", title: "Bait Station", url: patentUrl("AU2020471661B2") },
       { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
-      { number: "AU2023425963A1", label: "AU 2023425963 A1", title: "Modular Smart Frame", url: patentUrl("AU2023425963A1") },
-      { number: "AU2024277082A1", label: "AU 2024277082 A1", title: "Exercise Handle", url: patentUrl("AU2024277082A1") },
     ],
   },
   {
@@ -145,18 +140,7 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1d4ed8",
     countryCodes: ["124"],
     patents: [
-      { number: "CA3267615A1", label: "CA 3,267,615 A1", title: "Valve Control System", url: patentUrl("CA3267615A1") },
-      { number: "CA3192924A1", label: "CA 3,192,924 A1", title: "Bait Station", url: patentUrl("CA3192924A1") },
-    ],
-  },
-  {
-    id: "nz",
-    name: "New Zealand",
-    color: "#1e40af",
-    hoverColor: "#1e3a8a",
-    countryCodes: ["554"],
-    patents: [
-      { number: "NZ799057A", label: "NZ 799057 A", title: "Bait Station", url: patentUrl("NZ799057A") },
+      { number: "CA3246062A1", label: "CA 3,246,062 A1", title: "Animal Trap Monitor", url: patentUrl("CA3246062A1") },
     ],
   },
   {
@@ -165,16 +149,7 @@ const jurisdictions: Jurisdiction[] = [
     color: PCT_GREEN,
     hoverColor: PCT_GREEN_HOVER,
     countryCodes: [],
-    patents: [
-      { number: "WO2025006045A1", label: "WO 2025/006045 A1", url: patentUrl("WO2025006045A1") },
-      { number: "WO2024240368A1", label: "WO 2024/240368 A1", title: "Exercise Handle", url: patentUrl("WO2024240368A1") },
-      { number: "WO2024079441A1", label: "WO 2024/079441 A1", title: "Valve Control System", url: patentUrl("WO2024079441A1") },
-      { number: "WO2023233278A2", label: "WO 2023/233278 A2", url: patentUrl("WO2023233278A2") },
-      { number: "WO2023152461A1", label: "WO 2023/152461 A1", url: patentUrl("WO2023152461A1") },
-      { number: "WO2023152460A1", label: "WO 2023/152460 A1", url: patentUrl("WO2023152460A1") },
-      { number: "WO2022073056A1", label: "WO 2022/073056 A1", title: "Bait Station", url: patentUrl("WO2022073056A1") },
-      { number: "WO2022049262A2", label: "WO 2022/049262 A2", url: patentUrl("WO2022049262A2") },
-    ],
+    patents: [],
   },
 ];
 
@@ -312,7 +287,7 @@ function PatentMap() {
 
         {/* Jurisdictions — horizontal row underneath the map */}
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
             {jurisdictions.map((j) => {
               const isActive = activeJurisdiction === j.id;
               const grantCount = j.patents.filter((p) =>
@@ -343,10 +318,14 @@ function PatentMap() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5 ml-5">
-                      {j.patents.length === 0 && "Patents granted"}
-                      {grantCount > 0 && `${grantCount} granted`}
-                      {grantCount > 0 && pubCount > 0 && " \u00B7 "}
-                      {pubCount > 0 && `${pubCount} published`}
+                      {j.patents.length === 0
+                        ? "155+ contracting states"
+                        : <>
+                            {grantCount > 0 && `${grantCount} granted`}
+                            {grantCount > 0 && pubCount > 0 && " \u00B7 "}
+                            {pubCount > 0 && `${pubCount} published`}
+                          </>
+                      }
                     </p>
                   </button>
 
@@ -367,13 +346,15 @@ function PatentMap() {
                                 href={p.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-blue hover:text-blue-dark flex items-baseline gap-1.5 py-1.5 px-2 rounded hover:bg-blue/5 transition-colors w-full group"
+                                className="text-xs text-blue hover:text-blue-dark flex items-start gap-1.5 py-1.5 px-2 rounded hover:bg-blue/5 transition-colors w-full group"
                               >
-                                <span className="font-mono whitespace-nowrap">{p.label}</span>
-                                {p.title && (
-                                  <span className="text-slate-400 font-sans truncate">&mdash; {p.title}</span>
-                                )}
-                                <ExternalLink className="w-3 h-3 flex-shrink-0 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-mono whitespace-nowrap">{p.label}</span>
+                                  {p.title && (
+                                    <p className="text-[11px] text-slate-400 font-sans truncate mt-0.5">{p.title}</p>
+                                  )}
+                                </div>
+                                <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                               </a>
                             </li>
                           ))}
