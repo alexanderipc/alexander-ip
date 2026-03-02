@@ -1,8 +1,11 @@
 import { Metadata } from "next";
-import { Mail, MapPin, Shield } from "lucide-react";
+import { Mail, MapPin, Shield, MessageSquare, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
+import Card from "@/components/ui/Card";
 import IntakeForm from "@/components/forms/IntakeForm";
+import LocalizedPrice from "@/components/ui/LocalizedPrice";
 
 export const metadata: Metadata = {
   title: "Contact | Alexander IP",
@@ -40,6 +43,40 @@ export default async function ContactPage({
 
             {/* Right: Info */}
             <div className="space-y-8 lg:pl-8">
+              {/* Book a Consultation card */}
+              <Link href="/services/consultation" className="group block">
+                <Card hover padding="lg" className="border-blue/20 bg-blue/5">
+                  <div className="flex gap-4">
+                    <div className="w-11 h-11 bg-blue rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-navy mb-1">
+                        Book a Consultation
+                      </h3>
+                      <p className="text-sm text-slate-600 mb-2">
+                        Not sure where to start? A 30-minute consultation
+                        covers whether your idea is patentable, what
+                        protection would involve, and the best path forward.
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-blue font-bold">
+                          <LocalizedPrice
+                            amount={125}
+                            prefix="From"
+                            fallback="From $125"
+                          />
+                        </span>
+                        <span className="text-sm text-blue font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                          View details
+                          <ArrowRight className="w-4 h-4" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="w-10 h-10 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
