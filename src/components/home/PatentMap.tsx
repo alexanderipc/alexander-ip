@@ -65,7 +65,6 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US12503005B2", label: "US 12,503,005 B2", title: "Split-Load EV Chassis", url: patentUrl("US12503005B2") },
       { number: "US12433360B1", label: "US 12,433,360 B1", title: "Dual-Layer Elastic Belt", url: patentUrl("US12433360B1") },
       { number: "US12404623B2", label: "US 12,404,623 B2", title: "Vehicle Camera Cover", url: patentUrl("US12404623B2") },
-      { number: "US12381417B2", label: "US 12,381,417 B2", title: "Nano Inductance Cells", url: patentUrl("US12381417B2") },
       { number: "US12354583B2", label: "US 12,354,583 B2", title: "Voice Isolation Mask", url: patentUrl("US12354583B2") },
       { number: "US12349766B2", label: "US 12,349,766 B2", title: "Cleated Shoe Cover", url: patentUrl("US12349766B2") },
       { number: "US12337915B2", label: "US 12,337,915 B2", title: "Universal Docking Bracket", url: patentUrl("US12337915B2") },
@@ -79,7 +78,6 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US11839788B2", label: "US 11,839,788 B2", title: "Resistance Exercise Anchor", url: patentUrl("US11839788B2") },
       { number: "US11836570B1", label: "US 11,836,570 B1", title: "Machine-Readable Labels", url: patentUrl("US11836570B1") },
       { number: "US11833384B2", label: "US 11,833,384 B2", title: "Resistance Bands", url: patentUrl("US11833384B2") },
-      { number: "US11483078B1", label: "US 11,483,078 B1", title: "ULF Communications", url: patentUrl("US11483078B1") },
       { number: "US10878232B2", label: "US 10,878,232 B2", title: "Invoice Automation", url: patentUrl("US10878232B2") },
       // Published applications
       { number: "US20260018000A1", label: "US 2026/0018000 A1", title: "Smart Package Pod", url: patentUrl("US20260018000A1") },
@@ -145,11 +143,15 @@ const jurisdictions: Jurisdiction[] = [
   },
   {
     id: "pct",
-    name: "PCT (155 States)",
+    name: "International",
     color: PCT_GREEN,
     hoverColor: PCT_GREEN_HOVER,
     countryCodes: [],
-    patents: [],
+    patents: [
+      { number: "WO2025006045A1", label: "WO 2025/006045 A1", title: "Nano Inductance Cells", url: patentUrl("WO2025006045A1") },
+      { number: "WO2023233278A2", label: "WO 2023/233278 A2", title: "ULF Communications", url: patentUrl("WO2023233278A2") },
+      { number: "WO2022049262A2", label: "WO 2022/049262 A2", title: "Modular System", url: patentUrl("WO2022049262A2") },
+    ],
   },
 ];
 
@@ -221,8 +223,8 @@ function PatentMap() {
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             A selection of granted patents and published applications
-            drafted by Alexander IP, with PCT coverage across 155+
-            contracting states. Hover over any region to browse.
+            drafted by Alexander IP, with international coverage across
+            155+ countries. Hover over any region to browse.
           </p>
         </div>
 
@@ -318,14 +320,9 @@ function PatentMap() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5 ml-5">
-                      {j.patents.length === 0
-                        ? "155+ contracting states"
-                        : <>
-                            {grantCount > 0 && `${grantCount} granted`}
-                            {grantCount > 0 && pubCount > 0 && " \u00B7 "}
-                            {pubCount > 0 && `${pubCount} published`}
-                          </>
-                      }
+                      {grantCount > 0 && `${grantCount} granted`}
+                      {grantCount > 0 && pubCount > 0 && " \u00B7 "}
+                      {pubCount > 0 && `${pubCount} published`}
                     </p>
                   </button>
 
@@ -351,7 +348,7 @@ function PatentMap() {
                                 <div className="flex-1 min-w-0">
                                   <span className="font-mono whitespace-nowrap">{p.label}</span>
                                   {p.title && (
-                                    <p className="text-[11px] text-slate-400 font-sans truncate mt-0.5">{p.title}</p>
+                                    <p className="text-[11px] text-slate-400 font-sans truncate group-hover:whitespace-normal group-hover:overflow-visible mt-0.5">{p.title}</p>
                                   )}
                                 </div>
                                 <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
