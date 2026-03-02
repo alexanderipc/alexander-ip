@@ -139,7 +139,8 @@ function buildSmoothPath(
 function getMidpointY(
   sourceRefs: (HTMLDivElement | null)[],
   destRefs: (HTMLDivElement | null)[],
-  containerRect: DOMRect
+  containerRect: DOMRect,
+  bias = 0.5 // 0 = source bottom, 1 = dest top; higher = closer to dest cards
 ): number {
   let maxSourceBottom = 0;
   for (const el of sourceRefs) {
@@ -155,7 +156,7 @@ function getMidpointY(
       if (top < minDestTop) minDestTop = top;
     }
   }
-  return (maxSourceBottom + minDestTop) / 2;
+  return maxSourceBottom + (minDestTop - maxSourceBottom) * bias;
 }
 
 /* ── Component ───────────────────────────────────────────── */
@@ -202,11 +203,12 @@ export default function PackageBuilder() {
     const srcX = srcRect.left + srcRect.width / 2 - containerRect.left;
     const srcY = srcRect.bottom - containerRect.top;
 
-    /* Midpoint Y between complexity row and extras row */
+    /* Midpoint Y between complexity row and extras row — bias lower to clear heading text */
     const midY1 = getMidpointY(
       complexityRefs.current,
       extrasRefs.current,
-      containerRect
+      containerRect,
+      0.82
     );
 
     /* Orthogonal lines from complexity to extras */
@@ -236,11 +238,12 @@ export default function PackageBuilder() {
     const mX = mRect.left + mRect.width / 2 - containerRect.left;
     const mY = mRect.bottom - containerRect.top;
 
-    /* Midpoint Y between extras row and timeline row */
+    /* Midpoint Y between extras row and timeline row — bias lower to clear heading text */
     const midY2 = getMidpointY(
       extrasRefs.current,
       timelineRefs.current,
-      containerRect
+      containerRect,
+      0.82
     );
 
     const newLines2: FlowLine[] = [];
@@ -467,7 +470,7 @@ export default function PackageBuilder() {
       )}
 
       {/* ── Row 2: Recommended Extras ────────────────────── */}
-      <div className={`mt-10 md:mt-16 ${!isExtrasEnabled ? "opacity-40 pointer-events-none" : ""}`}>
+      <div className={`mt-8 md:mt-10 ${!isExtrasEnabled ? "opacity-40 pointer-events-none" : ""}`}>
         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">
           Step 2 &mdash; Include what you need
         </h3>
@@ -509,7 +512,7 @@ export default function PackageBuilder() {
       )}
 
       {/* ── Row 3: Delivery Timeline ───────────────────── */}
-      <div className={`mt-10 md:mt-16 ${!isTimelineEnabled ? "opacity-40 pointer-events-none" : ""}`}>
+      <div className={`mt-8 md:mt-10 ${!isTimelineEnabled ? "opacity-40 pointer-events-none" : ""}`}>
         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
           Step 3 &mdash; Choose delivery timeline
         </h3>
