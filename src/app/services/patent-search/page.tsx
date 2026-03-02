@@ -12,9 +12,9 @@ import { getServiceBySlug } from "@/data/services";
 const service = getServiceBySlug("patent-search")!;
 
 const searchTierUsd: Record<string, number> = {
-  Basic: 335,
-  Standard: 375,
-  Premium: 485,
+  Basic: 300,
+  Standard: 340,
+  Premium: 435,
 };
 
 const searchTierService: Record<string, string> = {
@@ -150,12 +150,12 @@ export default function PatentSearchPage() {
                 padding="lg"
                 className={`flex flex-col ${
                   tier.popular
-                    ? "border-2 border-teal ring-1 ring-teal/20 relative"
+                    ? "border-2 border-teal ring-1 ring-teal/20"
                     : ""
                 }`}
               >
                 {tier.popular && (
-                  <div className="md:absolute md:-top-3 md:left-1/2 md:-translate-x-1/2 mb-3 md:mb-0 text-center">
+                  <div className="text-center mb-4">
                     <Badge variant="teal">Most Popular</Badge>
                   </div>
                 )}

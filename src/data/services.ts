@@ -38,7 +38,7 @@ export const services: Service[] = [
       "Expert advice on patentability, filing strategy, and IP protection — whether you're exploring an initial idea or need guidance on more advanced matters like multi-jurisdiction strategy.",
     longDescription:
       "A paid consultation covering patentability assessments, filing strategy, portfolio planning, and general IP guidance. Whether you're at the early stages wondering if your idea is worth protecting, or you need advice on more advanced matters like filing strategy across multiple jurisdictions, office correspondence approach, or portfolio prioritisation — this is the place to start. It is not a patent search and does not result in any official document — rather, it's a platform for expert advice tailored to your situation. If we're unable to provide value, you'll receive a full refund.",
-    startingPrice: "$125",
+    startingPrice: "$112",
     currency: "USD",
     delivery: "14 days",
     icon: "MessageSquare",
@@ -52,7 +52,7 @@ export const services: Service[] = [
     pricing: [
       {
         name: "Standard Consultation",
-        price: "$125",
+        price: "$112",
         description: "Expert advice on your invention and IP strategy",
         features: [
           "Live consultation via video call",
@@ -89,7 +89,7 @@ export const services: Service[] = [
       "A thorough investigation of the prior art landscape with a detailed report on your invention's patentability prospects.",
     longDescription:
       "A comprehensive patent search examining existing patents, published applications, and other prior art to assess the patentability of your invention. You'll receive a detailed report identifying the closest prior art, your strongest points of novelty, and an honest assessment of your prospects. This can be ordered standalone or bundled with patent drafting at no additional time.",
-    startingPrice: "$335",
+    startingPrice: "$300",
     currency: "USD",
     delivery: "21 days",
     icon: "Search",
@@ -103,7 +103,7 @@ export const services: Service[] = [
     pricing: [
       {
         name: "Basic",
-        price: "$335",
+        price: "$300",
         description: "Prior Art Search — published patents relevant to your invention",
         features: [
           "Search of published patents",
@@ -115,7 +115,7 @@ export const services: Service[] = [
       },
       {
         name: "Standard",
-        price: "$375",
+        price: "$340",
         description: "Expanded Prior Art Search — includes web disclosures & non-patent literature",
         features: [
           "Everything in Basic",
@@ -128,7 +128,7 @@ export const services: Service[] = [
       },
       {
         name: "Premium",
-        price: "$485",
+        price: "$435",
         description: "Expanded Search + Strategy Call to discuss the best way forward",
         features: [
           "Everything in Standard",
@@ -165,7 +165,7 @@ export const services: Service[] = [
       "Full preparation of patent documents — background, summary, detailed description, claims, abstract, and drawings — ready for filing in any major jurisdiction.",
     longDescription:
       "Complete preparation of a utility patent application including all required elements: background of the invention, summary, detailed description, patent claims, abstract, and coordination of patent drawings. The application is drafted to professional standards, covering both provisional and non-provisional formats, and can be filed in the US, UK, Europe, Canada, Australia, or internationally via PCT. After purchase, you'll receive a questionnaire to provide technical details about your invention.",
-    startingPrice: "$995",
+    startingPrice: "$895",
     currency: "USD",
     delivery: "45 days",
     icon: "FileText",
@@ -180,7 +180,7 @@ export const services: Service[] = [
     pricing: [
       {
         name: "Simple Invention",
-        price: "$995",
+        price: "$895",
         description: "Mechanical inventions with few moving parts",
         features: [
           "Background, summary, detailed description",
@@ -192,7 +192,7 @@ export const services: Service[] = [
       },
       {
         name: "Mid-Tier Invention",
-        price: "$1,195",
+        price: "$1,075",
         description: "Electrical/electronic systems, moderate complexity",
         features: [
           "Background, summary, detailed description",
@@ -201,11 +201,10 @@ export const services: Service[] = [
           "45-day delivery",
           "One round of revisions",
         ],
-        popular: true,
       },
       {
         name: "Complex Invention",
-        price: "$1,395",
+        price: "$1,255",
         description: "Software, AI, biochemistry, advanced systems",
         features: [
           "Background, summary, detailed description",
@@ -219,22 +218,22 @@ export const services: Service[] = [
     extras: [
       {
         name: "Patent Search",
-        price: "$375",
+        price: "$340",
         note: "21 days standalone, or included within the 45-day drafting timeline if bundled",
       },
       {
         name: "Patent Illustrations (created by Alexander IP)",
-        price: "$350",
+        price: "$315",
         note: "Professional patent drawings prepared to patent office standards",
       },
       {
         name: "Patent Illustrations (client-provided, formatted)",
-        price: "$50",
+        price: "$45",
         note: "Your drawings formatted and integrated to meet patent office requirements",
       },
       {
         name: "Patent Filing / Submission",
-        price: "$250",
+        price: "$225",
         note: "Filing with the patent office on your behalf (excludes government fees)",
       },
     ],
@@ -257,7 +256,7 @@ export const services: Service[] = [
       {
         question: "What about rush delivery?",
         answer:
-          "Rush options are available at 30, 21, 14, or 7-day timelines with increasing surcharges. The 7-day option is +100% of the base price. See the rush delivery table on this page for exact pricing. You must specify a target date — 'ASAP' is not accepted.",
+          "Rush options are available at 30, 21, 14, or 7-day timelines with increasing surcharges. The 7-day option is +100% of the base price. See the delivery timeline options on this page for exact pricing. You must specify a target date — 'ASAP' is not accepted.",
       },
     ],
   },
@@ -321,7 +320,7 @@ export const services: Service[] = [
       "Strategic international patent protection through PCT applications and national phase entries across all major markets.",
     longDescription:
       "Extend your patent protection globally through the Patent Cooperation Treaty (PCT) route. We handle PCT international applications, strategic advice on ISA/IPEA selection, Chapter II demands, and coordination of national phase entries across multiple jurisdictions. This includes timing advice to maximise your protection windows and cost optimisation across countries.",
-    startingPrice: "$600",
+    startingPrice: "$540",
     currency: "USD",
     delivery: "21\u201345 days",
     icon: "Globe",
@@ -336,7 +335,7 @@ export const services: Service[] = [
     pricing: [
       {
         name: "PCT Filing",
-        price: "$600\u2013$950",
+        price: "$540\u2013$855",
         description: "International patent application via WIPO",
         features: [
           "PCT application preparation",
@@ -383,7 +382,7 @@ export const services: Service[] = [
       "Honest, understandable strategic advice on the risks of selling and manufacturing your product — backed by in-depth patent research and analysis.",
     longDescription:
       "Checking whether your product is at risk of infringing someone\u2019s patent is an unavoidably complex job. It involves extensive research, analysis, and in-depth patent law considerations. Even when the work is done properly, the answers are often given in legalese. This service is designed to give you honest, easily understandable strategic advice on your infringement risks. It involves an in-depth search for patents active in specific countries or regions where you might commercialise, detailed analysis of claim scope, and concrete advice on whether you infringe and how to avoid doing so.",
-    startingPrice: "$600",
+    startingPrice: "$540",
     currency: "USD",
     delivery: "30\u201345 days",
     icon: "ShieldCheck",
@@ -399,7 +398,7 @@ export const services: Service[] = [
     pricing: [
       {
         name: "Patent Landscape",
-        price: "$600",
+        price: "$540",
         description: "Research and report identifying high-risk active patents and summarising the field",
         features: [
           "Patent landscape search in target jurisdictions",
@@ -409,10 +408,11 @@ export const services: Service[] = [
           "Strategy report",
           "30-day delivery",
         ],
+        popular: true,
       },
       {
         name: "Simple Invention FTO",
-        price: "$1,600",
+        price: "$1,440",
         description: "Full FTO search and report with detailed claims analysis — for straightforward products",
         features: [
           "Everything in Patent Landscape",
@@ -422,11 +422,10 @@ export const services: Service[] = [
           "Concrete strategic advice",
           "45-day delivery",
         ],
-        popular: true,
       },
       {
         name: "Complex Invention FTO",
-        price: "$2,500",
+        price: "$2,250",
         description: "Full FTO search and report with detailed claims analysis — for complex products",
         features: [
           "Everything in Simple Invention FTO",
@@ -464,9 +463,9 @@ export const services: Service[] = [
 ];
 
 export const rushSurcharges = [
-  { days: 30, surcharge: "+$200" },
-  { days: 21, surcharge: "+$400" },
-  { days: 14, surcharge: "+$700" },
+  { days: 30, surcharge: "+$180" },
+  { days: 21, surcharge: "+$360" },
+  { days: 14, surcharge: "+$630" },
   { days: 7, surcharge: "+100% of base price" },
 ];
 

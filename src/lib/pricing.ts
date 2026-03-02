@@ -12,57 +12,57 @@ export interface CurrencyPrice {
 /* Fixed prices per service tier (used by Stripe checkout) */
 export const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
   consultation: {
-    GBP: { currency: "gbp", amount: 9500, symbol: "£", display: "£95" },
-    USD: { currency: "usd", amount: 12500, symbol: "$", display: "$125" },
-    EUR: { currency: "eur", amount: 12000, symbol: "€", display: "€120" },
+    GBP: { currency: "gbp", amount: 8500, symbol: "£", display: "£85" },
+    USD: { currency: "usd", amount: 11200, symbol: "$", display: "$112" },
+    EUR: { currency: "eur", amount: 10800, symbol: "€", display: "€108" },
   },
   /* Patent Search tiers */
   "patent-search-basic": {
-    GBP: { currency: "gbp", amount: 25000, symbol: "£", display: "£250" },
-    USD: { currency: "usd", amount: 33500, symbol: "$", display: "$335" },
-    EUR: { currency: "eur", amount: 32000, symbol: "€", display: "€320" },
+    GBP: { currency: "gbp", amount: 22500, symbol: "£", display: "£225" },
+    USD: { currency: "usd", amount: 30000, symbol: "$", display: "$300" },
+    EUR: { currency: "eur", amount: 28800, symbol: "€", display: "€288" },
   },
   "patent-search-standard": {
-    GBP: { currency: "gbp", amount: 28000, symbol: "£", display: "£280" },
-    USD: { currency: "usd", amount: 37500, symbol: "$", display: "$375" },
-    EUR: { currency: "eur", amount: 36000, symbol: "€", display: "€360" },
+    GBP: { currency: "gbp", amount: 25000, symbol: "£", display: "£250" },
+    USD: { currency: "usd", amount: 34000, symbol: "$", display: "$340" },
+    EUR: { currency: "eur", amount: 32500, symbol: "€", display: "€325" },
   },
   "patent-search-premium": {
-    GBP: { currency: "gbp", amount: 36000, symbol: "£", display: "£360" },
-    USD: { currency: "usd", amount: 48500, symbol: "$", display: "$485" },
-    EUR: { currency: "eur", amount: 46500, symbol: "€", display: "€465" },
+    GBP: { currency: "gbp", amount: 32500, symbol: "£", display: "£325" },
+    USD: { currency: "usd", amount: 43500, symbol: "$", display: "$435" },
+    EUR: { currency: "eur", amount: 42000, symbol: "€", display: "€420" },
   },
   /* Patent Drafting tiers */
   "patent-drafting-simple": {
-    GBP: { currency: "gbp", amount: 73500, symbol: "£", display: "£735" },
-    USD: { currency: "usd", amount: 99500, symbol: "$", display: "$995" },
-    EUR: { currency: "eur", amount: 95500, symbol: "€", display: "€955" },
+    GBP: { currency: "gbp", amount: 66000, symbol: "£", display: "£660" },
+    USD: { currency: "usd", amount: 89500, symbol: "$", display: "$895" },
+    EUR: { currency: "eur", amount: 86000, symbol: "€", display: "€860" },
   },
   "patent-drafting-mid": {
-    GBP: { currency: "gbp", amount: 88500, symbol: "£", display: "£885" },
-    USD: { currency: "usd", amount: 119500, symbol: "$", display: "$1,195" },
-    EUR: { currency: "eur", amount: 115000, symbol: "€", display: "€1,150" },
+    GBP: { currency: "gbp", amount: 79500, symbol: "£", display: "£795" },
+    USD: { currency: "usd", amount: 107500, symbol: "$", display: "$1,075" },
+    EUR: { currency: "eur", amount: 103500, symbol: "€", display: "€1,035" },
   },
   "patent-drafting-complex": {
-    GBP: { currency: "gbp", amount: 103000, symbol: "£", display: "£1,030" },
-    USD: { currency: "usd", amount: 139500, symbol: "$", display: "$1,395" },
-    EUR: { currency: "eur", amount: 134000, symbol: "€", display: "€1,340" },
+    GBP: { currency: "gbp", amount: 92500, symbol: "£", display: "£925" },
+    USD: { currency: "usd", amount: 125500, symbol: "$", display: "$1,255" },
+    EUR: { currency: "eur", amount: 120500, symbol: "€", display: "€1,205" },
   },
   /* FTO / Infringement Check tiers */
   "fto-landscape": {
-    GBP: { currency: "gbp", amount: 44500, symbol: "£", display: "£445" },
-    USD: { currency: "usd", amount: 60000, symbol: "$", display: "$600" },
-    EUR: { currency: "eur", amount: 57500, symbol: "€", display: "€575" },
+    GBP: { currency: "gbp", amount: 40000, symbol: "£", display: "£400" },
+    USD: { currency: "usd", amount: 54000, symbol: "$", display: "$540" },
+    EUR: { currency: "eur", amount: 52000, symbol: "€", display: "€520" },
   },
   "fto-simple": {
-    GBP: { currency: "gbp", amount: 118500, symbol: "£", display: "£1,185" },
-    USD: { currency: "usd", amount: 160000, symbol: "$", display: "$1,600" },
-    EUR: { currency: "eur", amount: 153500, symbol: "€", display: "€1,535" },
+    GBP: { currency: "gbp", amount: 106500, symbol: "£", display: "£1,065" },
+    USD: { currency: "usd", amount: 144000, symbol: "$", display: "$1,440" },
+    EUR: { currency: "eur", amount: 138000, symbol: "€", display: "€1,380" },
   },
   "fto-complex": {
-    GBP: { currency: "gbp", amount: 185000, symbol: "£", display: "£1,850" },
-    USD: { currency: "usd", amount: 250000, symbol: "$", display: "$2,500" },
-    EUR: { currency: "eur", amount: 240000, symbol: "€", display: "€2,400" },
+    GBP: { currency: "gbp", amount: 166500, symbol: "£", display: "£1,665" },
+    USD: { currency: "usd", amount: 225000, symbol: "$", display: "$2,250" },
+    EUR: { currency: "eur", amount: 216000, symbol: "€", display: "€2,160" },
   },
 };
 

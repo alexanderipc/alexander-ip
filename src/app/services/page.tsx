@@ -37,34 +37,33 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 const startingPriceUsd: Record<string, number | null> = {
-  consultation: 125,
-  "patent-search": 335,
-  "patent-drafting": 995,
+  consultation: 112,
+  "patent-search": 300,
+  "patent-drafting": 895,
   "patent-prosecution": null,
-  "international-filing": 600,
-  fto: 600,
+  "international-filing": 540,
+  fto: 540,
 };
 
 const draftingTiers = [
   {
     name: "Simple Invention",
-    usd: 995,
+    usd: 895,
     description: "Physical products with straightforward mechanics — tools, accessories, furniture, simple devices. Fewer than roughly 10 functional components.",
   },
   {
     name: "Standard Invention",
-    usd: 1195,
+    usd: 1075,
     description: "Electrical systems, multi-component mechanisms, consumer electronics, medical devices. Moderate technical complexity.",
-    popular: true,
   },
   {
     name: "Complex Invention",
-    usd: 1395,
+    usd: 1255,
     description: "Software-implemented inventions, AI/ML systems, biotech, chemical compositions, telecommunications. Requires detailed technical specification.",
   },
 ];
 
-const rushUsd: Record<number, number> = { 30: 200, 21: 400, 14: 700 };
+const rushUsd: Record<number, number> = { 30: 180, 21: 360, 14: 630 };
 
 const notOffered = [
   "Trademark registration",
@@ -236,17 +235,8 @@ export default function ServicesPage() {
               <Card
                 key={tier.name}
                 padding="lg"
-                className={`text-center ${
-                  tier.popular
-                    ? "border-2 border-teal ring-1 ring-teal/20 relative"
-                    : ""
-                }`}
+                className="text-center"
               >
-                {tier.popular && (
-                  <div className="md:absolute md:-top-3 md:left-1/2 md:-translate-x-1/2 mb-3 md:mb-0 text-center">
-                    <Badge variant="teal">Most Common</Badge>
-                  </div>
-                )}
                 <h3 className="text-lg font-semibold text-navy mb-3">
                   {tier.name}
                 </h3>
@@ -261,7 +251,7 @@ export default function ServicesPage() {
                 </div>
                 <Button
                   href="/services/patent-drafting"
-                  variant={tier.popular ? "primary" : "outline"}
+                  variant="outline"
                   size="sm"
                   className="w-full"
                 >

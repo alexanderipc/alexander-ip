@@ -12,9 +12,9 @@ import { getServiceBySlug } from "@/data/services";
 const service = getServiceBySlug("fto")!;
 
 const ftoTierUsd: Record<string, number> = {
-  "Patent Landscape": 600,
-  "Simple Invention FTO": 1600,
-  "Complex Invention FTO": 2500,
+  "Patent Landscape": 540,
+  "Simple Invention FTO": 1440,
+  "Complex Invention FTO": 2250,
 };
 
 const ftoTierService: Record<string, string> = {
@@ -44,9 +44,9 @@ export default function FTOPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <CheckoutButton
-                service="fto-simple"
+                service="fto-landscape"
                 size="lg"
-                label="Order Simple FTO"
+                label="Order Patent Landscape"
               />
               <Button
                 href="/contact?service=fto"
@@ -127,12 +127,12 @@ export default function FTOPage() {
                 padding="lg"
                 className={`flex flex-col ${
                   tier.popular
-                    ? "border-2 border-teal ring-1 ring-teal/20 relative"
+                    ? "border-2 border-teal ring-1 ring-teal/20"
                     : ""
                 }`}
               >
                 {tier.popular && (
-                  <div className="md:absolute md:-top-3 md:left-1/2 md:-translate-x-1/2 mb-3 md:mb-0 text-center">
+                  <div className="text-center mb-4">
                     <Badge variant="teal">Most Popular</Badge>
                   </div>
                 )}
@@ -195,9 +195,9 @@ export default function FTOPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CheckoutButton
-                service="fto-simple"
+                service="fto-landscape"
                 size="lg"
-                label="Order Simple FTO"
+                label="Order Patent Landscape"
               />
               <Button
                 href="/contact?service=fto"

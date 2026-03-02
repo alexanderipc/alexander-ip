@@ -18,7 +18,7 @@ const serviceCards = [
     title: "Consultation",
     description:
       "Not sure where to start? Alexander IP will assess your idea, explain what patent protection involves, and help you decide whether it makes sense to proceed.",
-    usdAmount: 125,
+    usdAmount: 112,
     href: "/services/consultation",
   },
   {
@@ -26,7 +26,7 @@ const serviceCards = [
     title: "Patent Search",
     description:
       "A thorough search of existing patents and publications to assess patentability before investing in a full application.",
-    usdAmount: 335,
+    usdAmount: 300,
     href: "/services/patent-search",
   },
   {
@@ -34,7 +34,7 @@ const serviceCards = [
     title: "Patent Drafting",
     description:
       "A complete patent application — background, claims, detailed description, and abstract — drafted to maximise protection and ready for filing.",
-    usdAmount: 995,
+    usdAmount: 895,
     href: "/services/patent-drafting",
   },
   {
@@ -50,7 +50,7 @@ const serviceCards = [
     title: "International Filing",
     description:
       "PCT applications and national phase entries to extend protection to other countries, with clear advice on where it's worth filing.",
-    usdAmount: 600,
+    usdAmount: 540,
     href: "/services/international-filing",
   },
   {
@@ -58,7 +58,7 @@ const serviceCards = [
     title: "FTO / Infringement",
     description:
       "Honest, understandable strategic advice on the risks of selling and manufacturing your product, backed by in-depth patent research.",
-    usdAmount: 600,
+    usdAmount: 540,
     href: "/services/fto",
   },
 ];
