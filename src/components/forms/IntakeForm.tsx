@@ -22,7 +22,7 @@ const serviceOptionsBase = [
   { label: "Patent Drafting", slug: "patent-drafting", usd: 995 },
   { label: "Office Correspondence", slug: "patent-prosecution", usd: null },
   { label: "International Filing / PCT", slug: "international-filing", usd: 600 },
-  { label: "FTO / Infringement Check", slug: "fto", usd: 600 },
+  { label: "Infringement Check", slug: "fto", usd: 600 },
   { label: "Portfolio Management", slug: "portfolio-management", usd: null },
   { label: "Not Sure", slug: "not-sure", usd: null },
 ];

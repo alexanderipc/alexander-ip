@@ -13,14 +13,14 @@ const service = getServiceBySlug("fto")!;
 
 const ftoTierUsd: Record<string, number> = {
   "Patent Landscape": 540,
-  "Simple Invention FTO": 1440,
-  "Complex Invention FTO": 2250,
+  "Simple Invention Infringement Check": 1440,
+  "Complex Invention Infringement Check": 2250,
 };
 
 const ftoTierService: Record<string, string> = {
   "Patent Landscape": "fto-landscape",
-  "Simple Invention FTO": "fto-simple",
-  "Complex Invention FTO": "fto-complex",
+  "Simple Invention Infringement Check": "fto-simple",
+  "Complex Invention Infringement Check": "fto-complex",
 };
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ export default function FTOPage() {
       <section className="py-16 lg:py-24 bg-gradient-to-b from-slate-50 to-white">
         <Container>
           <div className="max-w-3xl">
-            <Badge className="mb-6">FTO / Infringement Check</Badge>
+            <Badge className="mb-6">Infringement Check</Badge>
             <h1 className="text-4xl sm:text-5xl font-bold text-navy leading-tight mb-6">
               {service.title}
             </h1>
@@ -113,7 +113,7 @@ export default function FTOPage() {
         <Container>
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-navy mb-4">
-              FTO Packages
+              Infringement Check Packages
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Three tiers depending on the depth of analysis your product

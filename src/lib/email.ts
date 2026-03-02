@@ -115,7 +115,7 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   patent_drafting: "Patent Drafting",
   patent_prosecution: "Office Correspondence",
   international_filing: "International Filing",
-  fto: "FTO / Infringement Check",
+  fto: "Infringement Check",
   illustrations: "Patent Illustrations",
   filing: "Patent Filing",
   ip_valuation: "IP Valuation",

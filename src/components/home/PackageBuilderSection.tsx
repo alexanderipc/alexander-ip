@@ -3,7 +3,7 @@ import PackageBuilder from "@/components/services/PackageBuilder";
 
 export default function PackageBuilderSection() {
   return (
-    <section id="build-package" className="py-20 bg-slate-50 scroll-mt-8">
+    <section id="build-package" className="pt-10 pb-20 bg-white scroll-mt-8">
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">

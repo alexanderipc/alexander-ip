@@ -17,13 +17,14 @@ const navLinks = [
       { label: "Patent Drafting", href: "/services/patent-drafting" },
       { label: "Office Correspondence", href: "/services/patent-prosecution" },
       { label: "International Filing", href: "/services/international-filing" },
-      { label: "FTO / Infringement Check", href: "/services/fto" },
+      { label: "Infringement Check", href: "/services/fto" },
       { label: "Custom Project", href: "/services/custom" },
     ],
   },
   { label: "How It Works", href: "/process" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
+  { label: "Tinker\u2019s Workshop", href: "/tinkers-workshop" },
 ];
 
 export default function Navbar() {

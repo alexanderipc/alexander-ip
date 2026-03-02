@@ -103,14 +103,37 @@ interface FlowLine {
   active: boolean;
 }
 
-function buildOrthogonalPath(
+function buildSmoothPath(
   srcX: number,
   srcY: number,
   dstX: number,
   dstY: number,
-  midY: number
+  midY: number,
+  radius = 16
 ): string {
-  return `M ${srcX} ${srcY} L ${srcX} ${midY} L ${dstX} ${midY} L ${dstX} ${dstY}`;
+  /* Straight vertical when source and dest are aligned */
+  if (Math.abs(dstX - srcX) < 1) {
+    return `M ${srcX} ${srcY} L ${dstX} ${dstY}`;
+  }
+
+  /* Clamp radius so it fits within the available vertical/horizontal space */
+  const r = Math.min(
+    radius,
+    Math.abs(dstX - srcX) / 2,
+    Math.abs(midY - srcY) / 2,
+    Math.abs(dstY - midY) / 2
+  );
+
+  const dx = dstX > srcX ? 1 : -1; // direction sign
+
+  return [
+    `M ${srcX} ${srcY}`,
+    `L ${srcX} ${midY - r}`,                        // vertical down to first corner
+    `Q ${srcX} ${midY} ${srcX + dx * r} ${midY}`,   // smooth corner turn
+    `L ${dstX - dx * r} ${midY}`,                    // horizontal across
+    `Q ${dstX} ${midY} ${dstX} ${midY + r}`,         // smooth corner turn
+    `L ${dstX} ${dstY}`,                              // vertical down to destination
+  ].join(" ");
 }
 
 function getMidpointY(
@@ -194,7 +217,7 @@ export default function PackageBuilder() {
       const dstX = rect.left + rect.width / 2 - containerRect.left;
       const dstY = rect.top - containerRect.top;
       newLines1.push({
-        path: buildOrthogonalPath(srcX, srcY, dstX, dstY, midY1),
+        path: buildSmoothPath(srcX, srcY, dstX, dstY, midY1),
         active: selectedExtras.has(extras[i].key),
       });
     });
@@ -228,7 +251,7 @@ export default function PackageBuilder() {
       const tX = tRect.left + tRect.width / 2 - containerRect.left;
       const tY = tRect.top - containerRect.top;
       newLines2.push({
-        path: buildOrthogonalPath(mX, mY, tX, tY, midY2),
+        path: buildSmoothPath(mX, mY, tX, tY, midY2),
         active: timeline === tl.key,
       });
     });
@@ -443,11 +466,14 @@ export default function PackageBuilder() {
         </div>
       )}
 
-      {/* ── Row 2: Optional Extras ─────────────────────── */}
+      {/* ── Row 2: Recommended Extras ────────────────────── */}
       <div className={`mt-10 md:mt-16 ${!isExtrasEnabled ? "opacity-40 pointer-events-none" : ""}`}>
-        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
-          Step 2 &mdash; Add optional extras
+        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          Step 2 &mdash; Include what you need
         </h3>
+        <p className="text-xs text-slate-400 mb-4">
+          Most clients add illustrations and filing. Only skip these if you can handle them yourself.
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
           {extras.map((extra, i) => {
             const isSelected = selectedExtras.has(extra.key);

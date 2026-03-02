@@ -173,7 +173,7 @@ export const services: Service[] = [
       "Complete patent application drafting",
       "Professional claims drafting",
       "Detailed description with drawings coordination",
-      "Covers provisional & non-provisional",
+      "Covers both early-stage and full applications",
       "Multi-jurisdiction support (US, UK, EP, PCT, CA, AU)",
       "Filing with patent office included in full packages",
     ],
@@ -278,7 +278,7 @@ export const services: Service[] = [
       "Formal response letters with legal arguments",
       "Claim amendments and restructuring",
       "Restriction requirements and election responses",
-      "Final office actions, RCEs, and appeals support",
+      "Final office actions, continued examination requests, and appeals support",
     ],
     pricing: [
       {
@@ -376,8 +376,8 @@ export const services: Service[] = [
   },
   {
     slug: "fto",
-    title: "Freedom to Operate (FTO) / Infringement Check",
-    shortTitle: "FTO / Infringement",
+    title: "Infringement Check (Freedom to Operate)",
+    shortTitle: "Infringement Check",
     description:
       "Honest, understandable strategic advice on the risks of selling and manufacturing your product — backed by in-depth patent research and analysis.",
     longDescription:
@@ -411,9 +411,9 @@ export const services: Service[] = [
         popular: true,
       },
       {
-        name: "Simple Invention FTO",
+        name: "Simple Invention Infringement Check",
         price: "$1,440",
-        description: "Full FTO search and report with detailed claims analysis — for straightforward products",
+        description: "Full infringement search and report with detailed claims analysis — for straightforward products",
         features: [
           "Everything in Patent Landscape",
           "Detailed claim-by-claim analysis",
@@ -424,11 +424,11 @@ export const services: Service[] = [
         ],
       },
       {
-        name: "Complex Invention FTO",
+        name: "Complex Invention Infringement Check",
         price: "$2,250",
-        description: "Full FTO search and report with detailed claims analysis — for complex products",
+        description: "Full infringement search and report with detailed claims analysis — for complex products",
         features: [
-          "Everything in Simple Invention FTO",
+          "Everything in Simple Invention Infringement Check",
           "Broader claim scope analysis",
           "Multiple technology areas covered",
           "Advanced design-around strategies",
@@ -444,19 +444,19 @@ export const services: Service[] = [
     ],
     faq: [
       {
-        question: "What\u2019s the difference between a patent search and an FTO?",
+        question: "What\u2019s the difference between a patent search and an infringement check?",
         answer:
-          "A patent search assesses whether your invention is novel enough to patent. An FTO analysis assesses whether your product risks infringing someone else\u2019s existing patents. They answer different questions \u2014 one about your right to patent, the other about your right to sell.",
+          "A patent search assesses whether your invention is novel enough to patent. An infringement check assesses whether your product risks infringing someone else\u2019s existing patents. They answer different questions \u2014 one about your right to patent, the other about your right to sell.",
       },
       {
-        question: "When should I get an FTO?",
+        question: "When should I get an infringement check?",
         answer:
-          "Ideally before you invest heavily in manufacturing, tooling, or market launch. An FTO early in the process can save significant costs by identifying risks before they become expensive problems.",
+          "Ideally before you invest heavily in manufacturing, tooling, or market launch. An infringement check early in the process can save significant costs by identifying risks before they become expensive problems.",
       },
       {
         question: "Which tier do I need?",
         answer:
-          "The Patent Landscape package is ideal if you want a high-level understanding of the risk environment before committing to a full analysis. The Simple Invention FTO is right for most products \u2014 mechanical devices, consumer electronics, etc. The Complex Invention FTO is for products involving multiple technology areas, software-hardware integration, or particularly crowded patent landscapes.",
+          "The Patent Landscape package is ideal if you want a high-level understanding of the risk environment before committing to a full analysis. The Simple Invention Infringement Check is right for most products \u2014 mechanical devices, consumer electronics, etc. The Complex Invention Infringement Check is for products involving multiple technology areas, software-hardware integration, or particularly crowded patent landscapes.",
       },
     ],
   },

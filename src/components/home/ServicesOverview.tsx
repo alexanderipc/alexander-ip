@@ -7,7 +7,6 @@ import {
   Globe,
   ShieldCheck,
   ArrowRight,
-  ArrowDown,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
@@ -40,13 +39,13 @@ const serviceCards = [
   },
   {
     icon: Globe,
-    title: "Intl. Filing",
+    title: "International Filing",
     usdAmount: 540,
     href: "/services/international-filing",
   },
   {
     icon: ShieldCheck,
-    title: "FTO",
+    title: "Infringement Check",
     usdAmount: 540,
     href: "/services/fto",
   },
@@ -54,7 +53,7 @@ const serviceCards = [
 
 export default function ServicesOverview() {
   return (
-    <section className="py-20 bg-white">
+    <section className="pt-20 pb-6 bg-white">
       <Container>
         <div className="text-center mb-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">
@@ -124,24 +123,6 @@ export default function ServicesOverview() {
               </div>
             </Link>
           ))}
-        </div>
-
-        {/* Arrow pointing down to PackageBuilder */}
-        <div className="flex flex-col items-center mt-8 text-slate-400">
-          <span className="text-sm mb-2">
-            Configure your patent drafting package below
-          </span>
-          <ArrowDown className="w-5 h-5 animate-bounce" />
-        </div>
-
-        <div className="text-center mt-6">
-          <Link
-            href="/services"
-            className="inline-flex items-center gap-2 text-blue font-semibold hover:text-blue-dark transition-colors"
-          >
-            View all services with full pricing
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
       </Container>
     </section>

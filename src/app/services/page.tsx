@@ -24,7 +24,7 @@ import { services, rushSurcharges } from "@/data/services";
 export const metadata: Metadata = {
   title: "Services & Pricing | Alexander IP",
   description:
-    "Transparent, fixed-fee patent services from a Legal 500-trained specialist. Consultation, search, drafting, office correspondence, international filing, and FTO analysis. No hidden costs.",
+    "Transparent, fixed-fee patent services from a Legal 500-trained specialist. Consultation, search, drafting, office correspondence, international filing, and infringement analysis. No hidden costs.",
 };
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
