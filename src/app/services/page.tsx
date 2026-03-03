@@ -72,9 +72,51 @@ const notOffered = [
   "Design patents as a standalone service",
 ];
 
+function ServicesSchema() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Patent Services by Alexander IP",
+    itemListElement: services.map((s, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Service",
+        name: s.title,
+        description: s.description,
+        url: `https://www.alexander-ip.com/services/${s.slug}`,
+        provider: { "@type": "Organization", name: "Alexander IP" },
+        ...(s.startingPrice !== "Quote"
+          ? {
+              offers: {
+                "@type": "Offer",
+                price: s.startingPrice.replace(/[^0-9.]/g, ""),
+                priceCurrency: "USD",
+                priceSpecification: {
+                  "@type": "UnitPriceSpecification",
+                  price: s.startingPrice.replace(/[^0-9.]/g, ""),
+                  priceCurrency: "USD",
+                  unitText: "per project",
+                },
+              },
+            }
+          : {}),
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
 export default function ServicesPage() {
   return (
     <>
+      <ServicesSchema />
       {/* Hero */}
       <section className="py-16 lg:py-24 bg-gradient-to-b from-slate-50 to-white">
         <Container>

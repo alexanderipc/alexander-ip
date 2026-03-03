@@ -11,6 +11,24 @@ export const metadata: Metadata = {
     "Pay for a custom IP project at a pre-agreed price. Set your amount, describe your project, and get started instantly.",
 };
 
+function BreadcrumbSchema() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.alexander-ip.com" },
+      { "@type": "ListItem", position: 2, name: "Services", item: "https://www.alexander-ip.com/services" },
+      { "@type": "ListItem", position: 3, name: "Custom Project", item: "https://www.alexander-ip.com/services/custom" },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
 const faqItems = [
   {
     question: "What is a custom project?",
@@ -36,7 +54,9 @@ const faqItems = [
 
 export default function CustomProjectPage() {
   return (
-    <main>
+    <>
+      <BreadcrumbSchema />
+      <main>
       {/* Hero */}
       <section className="py-16 lg:py-20 bg-gradient-to-b from-slate-50 to-white">
         <Container size="narrow">
@@ -119,5 +139,6 @@ export default function CustomProjectPage() {
         </Container>
       </section>
     </main>
+    </>
   );
 }

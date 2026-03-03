@@ -16,9 +16,28 @@ export const metadata: Metadata = {
   description: service.description,
 };
 
+function BreadcrumbSchema() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.alexander-ip.com" },
+      { "@type": "ListItem", position: 2, name: "Services", item: "https://www.alexander-ip.com/services" },
+      { "@type": "ListItem", position: 3, name: service.title, item: "https://www.alexander-ip.com/services/consultation" },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
 export default function ConsultationPage() {
   return (
     <>
+      <BreadcrumbSchema />
       {/* Hero */}
       <section className="py-16 lg:py-24 bg-gradient-to-b from-slate-50 to-white">
         <Container>
