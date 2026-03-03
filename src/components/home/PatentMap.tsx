@@ -91,6 +91,18 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US2025366786A1", label: "US 2025/366786 A1", title: "Health Monitoring Diaper", url: patentUrl("US2025366786A1") },
       { number: "US20260021372A1", label: "US 2026/0021372 A1", title: "Snowboard Boot Stabilizer", url: patentUrl("US20260021372A1") },
       { number: "US2025314123A1", label: "US 2025/314123 A1", title: "Cat Gate System", url: patentUrl("US2025314123A1") },
+      { number: "US2023211133A1", label: "US 2023/211133 A1", title: "Dual Stopcock", url: patentUrl("US2023211133A1") },
+      { number: "US2025380670A1", label: "US 2025/380670 A1", title: "Smart Pet Collar", url: patentUrl("US2025380670A1") },
+      { number: "US20260033674A1", label: "US 2026/0033674 A1", title: "Cutting Board", url: patentUrl("US20260033674A1") },
+      { number: "US20260050739A1", label: "US 2026/0050739 A1", title: "AI Character Portrayals", url: patentUrl("US20260050739A1") },
+      { number: "US2025338980A1", label: "US 2025/338980 A1", title: "Tri-Fold Video Display", url: patentUrl("US2025338980A1") },
+      { number: "US2025323845A1", label: "US 2025/323845 A1", title: "AI Call Re-Engagement", url: patentUrl("US2025323845A1") },
+      { number: "US20260020642A1", label: "US 2026/0020642 A1", title: "Orthopedic Safety Boot", url: patentUrl("US20260020642A1") },
+      { number: "US20260008580A1", label: "US 2026/0008580 A1", title: "Medication Container", url: patentUrl("US20260008580A1") },
+      { number: "US2025041653A1", label: "US 2025/041653 A1", title: "Exercise Platform", url: patentUrl("US2025041653A1") },
+      { number: "US2025387034A1", label: "US 2025/387034 A1", title: "Heart Rate Sharing", url: patentUrl("US2025387034A1") },
+      { number: "US2025221384A1", label: "US 2025/221384 A1", title: "Smart Dog Collar", url: patentUrl("US2025221384A1") },
+      { number: "US2025353392A1", label: "US 2025/353392 A1", title: "EV Docking System", url: patentUrl("US2025353392A1") },
     ],
   },
   {
@@ -122,6 +134,10 @@ const jurisdictions: Jurisdiction[] = [
     patents: [
       { number: "EP4576048B1", label: "EP 4,576,048 B1", title: "Spatial Memory Aid", url: patentUrl("EP4576048B1") },
       { number: "EP4655775A1", label: "EP 4,655,775 A1", title: "Modular Smart Frame", url: patentUrl("EP4655775A1") },
+      { number: "EP4035264A1", label: "EP 4,035,264 A1", title: "Equal Sound Contours", url: patentUrl("EP4035264A1") },
+      { number: "EP4430020A1", label: "EP 4,430,020 A1", title: "Vehicle Docking Module", url: patentUrl("EP4430020A1") },
+      { number: "EP4695742A1", label: "EP 4,695,742 A1", title: "QR Code Optimization", url: patentUrl("EP4695742A1") },
+      { number: "EP4651704A1", label: "EP 4,651,704 A1", title: "Self-Watering Planter", url: patentUrl("EP4651704A1") },
     ],
   },
   {
@@ -134,6 +150,9 @@ const jurisdictions: Jurisdiction[] = [
       { number: "AU2022440230B2", label: "AU 2022440230 B2", title: "Vehicle Docking System", url: patentUrl("AU2022440230B2") },
       { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
       { number: "AU2025202303A1", label: "AU 2025202303 A1", title: "Cat Gate System", url: patentUrl("AU2025202303A1") },
+      { number: "AU2022440229A1", label: "AU 2022440229 A1", title: "EV Docking System", url: patentUrl("AU2022440229A1") },
+      { number: "AU2024277082A1", label: "AU 2024277082 A1", title: "Exercise Handle", url: patentUrl("AU2024277082A1") },
+      { number: "AU2023425963A1", label: "AU 2023425963 A1", title: "Modular Smart Frame", url: patentUrl("AU2023425963A1") },
     ],
   },
   {
@@ -144,15 +163,22 @@ const jurisdictions: Jurisdiction[] = [
     countryCodes: ["124"],
     patents: [
       { number: "CA3246062A1", label: "CA 3,246,062 A1", title: "Animal Trap Monitor", url: patentUrl("CA3246062A1") },
+      { number: "CA3267615A1", label: "CA 3,267,615 A1", title: "Valve Control System", url: patentUrl("CA3267615A1") },
+      { number: "CA3192924A1", label: "CA 3,192,924 A1", title: "Bait Station", url: patentUrl("CA3192924A1") },
     ],
   },
   {
     id: "pct",
-    name: "PCT (155 States)",
+    name: "International (155+ States)",
     color: PCT_GREEN,
     hoverColor: PCT_GREEN_HOVER,
     countryCodes: [],
-    patents: [],
+    patents: [
+      { number: "WO2024079441A1", label: "WO 2024/079441 A1", title: "Valve Control System", url: patentUrl("WO2024079441A1") },
+      { number: "WO2024156974A1", label: "WO 2024/156974 A1", title: "Modular Smart Frame", url: patentUrl("WO2024156974A1") },
+      { number: "WO2024240368A1", label: "WO 2024/240368 A1", title: "Exercise Handle", url: patentUrl("WO2024240368A1") },
+      { number: "WO2022073056A1", label: "WO 2022/073056 A1", title: "Bait Station", url: patentUrl("WO2022073056A1") },
+    ],
   },
 ];
 
@@ -321,8 +347,8 @@ function PatentMap() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5 ml-5">
-                      {j.patents.length === 0
-                        ? "155+ contracting states"
+                      {j.id === "pct"
+                        ? `${pubCount} published · 155+ states`
                         : <>
                             {grantCount > 0 && `${grantCount} granted`}
                             {grantCount > 0 && pubCount > 0 && " \u00B7 "}
