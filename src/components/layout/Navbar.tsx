@@ -24,7 +24,6 @@ const navLinks = [
   { label: "How It Works", href: "/process" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
-  { label: "Tinker\u2019s Workshop", href: "/tinkers-workshop" },
 ];
 
 export default function Navbar() {
