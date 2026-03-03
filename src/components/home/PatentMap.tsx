@@ -57,7 +57,7 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1540a8",
     countryCodes: ["840"],
     patents: [
-      // Granted patents (newest first)
+      // ── Granted patents (newest first) ──
       { number: "US12556844B1", label: "US 12,556,844 B1", title: "CPU & RAM Monitor", url: patentUrl("US12556844B1") },
       { number: "US12554272B2", label: "US 12,554,272 B2", title: "Valve Control System", url: patentUrl("US12554272B2") },
       { number: "US12539800B2", label: "US 12,539,800 B2", title: "Swivel Vehicle Table", url: patentUrl("US12539800B2") },
@@ -81,7 +81,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US11833384B2", label: "US 11,833,384 B2", title: "Resistance Bands", url: patentUrl("US11833384B2") },
       { number: "US11483078B1", label: "US 11,483,078 B1", title: "ULF Communications", url: patentUrl("US11483078B1") },
       { number: "US10878232B2", label: "US 10,878,232 B2", title: "Invoice Automation", url: patentUrl("US10878232B2") },
-      // Published applications
+      // ── Published applications ──
       { number: "US20260018000A1", label: "US 2026/0018000 A1", title: "Smart Package Pod", url: patentUrl("US20260018000A1") },
       { number: "US20260052163A1", label: "US 2026/0052163 A1", title: "Cybersecurity Honeypot", url: patentUrl("US20260052163A1") },
       { number: "US2024270289A1", label: "US 2024/270289 A1", title: "Gondola Transport System", url: patentUrl("US2024270289A1") },
@@ -103,6 +103,16 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US2025387034A1", label: "US 2025/387034 A1", title: "Heart Rate Sharing", url: patentUrl("US2025387034A1") },
       { number: "US2025221384A1", label: "US 2025/221384 A1", title: "Smart Dog Collar", url: patentUrl("US2025221384A1") },
       { number: "US2025353392A1", label: "US 2025/353392 A1", title: "EV Docking System", url: patentUrl("US2025353392A1") },
+      { number: "US2025137432A1", label: "US 2025/137432 A1", title: "Pressure-Differential Engine", url: patentUrl("US2025137432A1") },
+      { number: "US2025251701A1", label: "US 2025/251701 A1", title: "3D Watch Winder", url: patentUrl("US2025251701A1") },
+      { number: "US2025029518A1", label: "US 2025/029518 A1", title: "Magnetic Collectible Display", url: patentUrl("US2025029518A1") },
+      { number: "US2025349225A1", label: "US 2025/349225 A1", title: "Musical Instrument Layouts", url: patentUrl("US2025349225A1") },
+      { number: "US2025383183A1", label: "US 2025/383183 A1", title: "Dual-Profile Mounting Rail", url: patentUrl("US2025383183A1") },
+      { number: "US2025303675A1", label: "US 2025/303675 A1", title: "Laminated Film Assembly", url: patentUrl("US2025303675A1") },
+      { number: "US2025199325A1", label: "US 2025/199325 A1", title: "VR Fragrance Device", url: patentUrl("US2025199325A1") },
+      { number: "US2024374013A1", label: "US 2024/374013 A1", title: "Dual Deodorant Dispenser", url: patentUrl("US2024374013A1") },
+      { number: "US20260033580A1", label: "US 2026/0033580 A1", title: "Convertible Headwear", url: patentUrl("US20260033580A1") },
+      { number: "US2025316250A1", label: "US 2025/316250 A1", title: "Dynamic Audio Retrigger", url: patentUrl("US2025316250A1") },
     ],
   },
   {
@@ -112,13 +122,8 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#0a2d66",
     countryCodes: ["826"],
     patents: [
-      { number: "GB2547098A", label: "GB 2,547,098 A", title: "Inflatable Luggage Frame", url: patentUrl("GB2547098A") },
-      { number: "GB2600049A", label: "GB 2,600,049 A", title: "Acoustic Wall Rail System", url: patentUrl("GB2600049A") },
-      { number: "GB2515443A", label: "GB 2,515,443 A", title: "Steering Wheel Mount", url: patentUrl("GB2515443A") },
-      { number: "GB2506730A", label: "GB 2,506,730 A", title: "Recessed Window Panel", url: patentUrl("GB2506730A") },
-      { number: "GB2600621A", label: "GB 2,600,621 A", title: "Pet Hair Removal", url: patentUrl("GB2600621A") },
-      { number: "GB2515546A", label: "GB 2,515,546 A", title: "Adaptive VR System", url: patentUrl("GB2515546A") },
-      { number: "GB2504745A", label: "GB 2,504,745 A", title: "Cat Gate System", url: patentUrl("GB2504745A") },
+      // ── Granted ──
+      { number: "GB2623310B", label: "GB 2,623,310 B", title: "Valve Control System", url: patentUrl("GB2623310B") },
     ],
   },
   {
@@ -132,27 +137,33 @@ const jurisdictions: Jurisdiction[] = [
       "528", "578", "616", "620", "642", "703", "705", "724", "752", "756", "792",
     ],
     patents: [
+      // ── Granted ──
       { number: "EP4576048B1", label: "EP 4,576,048 B1", title: "Spatial Memory Aid", url: patentUrl("EP4576048B1") },
+      // ── Published ──
       { number: "EP4655775A1", label: "EP 4,655,775 A1", title: "Modular Smart Frame", url: patentUrl("EP4655775A1") },
-      { number: "EP4035264A1", label: "EP 4,035,264 A1", title: "Equal Sound Contours", url: patentUrl("EP4035264A1") },
-      { number: "EP4430020A1", label: "EP 4,430,020 A1", title: "Vehicle Docking Module", url: patentUrl("EP4430020A1") },
+      { number: "EP4035264A1", label: "EP 4,035,264 A1", title: "Audio Data Processing", url: patentUrl("EP4035264A1") },
       { number: "EP4695742A1", label: "EP 4,695,742 A1", title: "QR Code Optimization", url: patentUrl("EP4695742A1") },
       { number: "EP4651704A1", label: "EP 4,651,704 A1", title: "Self-Watering Planter", url: patentUrl("EP4651704A1") },
     ],
   },
   {
     id: "au",
-    name: "Australia",
+    name: "Australia & NZ",
     color: "#1a56db",
     hoverColor: "#1540a8",
-    countryCodes: ["036"],
+    countryCodes: ["036", "554"],
     patents: [
-      { number: "AU2022440230B2", label: "AU 2022440230 B2", title: "Vehicle Docking System", url: patentUrl("AU2022440230B2") },
-      { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
+      // ── Granted ──
+      { number: "AU2022440230B2", label: "AU 2022440230 B2", title: "Vehicle Docking Module", url: patentUrl("AU2022440230B2") },
+      { number: "AU2023361441B2", label: "AU 2023361441 B2", title: "Valve Control System", url: patentUrl("AU2023361441B2") },
+      { number: "AU2020471661B2", label: "AU 2020471661 B2", title: "Bait Station", url: patentUrl("AU2020471661B2") },
+      { number: "NZ799057A", label: "NZ 799,057 A", title: "Bait Station", url: patentUrl("NZ799057A") },
+      // ── Published ──
       { number: "AU2025202303A1", label: "AU 2025202303 A1", title: "Cat Gate System", url: patentUrl("AU2025202303A1") },
       { number: "AU2022440229A1", label: "AU 2022440229 A1", title: "EV Docking System", url: patentUrl("AU2022440229A1") },
       { number: "AU2024277082A1", label: "AU 2024277082 A1", title: "Exercise Handle", url: patentUrl("AU2024277082A1") },
       { number: "AU2023425963A1", label: "AU 2023425963 A1", title: "Modular Smart Frame", url: patentUrl("AU2023425963A1") },
+      { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
     ],
   },
   {
@@ -165,6 +176,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "CA3246062A1", label: "CA 3,246,062 A1", title: "Animal Trap Monitor", url: patentUrl("CA3246062A1") },
       { number: "CA3267615A1", label: "CA 3,267,615 A1", title: "Valve Control System", url: patentUrl("CA3267615A1") },
       { number: "CA3192924A1", label: "CA 3,192,924 A1", title: "Bait Station", url: patentUrl("CA3192924A1") },
+      { number: "CA3250800A1", label: "CA 3,250,800 A1", title: "EV Docking Module", url: patentUrl("CA3250800A1") },
     ],
   },
   {
@@ -178,6 +190,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "WO2024156974A1", label: "WO 2024/156974 A1", title: "Modular Smart Frame", url: patentUrl("WO2024156974A1") },
       { number: "WO2024240368A1", label: "WO 2024/240368 A1", title: "Exercise Handle", url: patentUrl("WO2024240368A1") },
       { number: "WO2022073056A1", label: "WO 2022/073056 A1", title: "Bait Station", url: patentUrl("WO2022073056A1") },
+      { number: "BR112022018356A2", label: "BR 112022018356 A2", title: "Electronic Vaping Device", url: patentUrl("BR112022018356A2") },
     ],
   },
 ];
