@@ -71,6 +71,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US12337915B2", label: "US 12,337,915 B2", title: "Universal Docking Bracket", url: patentUrl("US12337915B2") },
       { number: "US12318654B2", label: "US 12,318,654 B2", title: "Exercise Handle", url: patentUrl("US12318654B2") },
       { number: "US12277273B2", label: "US 12,277,273 B2", title: "Haptic Device", url: patentUrl("US12277273B2") },
+      { number: "US12236923B2", label: "US 12,236,923 B2", title: "Music Production Device", url: patentUrl("US12236923B2") },
       { number: "US12213474B2", label: "US 12,213,474 B2", title: "Bait Station", url: patentUrl("US12213474B2") },
       { number: "US12189040B2", label: "US 12,189,040 B2", title: "Bicycle Handlebar Grip", url: patentUrl("US12189040B2") },
       { number: "US12121131B1", label: "US 12,121,131 B1", title: "Dispensing Stick", url: patentUrl("US12121131B1") },
@@ -89,6 +90,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US2025256054A1", label: "US 2025/256054 A1", title: "Baby Patting Device", url: patentUrl("US2025256054A1") },
       { number: "US2025366786A1", label: "US 2025/366786 A1", title: "Health Monitoring Diaper", url: patentUrl("US2025366786A1") },
       { number: "US20260021372A1", label: "US 2026/0021372 A1", title: "Snowboard Boot Stabilizer", url: patentUrl("US20260021372A1") },
+      { number: "US2025314123A1", label: "US 2025/314123 A1", title: "Cat Gate System", url: patentUrl("US2025314123A1") },
     ],
   },
   {
@@ -104,6 +106,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "GB2506730A", label: "GB 2,506,730 A", title: "Recessed Window Panel", url: patentUrl("GB2506730A") },
       { number: "GB2600621A", label: "GB 2,600,621 A", title: "Pet Hair Removal", url: patentUrl("GB2600621A") },
       { number: "GB2515546A", label: "GB 2,515,546 A", title: "Adaptive VR System", url: patentUrl("GB2515546A") },
+      { number: "GB2504745A", label: "GB 2,504,745 A", title: "Cat Gate System", url: patentUrl("GB2504745A") },
     ],
   },
   {
@@ -130,6 +133,7 @@ const jurisdictions: Jurisdiction[] = [
     patents: [
       { number: "AU2022440230B2", label: "AU 2022440230 B2", title: "Vehicle Docking System", url: patentUrl("AU2022440230B2") },
       { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
+      { number: "AU2025202303A1", label: "AU 2025202303 A1", title: "Cat Gate System", url: patentUrl("AU2025202303A1") },
     ],
   },
   {
