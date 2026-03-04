@@ -209,20 +209,38 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         user_metadata: { name: customerName },
       });
 
-    if (createError || !newUser.user) {
-      throw new Error(
-        `Failed to create client: ${createError?.message || "Unknown error"}`
-      );
+    if (createError || !newUser?.user) {
+      // User may already exist in auth.users but not in profiles
+      // (e.g. orphaned auth record, profile trigger failed, or email mismatch)
+      console.log(`[webhook] createUser failed: ${createError?.message}, searching auth users...`);
+      const { data: listData } = await adminClient.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+      const matchedUser = listData?.users?.find((u) => u.email === email);
+
+      if (matchedUser) {
+        clientId = matchedUser.id;
+        console.log(`[webhook] Found existing auth user: ${clientId}`);
+        // Ensure profile exists with correct email (upsert handles missing row)
+        await adminClient
+          .from("profiles")
+          .upsert({ id: clientId, name: customerName, email });
+      } else {
+        throw new Error(
+          `Failed to create client: ${createError?.message || "Unknown error"}`
+        );
+      }
+    } else {
+      clientId = newUser.user.id;
+
+      // Update profile with name and email
+      await adminClient
+        .from("profiles")
+        .update({ name: customerName, email })
+        .eq("id", clientId);
+      console.log(`[webhook] Created user: ${clientId}`);
     }
-
-    clientId = newUser.user.id;
-
-    // Update profile with name and email
-    await adminClient
-      .from("profiles")
-      .update({ name: customerName, email })
-      .eq("id", clientId);
-    console.log(`[webhook] Created user: ${clientId}`);
   }
 
   // 5. Calculate delivery date
