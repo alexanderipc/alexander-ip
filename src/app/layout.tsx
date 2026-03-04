@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   manifest: "/manifest.json",
   verification: {
-    google: "PASTE_YOUR_GOOGLE_VERIFICATION_CODE",
+    google: "taSgKy26DWaKNVAMC6fi0UCkJzWv5rFcOyaWGIZso14",
   },
 };
 
