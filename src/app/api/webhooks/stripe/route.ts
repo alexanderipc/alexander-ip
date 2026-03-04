@@ -108,10 +108,11 @@ export async function POST(request: NextRequest) {
   try {
     await handleCheckoutCompleted(session);
   } catch (err) {
-    console.error("Webhook processing error:", err);
-    // Return 500 so Stripe retries
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error("Webhook processing error:", errMsg, err);
+    // Return 500 so Stripe retries — include message for diagnostics
     return NextResponse.json(
-      { error: "Processing failed" },
+      { error: `Processing failed: ${errMsg}` },
       { status: 500 }
     );
   }
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
 /* ── Checkout completed handler ──────────────────────────────── */
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  console.log(`[webhook] Processing checkout: ${session.id}`);
   const adminClient = createAdminClient();
 
   // 1. Extract data from session
@@ -133,6 +135,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     typeof session.payment_intent === "string"
       ? session.payment_intent
       : session.payment_intent?.id || null;
+
+  console.log(`[webhook] Service: ${stripeServiceId}, Email: ${email}, Amount: ${amountTotal}, Currency: ${currency}`);
 
   if (!stripeServiceId || !email) {
     console.error("Webhook missing required data:", {
@@ -178,20 +182,26 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const customerName =
     session.customer_details?.name || email.split("@")[0];
 
-  const { data: existingUsers } = await adminClient.auth.admin.listUsers();
-  const existingUser = existingUsers?.users?.find(
-    (u) => u.email === email
-  );
+  console.log(`[webhook] Looking up user: ${email}`);
 
-  if (existingUser) {
-    clientId = existingUser.id;
-    // Update profile with name and email
+  // Look up existing user by email in profiles table (fast, no pagination issues)
+  const { data: existingProfile } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    clientId = existingProfile.id;
+    console.log(`[webhook] Found existing user: ${clientId}`);
+    // Update profile with latest name
     await adminClient
       .from("profiles")
-      .update({ name: customerName, email })
+      .update({ name: customerName })
       .eq("id", clientId);
   } else {
     // Create new user (DB trigger auto-creates profile)
+    console.log(`[webhook] Creating new user for: ${email}`);
     const { data: newUser, error: createError } =
       await adminClient.auth.admin.createUser({
         email,
@@ -212,6 +222,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .from("profiles")
       .update({ name: customerName, email })
       .eq("id", clientId);
+    console.log(`[webhook] Created user: ${clientId}`);
   }
 
   // 5. Calculate delivery date
@@ -222,6 +233,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     : null;
 
   // 6. Create project
+  console.log(`[webhook] Creating project: ${title} (${serviceType}) for client ${clientId}`);
   const { data: project, error: projectError } = await adminClient
     .from("projects")
     .insert({
@@ -262,6 +274,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     internal_note: `Auto-created from Stripe checkout. Payment: ${paymentIntentId}`,
     notify_client: true,
   });
+
+  console.log(`[webhook] Project created: ${project.id}`);
 
   // 8. Send welcome email with portal link
   try {
