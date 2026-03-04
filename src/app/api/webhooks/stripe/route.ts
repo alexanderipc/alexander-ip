@@ -200,20 +200,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .update({ name: customerName })
       .eq("id", clientId);
   } else {
-    // Create new user via direct SQL (bypasses broken GoTrue createUser API)
+    // Create new user (trigger auto-creates profile)
     console.log(`[webhook] Creating new user for: ${email}`);
-    const { data: newUserId, error: rpcError } = await adminClient.rpc(
-      "create_user_bypass",
-      { p_email: email, p_name: customerName }
-    );
+    const { data: newUser, error: createError } =
+      await adminClient.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { name: customerName },
+      });
 
-    if (rpcError || !newUserId) {
+    if (createError || !newUser?.user) {
       throw new Error(
-        `Failed to create client: ${rpcError?.message || "Unknown error"}`
+        `Failed to create client: ${createError?.message || "Unknown error"}`
       );
     }
 
-    clientId = newUserId;
+    clientId = newUser.user.id;
     console.log(`[webhook] Created user: ${clientId}`);
   }
 
