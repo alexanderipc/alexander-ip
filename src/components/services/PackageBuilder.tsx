@@ -343,6 +343,7 @@ export default function PackageBuilder() {
           customAmount: amountInSmallestUnit,
           currency: curr.code,
           description: `Patent Drafting Package: ${parts.join(" + ")}`,
+          timelineDays: timelines.find((t) => t.key === timeline)?.days || null,
         };
       }
 

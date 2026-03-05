@@ -38,10 +38,20 @@ export async function POST(request: NextRequest) {
       });
 
     if (genError || !data?.properties?.hashed_token) {
-      console.error("Generate link error:", genError);
+      console.error("Generate link error:", genError, "| email:", email);
+
+      // If user not found, give helpful message instead of generic 500
+      const isNotFound =
+        genError?.message?.includes("not found") ||
+        genError?.message?.includes("finding user");
+
       return NextResponse.json(
-        { error: "Failed to generate sign-in link. Please try again." },
-        { status: 500 }
+        {
+          error: isNotFound
+            ? "No account found with that email. If you purchased a service, check that you're using the same email."
+            : "Failed to generate sign-in link. Please try again.",
+        },
+        { status: isNotFound ? 404 : 500 }
       );
     }
 

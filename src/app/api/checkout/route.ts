@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const body = await request.json();
-    const { service = "consultation", customAmount, description, currency: bodyCurrency } = body;
+    const { service = "consultation", customAmount, description, currency: bodyCurrency, timelineDays } = body;
 
     const config = serviceConfig[service];
     if (!config) {
@@ -158,6 +158,11 @@ export async function POST(request: NextRequest) {
     // Store description in metadata for custom projects (webhook uses this)
     if (service === "custom" && description) {
       metadata.description = String(description).slice(0, 500);
+    }
+
+    // Store timeline days if provided (e.g. rush/emergency delivery)
+    if (timelineDays && typeof timelineDays === "number" && timelineDays > 0) {
+      metadata.timeline_days = String(timelineDays);
     }
 
     const session = await stripe.checkout.sessions.create({

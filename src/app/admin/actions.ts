@@ -644,12 +644,16 @@ export async function getCalendarData(year: number, month: number) {
   const events: CalendarEvent[] = [];
 
   // Fetch projects with delivery dates in range (non-complete only)
-  const { data: projects } = await supabase
+  const { data: projects, error: projectsError } = await supabase
     .from("projects")
     .select("id, title, estimated_delivery_date, status, client_id, profiles(name, email)")
     .gte("estimated_delivery_date", startDate)
     .lte("estimated_delivery_date", endDate)
     .not("status", "in", '("complete","complete_granted")');
+
+  if (projectsError) {
+    console.error("Calendar projects query error:", projectsError);
+  }
 
   if (projects) {
     for (const p of projects) {
@@ -670,12 +674,16 @@ export async function getCalendarData(year: number, month: number) {
   }
 
   // Fetch incomplete milestones with target dates in range
-  const { data: milestones } = await supabase
+  const { data: milestones, error: milestonesError } = await supabase
     .from("project_milestones")
     .select("id, title, target_date, project_id, projects(title, client_id, profiles(name, email))")
     .gte("target_date", startDate)
     .lte("target_date", endDate)
     .is("completed_date", null);
+
+  if (milestonesError) {
+    console.error("Calendar milestones query error:", milestonesError);
+  }
 
   if (milestones) {
     for (const m of milestones) {

@@ -220,11 +220,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   // 5. Calculate delivery date
-  const timelineDays = DEFAULT_TIMELINES[serviceType] || null;
+  // Use timeline from checkout metadata (rush/emergency), fall back to service default
+  const metadataTimeline = session.metadata?.timeline_days
+    ? parseInt(session.metadata.timeline_days, 10)
+    : null;
+  const timelineDays = metadataTimeline || DEFAULT_TIMELINES[serviceType] || null;
   const startDate = new Date().toISOString().split("T")[0];
   const estimatedDelivery = timelineDays
     ? calculateDeliveryDate(startDate, timelineDays)
     : null;
+  console.log(`[webhook] Timeline: ${timelineDays} days (metadata: ${metadataTimeline}, default: ${DEFAULT_TIMELINES[serviceType]}), delivery: ${estimatedDelivery}`);
 
   // 6. Create project
   console.log(`[webhook] Creating project: ${title} (${serviceType}) for client ${clientId}`);

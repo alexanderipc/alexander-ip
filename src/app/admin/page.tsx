@@ -9,7 +9,7 @@ import {
 } from "@/lib/portal/status";
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
-import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle, CalendarDays } from "lucide-react";
+import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle } from "lucide-react";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -68,22 +68,13 @@ export default async function AdminDashboard() {
             {active.length} active project{active.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/calendar"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"
-          >
-            <CalendarDays className="w-4 h-4" />
-            Calendar
-          </Link>
-          <Link
-            href="/admin/projects/new"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Project
-          </Link>
-        </div>
+        <Link
+          href="/admin/projects/new"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          New Project
+        </Link>
       </div>
 
       {/* Alerts */}
@@ -106,8 +97,8 @@ export default async function AdminDashboard() {
 
       {/* Projects table */}
       {active.length > 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-8 overflow-x-auto">
-          <table className="w-full min-w-[640px]">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-8">
+          <table className="w-full">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">

@@ -7,6 +7,7 @@ import {
   getStatusLabel,
   getProgressPercent,
   getNextStatus,
+  getDaysRemaining,
   isComplete,
 } from "@/lib/portal/status";
 import StatusBadge from "@/components/portal/StatusBadge";
