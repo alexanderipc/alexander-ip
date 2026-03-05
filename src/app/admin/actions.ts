@@ -635,12 +635,13 @@ export async function getCalendarData(year: number, month: number) {
   await requireAdmin(); // Verify caller is admin
   const supabase = createAdminClient(); // Use admin client to bypass RLS for calendar reads
 
-  // Build date range for the month (with padding for calendar display)
+  // Build date range for the month (with padding for next-month calendar rows)
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const endDate =
-    month === 12
-      ? `${year + 1}-01-31`
-      : `${year}-${String(month + 1).padStart(2, "0")}-31`;
+  // Correctly calculate last day of the *next* month (for calendar padding rows)
+  // new Date(year, month+1, 0) gives last day of the month after our target
+  // JS Date handles year rollover automatically (month 13 → Jan next year)
+  const endDateObj = new Date(year, month + 1, 0);
+  const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, "0")}-${String(endDateObj.getDate()).padStart(2, "0")}`;
 
   const events: CalendarEvent[] = [];
 
@@ -652,6 +653,7 @@ export async function getCalendarData(year: number, month: number) {
     .lte("estimated_delivery_date", endDate)
     .not("status", "in", '("complete","complete_granted")');
 
+  console.log(`[calendar] range: ${startDate} → ${endDate}, projects: ${projects?.length ?? 'null'}, error: ${projectsError?.message ?? 'none'}`);
   if (projectsError) {
     console.error("Calendar projects query error:", projectsError);
   }
