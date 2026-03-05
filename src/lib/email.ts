@@ -522,6 +522,7 @@ export async function sendAdminNewOrderEmail(
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: ADMIN_EMAIL,
+      cc: "finance.alexanderipc@gmail.com",
       subject: `💰 New order: ${formattedAmount} — ${data.title}`,
       html: adminOrderHtml({ ...data, formattedAmount }),
     });
