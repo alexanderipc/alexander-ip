@@ -495,6 +495,111 @@ function newMessageHtml(data: MessageEmailData): string {
 </html>`;
 }
 
+/* ── Admin New Order Notification ──────────────────────────── */
+
+const ADMIN_EMAIL = "alexanderip.contact@gmail.com";
+
+interface AdminOrderData {
+  clientName: string;
+  clientEmail: string;
+  title: string;
+  serviceType: ServiceType;
+  amount: number; // cents/pence
+  currency: string;
+  estimatedDelivery: string | null;
+  projectId: string;
+}
+
+export async function sendAdminNewOrderEmail(
+  data: AdminOrderData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const formattedAmount = (data.amount / 100).toLocaleString("en-US", {
+      style: "currency",
+      currency: data.currency,
+    });
+
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: `💰 New order: ${formattedAmount} — ${data.title}`,
+      html: adminOrderHtml({ ...data, formattedAmount }),
+    });
+
+    if (error) {
+      console.error("Resend error (admin notification):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Admin notification email failed:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function adminOrderHtml(
+  data: AdminOrderData & { formattedAmount: string }
+): string {
+  const serviceLabel = SERVICE_LABELS[data.serviceType] || data.serviceType;
+  const deliveryLine = data.estimatedDelivery
+    ? `<tr>
+        <td style="padding:6px 0;color:#64748b;font-size:14px;width:140px;">Delivery</td>
+        <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${new Date(data.estimatedDelivery).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</td>
+       </tr>`
+    : "";
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+        <tr><td style="background-color:#16a34a;padding:28px 32px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800;">New Order Received</h1>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <p style="margin:0 0 4px;color:#0f1729;font-size:28px;font-weight:800;">${data.formattedAmount}</p>
+          <p style="margin:0 0 24px;color:#64748b;font-size:14px;">from ${data.clientName}</p>
+
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:24px;">
+            <tr><td style="padding:16px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:14px;width:140px;">Project</td>
+                  <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${data.title}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:14px;">Service</td>
+                  <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${serviceLabel}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:14px;">Client</td>
+                  <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${data.clientEmail}</td>
+                </tr>
+                ${deliveryLine}
+              </table>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+            <a href="https://www.alexander-ip.com/admin/projects/${data.projectId}" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:14px 40px;border-radius:10px;">
+              View Project &rarr;
+            </a>
+          </td></tr></table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 /* ── Project Created Email (HTML) ──────────────────────────── */
 
 function projectCreatedHtml(data: ProjectEmailData): string {

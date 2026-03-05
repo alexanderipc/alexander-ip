@@ -5,7 +5,7 @@ import {
   DEFAULT_TIMELINES,
   calculateDeliveryDate,
 } from "@/lib/portal/status";
-import { sendProjectCreatedEmail } from "@/lib/email";
+import { sendProjectCreatedEmail, sendAdminNewOrderEmail } from "@/lib/email";
 import type { ServiceType } from "@/lib/supabase/types";
 
 export const runtime = "nodejs";
@@ -271,7 +271,23 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   console.log(`[webhook] Project created: ${project.id}`);
 
-  // 8. Send welcome email with portal link
+  // 8. Send admin notification email
+  try {
+    await sendAdminNewOrderEmail({
+      clientName: customerName,
+      clientEmail: email,
+      title,
+      serviceType,
+      amount: amountTotal || 0,
+      currency,
+      estimatedDelivery,
+      projectId: project.id,
+    });
+  } catch (adminEmailErr) {
+    console.error("Failed to send admin notification:", adminEmailErr);
+  }
+
+  // 9. Send welcome email with portal link
   try {
     // Generate magic link for the client
     const { data: linkData } =
