@@ -58,6 +58,7 @@ const jurisdictions: Jurisdiction[] = [
     countryCodes: ["840"],
     patents: [
       // ── Granted patents (newest first) ──
+      { number: "US11940361B2", label: "US 11,940,361 B2", title: "Open Water Analysis System & Vortex Filter", url: patentUrl("US11940361B2") },
       { number: "US12556844B1", label: "US 12,556,844 B1", title: "CPU & RAM Monitor", url: patentUrl("US12556844B1") },
       { number: "US12554272B2", label: "US 12,554,272 B2", title: "Valve Control System", url: patentUrl("US12554272B2") },
       { number: "US12539800B2", label: "US 12,539,800 B2", title: "Swivel Vehicle Table", url: patentUrl("US12539800B2") },
@@ -124,6 +125,12 @@ const jurisdictions: Jurisdiction[] = [
     patents: [
       // ── Granted ──
       { number: "GB2623310B", label: "GB 2,623,310 B", title: "Valve Control System", url: patentUrl("GB2623310B") },
+      // ── Published ──
+      { number: "GB2600469A", label: "GB 2,600,469 A", title: "Inflatable Luggage Frame", url: patentUrl("GB2600469A") },
+      { number: "GB2600049A", label: "GB 2,600,049 A", title: "Acoustic Wall Rail System", url: patentUrl("GB2600049A") },
+      { number: "GB2600621A", label: "GB 2,600,621 A", title: "Pet Hair Removal System", url: patentUrl("GB2600621A") },
+      { number: "GB2515546A", label: "GB 2,515,546 A", title: "Drawbar Mounting", url: patentUrl("GB2515546A") },
+      { number: "GB2515443A", label: "GB 2,515,443 A", title: "Quick-Release Steering Wheel Mount", url: patentUrl("GB2515443A") },
     ],
   },
   {
@@ -144,6 +151,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "EP4035264A1", label: "EP 4,035,264 A1", title: "Audio Data Processing", url: patentUrl("EP4035264A1") },
       { number: "EP4695742A1", label: "EP 4,695,742 A1", title: "QR Code Optimization", url: patentUrl("EP4695742A1") },
       { number: "EP4651704A1", label: "EP 4,651,704 A1", title: "Self-Watering Planter", url: patentUrl("EP4651704A1") },
+      { number: "EP4538953A1", label: "EP 4,538,953 A1", title: "Context-Aware Targeted Advertising", url: patentUrl("EP4538953A1") },
     ],
   },
   {
@@ -173,6 +181,11 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: "#1d4ed8",
     countryCodes: ["124"],
     patents: [
+      // ── Granted ──
+      { number: "CA3038171C", label: "CA 3,038,171 C", title: "Buoy Apparatus and Control System", url: patentUrl("CA3038171C") },
+      // ── Published ──
+      { number: "CA3129147A1", label: "CA 3,129,147 A1", title: "Open Water Analysis System & Vortex Filter", url: patentUrl("CA3129147A1") },
+      { number: "CA3116827A1", label: "CA 3,116,827 A1", title: "Smart Reader System", url: patentUrl("CA3116827A1") },
       { number: "CA3246062A1", label: "CA 3,246,062 A1", title: "Animal Trap Monitor", url: patentUrl("CA3246062A1") },
       { number: "CA3267615A1", label: "CA 3,267,615 A1", title: "Valve Control System", url: patentUrl("CA3267615A1") },
       { number: "CA3192924A1", label: "CA 3,192,924 A1", title: "Bait Station", url: patentUrl("CA3192924A1") },
@@ -393,7 +406,7 @@ function PatentMap() {
                                 <div className="flex-1 min-w-0">
                                   <span className="font-mono whitespace-nowrap">{p.label}</span>
                                   {p.title && (
-                                    <p className="text-[11px] text-slate-400 font-sans truncate mt-0.5">{p.title}</p>
+                                    <p className="text-[11px] text-slate-400 font-sans truncate group-hover:whitespace-normal group-hover:overflow-visible mt-0.5">{p.title}</p>
                                   )}
                                 </div>
                                 <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
