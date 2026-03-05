@@ -632,7 +632,8 @@ export interface CalendarEvent {
 }
 
 export async function getCalendarData(year: number, month: number) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin(); // Verify caller is admin
+  const supabase = createAdminClient(); // Use admin client to bypass RLS for calendar reads
 
   // Build date range for the month (with padding for calendar display)
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
