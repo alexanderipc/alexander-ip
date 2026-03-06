@@ -37,40 +37,40 @@ export default async function PortalLayout({
       <div className="bg-white border-b border-slate-200">
         <Container>
           <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 sm:gap-6">
               <Link
                 href="/portal"
                 className="flex items-center gap-2 text-navy font-semibold text-sm hover:text-blue-600 transition-colors"
               >
                 <LayoutDashboard className="w-4 h-4" />
-                My Projects
+                <span className="hidden sm:inline">My Projects</span>
               </Link>
               <Link
                 href="/portal/calendar"
                 className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-navy transition-colors"
               >
                 <CalendarDays className="w-4 h-4" />
-                Calendar
+                <span className="hidden sm:inline">Calendar</span>
               </Link>
               <Link
                 href="/portal/settings"
                 className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-navy transition-colors"
               >
                 <Settings className="w-4 h-4" />
-                Settings
+                <span className="hidden sm:inline">Settings</span>
               </Link>
               {profile?.role === "admin" && (
                 <Link
                   href="/admin"
-                  className="text-sm text-slate-500 hover:text-navy transition-colors"
+                  className="hidden sm:flex text-sm text-slate-500 hover:text-navy transition-colors"
                 >
                   Admin Dashboard
                 </Link>
               )}
             </div>
 
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-500">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <span className="hidden sm:inline text-sm text-slate-500">
                 {displayName}
               </span>
               <a
@@ -78,7 +78,7 @@ export default async function PortalLayout({
                 className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                Sign out
+                <span className="hidden sm:inline">Sign out</span>
               </a>
             </div>
           </div>
