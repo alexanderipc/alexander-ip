@@ -40,11 +40,15 @@ export async function clientUploadDocument(
   const adminClient = createAdminClient();
 
   // Verify the client owns this project (RLS would catch this too, but be explicit)
-  const { data: project } = await supabase
+  const { data: project, error: projectError } = await supabase
     .from("projects")
     .select("id, client_id")
     .eq("id", projectId)
     .single();
+
+  if (projectError) {
+    console.error("[Upload] Project lookup error:", projectError.message, "| projectId:", projectId, "| user:", user.id);
+  }
 
   if (!project || project.client_id !== user.id) {
     throw new Error("Project not found");
@@ -67,6 +71,7 @@ export async function clientUploadDocument(
     });
 
   if (uploadError) {
+    console.error("[Upload] Storage upload error:", uploadError.message, "| path:", filePath);
     throw new Error(`Upload failed: ${uploadError.message}`);
   }
 
@@ -83,8 +88,11 @@ export async function clientUploadDocument(
     });
 
   if (insertError) {
+    console.error("[Upload] DB insert error:", insertError.message, "| projectId:", projectId);
     throw new Error(`Failed to save document record: ${insertError.message}`);
   }
+
+  console.log("[Upload] Success:", file.name, "→", filePath, "| user:", user.id);
 
   revalidatePath(`/portal/projects/${projectId}`);
   revalidatePath(`/admin/projects/${projectId}`);
@@ -189,12 +197,13 @@ export interface ClientCalendarEvent {
 export async function getClientCalendarData(year: number, month: number) {
   const { supabase, user } = await requireClient();
 
-  // Build date range for the month (with padding for calendar display)
+  // Build date range for the month (with padding for next-month calendar rows)
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const endDate =
-    month === 12
-      ? `${year + 1}-01-31`
-      : `${year}-${String(month + 1).padStart(2, "0")}-31`;
+  // Use JS Date to get the correct last day of next month (avoids invalid dates like Apr-31)
+  const endMonth = month === 12 ? 1 : month + 1;
+  const endYear = month === 12 ? year + 1 : year;
+  const endDateObj = new Date(endYear, endMonth, 0); // day 0 = last day of prev month
+  const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, "0")}-${String(endDateObj.getDate()).padStart(2, "0")}`;
 
   const events: ClientCalendarEvent[] = [];
 

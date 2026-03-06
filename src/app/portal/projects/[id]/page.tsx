@@ -24,11 +24,22 @@ interface Props {
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
+
+  let supabase;
+  try {
+    supabase = await createClient();
+  } catch (err) {
+    console.error("[Portal] Failed to create Supabase client:", err);
+    redirect("/auth/login");
+  }
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+  if (authError) {
+    console.error("[Portal] Auth error:", authError.message);
+  }
   if (!user) redirect("/auth/login");
 
   // Fetch project (RLS ensures only the client's own projects are visible)
@@ -38,6 +49,9 @@ export default async function ProjectDetailPage({ params }: Props) {
     .eq("id", id)
     .single();
 
+  if (error) {
+    console.error("[Portal] Project fetch error:", error.message, "| project_id:", id, "| user:", user.id);
+  }
   if (error || !project) notFound();
 
   // Fetch related data in parallel — each query is individually safe
@@ -79,6 +93,9 @@ export default async function ProjectDetailPage({ params }: Props) {
         .eq("is_client_visible", true)
         .order("target_date", { ascending: true }),
     ]);
+    if (updatesResult.error) console.error("[Portal] Updates query error:", updatesResult.error.message);
+    if (docsResult.error) console.error("[Portal] Documents query error:", docsResult.error.message);
+    if (milestonesResult.error) console.error("[Portal] Milestones query error:", milestonesResult.error.message);
     updates = updatesResult.data || [];
     rawDocs = docsResult.data || [];
     milestones = milestonesResult.data || [];
@@ -93,6 +110,7 @@ export default async function ProjectDetailPage({ params }: Props) {
       .select("*")
       .eq("project_id", id)
       .order("created_at", { ascending: true });
+    if (messagesResult.error) console.error("[Portal] Messages query error:", messagesResult.error.message);
     messages = (messagesResult.data as Msg[]) || [];
   } catch {
     messages = [];
@@ -102,23 +120,29 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   // Generate signed URLs for documents (bucket is private, use admin client)
   // Each URL is generated individually so one failure doesn't crash the page
-  const adminClient = createAdminClient();
-  const documents = await Promise.all(
-    rawDocs.map(async (doc) => {
-      try {
-        const { data } = await adminClient.storage
-          .from("project-documents")
-          .createSignedUrl(doc.file_url, 3600);
-        return { ...doc, signed_url: data?.signedUrl || "#" };
-      } catch (urlErr) {
-        console.error("[Portal] Failed to create signed URL for", doc.file_url, urlErr);
-        return { ...doc, signed_url: "#" };
-      }
-    })
-  );
+  let documents: (typeof rawDocs[number] & { signed_url: string })[] = [];
+  try {
+    const adminClient = createAdminClient();
+    documents = await Promise.all(
+      rawDocs.map(async (doc) => {
+        try {
+          const { data } = await adminClient.storage
+            .from("project-documents")
+            .createSignedUrl(doc.file_url, 3600);
+          return { ...doc, signed_url: data?.signedUrl || "#" };
+        } catch (urlErr) {
+          console.error("[Portal] Failed to create signed URL for", doc.file_url, urlErr);
+          return { ...doc, signed_url: "#" };
+        }
+      })
+    );
+  } catch (signedUrlErr) {
+    console.error("[Portal] Failed to generate signed URLs:", signedUrlErr);
+    documents = rawDocs.map((doc) => ({ ...doc, signed_url: "#" }));
+  }
 
   const percent = getProgressPercent(project.service_type, project.status);
-  const complete = isComplete(project.status);
+  const complete = isComplete(project.status) || project.status === "complete_granted";
   const daysLeft = project.estimated_delivery_date
     ? getDaysRemaining(project.estimated_delivery_date)
     : null;
