@@ -7,6 +7,7 @@ import {
 } from "@/lib/portal/status";
 import { sendProjectCreatedEmail, sendAdminNewOrderEmail } from "@/lib/email";
 import type { ServiceType } from "@/lib/supabase/types";
+import { createProjectFolders } from "@/lib/microsoft/onedrive";
 
 export const runtime = "nodejs";
 
@@ -275,6 +276,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   });
 
   console.log(`[webhook] Project created: ${project.id}`);
+
+  // 7b. Create OneDrive folder structure (non-blocking)
+  try {
+    const folderUrl = await createProjectFolders(customerName, title);
+    if (folderUrl) {
+      await adminClient
+        .from("projects")
+        .update({ onedrive_url: folderUrl })
+        .eq("id", project.id);
+      console.log(`[webhook] OneDrive folder created: ${folderUrl}`);
+    }
+  } catch (driveErr) {
+    console.error("[webhook] OneDrive folder creation failed:", driveErr);
+  }
 
   // 8. Send admin notification email
   try {

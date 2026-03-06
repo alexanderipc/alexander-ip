@@ -18,6 +18,7 @@ import {
   sendNewMessageEmail,
 } from "@/lib/email";
 import { buildUnsubscribeUrl } from "@/lib/unsubscribe";
+import { createProjectFolders } from "@/lib/microsoft/onedrive";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
@@ -161,6 +162,19 @@ export async function createProject(formData: FormData) {
     });
   } catch (emailErr) {
     console.error("Failed to send project created email:", emailErr);
+  }
+
+  // Create OneDrive folder structure (non-blocking — failure won't break project creation)
+  try {
+    const folderUrl = await createProjectFolders(clientName || clientEmail.split("@")[0], title);
+    if (folderUrl) {
+      await supabase
+        .from("projects")
+        .update({ onedrive_url: folderUrl })
+        .eq("id", project.id);
+    }
+  } catch (driveErr) {
+    console.error("[OneDrive] Failed to create project folders:", driveErr);
   }
 
   revalidatePath("/admin");

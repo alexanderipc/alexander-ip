@@ -81,6 +81,7 @@ CREATE TABLE projects (
   stripe_payment_id TEXT,
   client_notifications_muted BOOLEAN NOT NULL DEFAULT FALSE,
   admin_notifications_muted BOOLEAN NOT NULL DEFAULT FALSE,
+  onedrive_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -141,6 +142,17 @@ CREATE TABLE linked_projects (
   UNIQUE(project_a_id, project_b_id)
 );
 
+-- OAuth tokens (for OneDrive integration — admin only)
+CREATE TABLE oauth_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  provider TEXT NOT NULL UNIQUE,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ============================================================
 -- INDEXES
 -- ============================================================
@@ -165,6 +177,7 @@ ALTER TABLE project_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_milestones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE linked_projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE oauth_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Helper: check admin role without triggering RLS recursion on profiles
 CREATE OR REPLACE FUNCTION is_admin()

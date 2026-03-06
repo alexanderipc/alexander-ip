@@ -82,6 +82,7 @@ export interface Project {
   stripe_payment_id: string | null;
   client_notifications_muted: boolean;
   admin_notifications_muted: boolean;
+  onedrive_url: string | null;
   created_at: string;
   updated_at: string;
 }
