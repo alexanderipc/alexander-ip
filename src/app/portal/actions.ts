@@ -111,7 +111,7 @@ export async function sendClientMessage(projectId: string, body: string) {
   // Verify client owns this project
   const { data: project } = await supabase
     .from("projects")
-    .select("id, client_id, title")
+    .select("id, client_id, title, admin_notifications_muted")
     .eq("id", projectId)
     .single();
 
@@ -129,24 +129,26 @@ export async function sendClientMessage(projectId: string, body: string) {
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
-  // Notify admin via email
-  try {
-    const { data: clientProfile } = await supabase
-      .from("profiles")
-      .select("name, email")
-      .eq("id", user.id)
-      .single();
+  // Notify admin via email (skip if project-level admin mute is on)
+  if (!project.admin_notifications_muted) {
+    try {
+      const { data: clientProfile } = await supabase
+        .from("profiles")
+        .select("name, email")
+        .eq("id", user.id)
+        .single();
 
-    const senderName = clientProfile?.name || clientProfile?.email || "Client";
+      const senderName = clientProfile?.name || clientProfile?.email || "Client";
 
-    await sendNewMessageEmail("alexanderip.contact@gmail.com", {
-      projectTitle: project.title,
-      senderName,
-      messagePreview: body.trim(),
-      portalUrl: PORTAL_URL,
-    });
-  } catch (emailErr) {
-    console.error("Failed to send message notification email:", emailErr);
+      await sendNewMessageEmail("alexanderip.contact@gmail.com", {
+        projectTitle: project.title,
+        senderName,
+        messagePreview: body.trim(),
+        portalUrl: PORTAL_URL,
+      });
+    } catch (emailErr) {
+      console.error("Failed to send message notification email:", emailErr);
+    }
   }
 
   revalidatePath(`/portal/projects/${projectId}`);
@@ -292,6 +294,34 @@ export async function updateNotificationPreferences(
   if (error) throw new Error(`Failed to update preferences: ${error.message}`);
 
   revalidatePath("/portal/settings");
+
+  return { success: true };
+}
+
+/* ── Toggle Client Notification Mute ─────────────────────────── */
+
+export async function toggleClientNotificationMute(projectId: string) {
+  const { supabase, user } = await requireClient();
+
+  // Verify client owns this project
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, client_id, client_notifications_muted")
+    .eq("id", projectId)
+    .single();
+
+  if (!project || project.client_id !== user.id) {
+    throw new Error("Project not found");
+  }
+
+  // Use admin client to update (clients can only SELECT their projects via RLS)
+  const adminClient = createAdminClient();
+  await adminClient
+    .from("projects")
+    .update({ client_notifications_muted: !project.client_notifications_muted })
+    .eq("id", projectId);
+
+  revalidatePath(`/portal/projects/${projectId}`);
 
   return { success: true };
 }

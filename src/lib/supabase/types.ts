@@ -80,6 +80,8 @@ export interface Project {
   price_paid: number | null;
   currency: string;
   stripe_payment_id: string | null;
+  client_notifications_muted: boolean;
+  admin_notifications_muted: boolean;
   created_at: string;
   updated_at: string;
 }

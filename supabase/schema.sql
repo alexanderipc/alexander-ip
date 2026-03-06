@@ -79,6 +79,8 @@ CREATE TABLE projects (
   price_paid INTEGER,          -- in smallest currency unit (cents/pence)
   currency TEXT DEFAULT 'USD',
   stripe_payment_id TEXT,
+  client_notifications_muted BOOLEAN NOT NULL DEFAULT FALSE,
+  admin_notifications_muted BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

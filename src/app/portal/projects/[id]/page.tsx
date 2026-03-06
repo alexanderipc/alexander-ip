@@ -16,6 +16,7 @@ import DocumentsList from "@/components/portal/DocumentsList";
 import ClientDocumentUpload from "@/components/portal/ClientDocumentUpload";
 import MilestonesList from "@/components/portal/MilestonesList";
 import MessageThread from "@/components/portal/MessageThread";
+import ClientNotificationMute from "@/components/portal/ClientNotificationMute";
 import { ArrowLeft, Calendar, Globe, Clock, MessageCircle } from "lucide-react";
 
 interface Props {
@@ -226,6 +227,10 @@ export default async function ProjectDetailPage({ params }: Props) {
               <span>{project.jurisdictions.join(", ")}</span>
             </div>
           )}
+          <ClientNotificationMute
+            projectId={project.id}
+            muted={project.client_notifications_muted ?? false}
+          />
         </div>
       </div>
 

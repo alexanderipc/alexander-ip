@@ -212,8 +212,8 @@ export async function advanceStatus(
     notify_client: notifyClient,
   });
 
-  // Send email notification
-  if (notifyClient) {
+  // Send email notification (skip if project-level mute is on)
+  if (notifyClient && !project.client_notifications_muted) {
     try {
       const { data: clientProfile } = await supabase
         .from("profiles")
@@ -260,7 +260,7 @@ export async function addUpdate(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("status, title, service_type, client_id")
+    .select("status, title, service_type, client_id, client_notifications_muted")
     .eq("id", projectId)
     .single();
 
@@ -275,8 +275,8 @@ export async function addUpdate(
     notify_client: notifyClient,
   });
 
-  // Send email notification
-  if (notifyClient) {
+  // Send email notification (skip if project-level mute is on)
+  if (notifyClient && !project.client_notifications_muted) {
     try {
       const { data: clientProfile } = await supabase
         .from("profiles")
@@ -326,7 +326,7 @@ export async function updateDeliveryDate(
   if (note) {
     const { data: project } = await supabase
       .from("projects")
-      .select("status")
+      .select("status, client_id, title, client_notifications_muted")
       .eq("id", projectId)
       .single();
 
@@ -337,6 +337,34 @@ export async function updateDeliveryDate(
       note: `Delivery date updated to ${new Date(newDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. ${note}`,
       notify_client: true,
     });
+
+    // Send email notification (was missing prefs check — now fixed)
+    if (project && !project.client_notifications_muted) {
+      try {
+        const { data: clientProfile } = await supabase
+          .from("profiles")
+          .select("email, notification_preferences")
+          .eq("id", project.client_id)
+          .single();
+
+        const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
+
+        if (clientProfile?.email && prefs.status_updates) {
+          const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "status_updates");
+          await sendStatusUpdateEmail(clientProfile.email, {
+            title: project.title,
+            serviceType: "" as ServiceType,
+            newStatus: project.status,
+            statusLabel: `Delivery date updated`,
+            note: `Delivery date updated to ${new Date(newDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. ${note}`,
+            portalUrl: PORTAL_URL,
+            unsubscribeUrl,
+          });
+        }
+      } catch (emailErr) {
+        console.error("Failed to send delivery date email:", emailErr);
+      }
+    }
   }
 
   revalidatePath(`/admin/projects/${projectId}`);
@@ -389,16 +417,16 @@ export async function uploadDocument(
     throw new Error(`Failed to save document record: ${insertError.message}`);
   }
 
-  // Send email notification for client-visible documents
+  // Send email notification for client-visible documents (skip if project-level mute is on)
   if (clientVisible) {
     try {
       const { data: project } = await supabase
         .from("projects")
-        .select("title, client_id")
+        .select("title, client_id, client_notifications_muted")
         .eq("id", projectId)
         .single();
 
-      if (project) {
+      if (project && !project.client_notifications_muted) {
         const { data: clientProfile } = await supabase
           .from("profiles")
           .select("email, notification_preferences")
@@ -556,7 +584,7 @@ export async function sendAdminMessage(projectId: string, body: string) {
   // Fetch project info for email
   const { data: project } = await supabase
     .from("projects")
-    .select("id, title, client_id")
+    .select("id, title, client_id, client_notifications_muted")
     .eq("id", projectId)
     .single();
 
@@ -572,28 +600,30 @@ export async function sendAdminMessage(projectId: string, body: string) {
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
-  // Notify client via email
-  try {
-    const { data: clientProfile } = await supabase
-      .from("profiles")
-      .select("email, notification_preferences")
-      .eq("id", project.client_id)
-      .single();
+  // Notify client via email (skip if project-level mute is on)
+  if (!project.client_notifications_muted) {
+    try {
+      const { data: clientProfile } = await supabase
+        .from("profiles")
+        .select("email, notification_preferences")
+        .eq("id", project.client_id)
+        .single();
 
-    const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
+      const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
 
-    if (clientProfile?.email && prefs.new_messages) {
-      const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "new_messages");
-      await sendNewMessageEmail(clientProfile.email, {
-        projectTitle: project.title,
-        senderName: "Alexander IP",
-        messagePreview: body.trim(),
-        portalUrl: PORTAL_URL,
-        unsubscribeUrl,
-      });
+      if (clientProfile?.email && prefs.new_messages) {
+        const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "new_messages");
+        await sendNewMessageEmail(clientProfile.email, {
+          projectTitle: project.title,
+          senderName: "Alexander IP",
+          messagePreview: body.trim(),
+          portalUrl: PORTAL_URL,
+          unsubscribeUrl,
+        });
+      }
+    } catch (emailErr) {
+      console.error("Failed to send message notification email:", emailErr);
     }
-  } catch (emailErr) {
-    console.error("Failed to send message notification email:", emailErr);
   }
 
   revalidatePath(`/admin/projects/${projectId}`);
@@ -709,4 +739,38 @@ export async function getCalendarData(year: number, month: number) {
   }
 
   return events;
+}
+
+/* ── Toggle Project Notification Mute (Admin) ──────────────── */
+
+export async function toggleProjectNotificationMute(
+  projectId: string,
+  target: "client" | "admin"
+) {
+  const { supabase } = await requireAdmin();
+
+  const column =
+    target === "client"
+      ? "client_notifications_muted"
+      : "admin_notifications_muted";
+
+  // Fetch current value
+  const { data: project } = await supabase
+    .from("projects")
+    .select(column)
+    .eq("id", projectId)
+    .single();
+
+  if (!project) throw new Error("Project not found");
+
+  const currentValue = (project as Record<string, boolean>)[column];
+
+  await supabase
+    .from("projects")
+    .update({ [column]: !currentValue })
+    .eq("id", projectId);
+
+  revalidatePath(`/admin/projects/${projectId}`);
+
+  return { success: true };
 }
