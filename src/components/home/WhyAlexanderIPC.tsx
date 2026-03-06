@@ -12,7 +12,7 @@ const differentiators = [
     icon: GraduationCap,
     title: "Legal 500 Training, Lean Business Model",
     description:
-      "Founded by a specialist trained at Kilburn & Strode, a top-tier Legal 500 IP firm. The same calibre of work, without the central London office, partner profit margins, or layers of administration. The expert doing the work is the only person you deal with.",
+      "Founded by a specialist trained at Kilburn & Strode, a top-tier Legal 500 IP firm. The same calibre of work, without the central London office, partner profit margins, platform commissions, or layers of administration. The expert doing the work is the only person you deal with.",
   },
   {
     icon: User,
