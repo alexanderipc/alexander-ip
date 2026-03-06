@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useTransition, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { sendAdminMessage, markAdminMessagesRead } from "@/app/admin/actions";
 import { Send } from "lucide-react";
 
@@ -24,10 +25,32 @@ export default function AdminMessageThread({
   messages,
   clientName,
 }: MessageThreadProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const prevCountRef = useRef(messages.length);
+
+  // Merge server messages with optimistic ones
+  const serverIds = new Set(messages.map((m) => m.id));
+  const pendingOptimistic = optimisticMessages.filter(
+    (m) => !serverIds.has(m.id)
+  );
+  const allMessages = [...messages, ...pendingOptimistic];
+
+  const sorted = [...allMessages].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
+  // Scroll to bottom of the message container (not the page)
+  const scrollToBottom = useCallback(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, []);
 
   // Mark unread client messages as read when component mounts
   useEffect(() => {
@@ -37,21 +60,68 @@ export default function AdminMessageThread({
     }
   }, [projectId, messages]);
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom when new messages appear
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+    if (messages.length !== prevCountRef.current || pendingOptimistic.length > 0) {
+      scrollToBottom();
+      prevCountRef.current = messages.length;
+    }
+  }, [messages.length, pendingOptimistic.length, scrollToBottom]);
+
+  // Initial scroll to bottom
+  useEffect(() => {
+    scrollToBottom();
+  }, [scrollToBottom]);
+
+  // Poll for new messages every 15 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [router]);
+
+  // Clean up optimistic messages that are now in server data
+  useEffect(() => {
+    if (optimisticMessages.length > 0 && serverIds.size > 0) {
+      const remaining = optimisticMessages.filter((m) => !serverIds.has(m.id));
+      if (remaining.length !== optimisticMessages.length) {
+        setOptimisticMessages(remaining);
+      }
+    }
+  }, [messages, optimisticMessages, serverIds]);
 
   function handleSend() {
     if (!body.trim() || isPending) return;
     setError(null);
 
+    const messageText = body.trim();
+
+    // Add optimistic message immediately
+    const optimisticMsg: Message = {
+      id: `optimistic-${Date.now()}`,
+      body: messageText,
+      is_admin: true,
+      read_at: null,
+      created_at: new Date().toISOString(),
+      sender_id: "admin",
+    };
+    setOptimisticMessages((prev) => [...prev, optimisticMsg]);
+    setBody("");
+
     startTransition(async () => {
       try {
-        await sendAdminMessage(projectId, body.trim());
-        setBody("");
+        await sendAdminMessage(projectId, messageText);
+        router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to send message");
+        // Remove optimistic message on error
+        setOptimisticMessages((prev) =>
+          prev.filter((m) => m.id !== optimisticMsg.id)
+        );
+        setBody(messageText);
+        setError(
+          err instanceof Error ? err.message : "Failed to send message"
+        );
       }
     });
   }
@@ -63,17 +133,13 @@ export default function AdminMessageThread({
     }
   }
 
-  // Show messages in chronological order (oldest first)
-  const sorted = [...messages].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
-
-  const unreadCount = messages.filter((m) => !m.is_admin && !m.read_at).length;
-
   return (
     <div>
       {/* Message list */}
-      <div className="space-y-3 max-h-96 overflow-y-auto mb-4 pr-1">
+      <div
+        ref={containerRef}
+        className="space-y-3 max-h-96 overflow-y-auto mb-4 pr-1"
+      >
         {sorted.length === 0 ? (
           <p className="text-sm text-slate-400 italic py-4 text-center">
             No messages yet. Send a message to the client.
@@ -81,6 +147,7 @@ export default function AdminMessageThread({
         ) : (
           sorted.map((msg) => {
             const isAdmin = msg.is_admin;
+            const isOptimistic = msg.id.startsWith("optimistic-");
             return (
               <div
                 key={msg.id}
@@ -91,7 +158,7 @@ export default function AdminMessageThread({
                     isAdmin
                       ? "bg-navy text-white"
                       : "bg-slate-100 text-slate-800"
-                  }`}
+                  } ${isOptimistic ? "opacity-70" : ""}`}
                 >
                   {!isAdmin && (
                     <p className="text-[11px] font-medium text-blue-600 mb-0.5">
@@ -109,19 +176,20 @@ export default function AdminMessageThread({
                       isAdmin ? "text-slate-300" : "text-slate-400"
                     }`}
                   >
-                    {new Date(msg.created_at).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {isOptimistic
+                      ? "Sending..."
+                      : new Date(msg.created_at).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                   </time>
                 </div>
               </div>
             );
           })
         )}
-        <div ref={bottomRef} />
       </div>
 
       {/* Input */}
@@ -147,18 +215,20 @@ export default function AdminMessageThread({
 
       <div className="flex items-center justify-between mt-1">
         <p className="text-[11px] text-slate-400">
-          {isPending ? "Sending..." : "Enter to send \u00B7 Shift+Enter for new line"}
+          Enter to send &middot; Shift+Enter for new line
         </p>
         {body.length > 1800 && (
-          <p className={`text-[11px] ${body.length >= 2000 ? "text-red-500" : "text-slate-400"}`}>
+          <p
+            className={`text-[11px] ${
+              body.length >= 2000 ? "text-red-500" : "text-slate-400"
+            }`}
+          >
             {body.length}/2000
           </p>
         )}
       </div>
 
-      {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   );
 }
