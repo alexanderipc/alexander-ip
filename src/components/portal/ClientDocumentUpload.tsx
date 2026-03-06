@@ -29,6 +29,7 @@ export default function ClientDocumentUpload({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setError(null);
@@ -61,7 +62,7 @@ export default function ClientDocumentUpload({
     setFileName(null);
     setFileSize(0);
     setError(null);
-    formRef.current?.reset();
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function handleSubmit(formData: FormData) {
@@ -87,8 +88,24 @@ export default function ClientDocumentUpload({
 
   return (
     <form ref={formRef} action={handleSubmit} className="space-y-3">
+      {/* File input always in DOM so FormData includes it on submit */}
+      <input
+        type="file"
+        name="file"
+        className="hidden"
+        accept={ALLOWED_EXTENSIONS.join(",")}
+        onChange={handleFileChange}
+        ref={fileInputRef}
+      />
+
       {!fileName ? (
-        <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg p-5 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
+        <label
+          className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg p-5 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }}
+        >
           <Upload className="w-5 h-5 text-slate-400 mb-1.5" />
           <span className="text-sm font-medium text-slate-600">
             Upload a document
@@ -96,13 +113,6 @@ export default function ClientDocumentUpload({
           <span className="text-xs text-slate-400 mt-0.5">
             PDF, Word, images or text &middot; Max 10 MB
           </span>
-          <input
-            type="file"
-            name="file"
-            className="hidden"
-            accept={ALLOWED_EXTENSIONS.join(",")}
-            onChange={handleFileChange}
-          />
         </label>
       ) : (
         <div className="border border-slate-200 rounded-lg p-3">
