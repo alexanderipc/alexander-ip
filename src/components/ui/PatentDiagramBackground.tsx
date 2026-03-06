@@ -53,7 +53,6 @@ const tiles: TileDef[] = [
   { src: "/images/diagrams/snowboard-bindings.webp", w: 600, h: 385, complexity: "simple" },
   { src: "/images/diagrams/fluid-treatment-system.webp", w: 800, h: 572, complexity: "complex" },
   { src: "/images/diagrams/pen-exterior.webp", w: 800, h: 598, complexity: "medium" },
-  { src: "/images/diagrams/gear-mechanism.webp", w: 800, h: 643, complexity: "medium" },
   { src: "/images/diagrams/heat-exchanger-coils.webp", w: 685, h: 800, complexity: "complex" },
   { src: "/images/diagrams/wheel-traction-device.webp", w: 800, h: 698, complexity: "medium" },
   { src: "/images/diagrams/rollator-walker.webp", w: 657, h: 800, complexity: "complex" },
