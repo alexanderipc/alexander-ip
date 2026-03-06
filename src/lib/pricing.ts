@@ -161,5 +161,5 @@ export function convertRange(
 export function getDisplayPrice(service: string, currencyKey: string): string {
   const prices = currencyPrices[service];
   const price = prices?.[currencyKey] || prices?.[DEFAULT_CURRENCY];
-  return price?.display || "$125";
+  return price?.display || "$112";
 }

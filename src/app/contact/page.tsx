@@ -62,9 +62,9 @@ export default async function ContactPage({
                       <div className="flex items-center justify-between">
                         <span className="text-blue font-bold">
                           <LocalizedPrice
-                            amount={125}
+                            amount={112}
                             prefix="From"
-                            fallback="From $125"
+                            fallback="From $112"
                           />
                         </span>
                         <span className="text-sm text-blue font-medium flex items-center gap-1 group-hover:gap-2 transition-all">

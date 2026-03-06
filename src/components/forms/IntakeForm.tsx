@@ -17,7 +17,7 @@ const ALLOWED_TYPES = [
 ];
 
 const serviceOptionsBase = [
-  { label: "Patent Consultation", slug: "consultation", usd: 125 },
+  { label: "Patent Consultation", slug: "consultation", usd: 112 },
   { label: "Patent Search", slug: "patent-search", usd: 335 },
   { label: "Patent Drafting", slug: "patent-drafting", usd: 995 },
   { label: "Office Correspondence", slug: "patent-prosecution", usd: null },
@@ -56,9 +56,6 @@ interface IntakeFormProps {
 export default function IntakeForm({ defaultService }: IntakeFormProps) {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [serviceOptions, setServiceOptions] = useState<{ value: string; label: string }[]>([]);
-  const [budgetText, setBudgetText] = useState(
-    "I understand that services start from $125 for consultations and typical patent drafting packages range from $995\u2013$2,370."
-  );
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -97,12 +94,6 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
     }));
     setServiceOptions(options);
 
-    const consultPrice = convertPrice(125, currency);
-    const draftLow = convertPrice(995, currency);
-    const draftHigh = convertPrice(2370, currency);
-    setBudgetText(
-      `I understand that services start from ${consultPrice}${vatSuffix} for consultations and typical patent drafting packages range from ${draftLow}\u2013${draftHigh}${vatSuffix}.`
-    );
   }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -284,19 +275,6 @@ export default function IntakeForm({ defaultService }: IntakeFormProps) {
             ))}
           </select>
         </div>
-      </div>
-
-      {/* Budget awareness */}
-      <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          id="budget"
-          name="budget_aware"
-          className="mt-1 w-4 h-4 text-blue border-slate-300 rounded focus:ring-blue"
-        />
-        <label htmlFor="budget" className="text-sm text-slate-600">
-          {budgetText}
-        </label>
       </div>
 
       {/* Privacy consent (required) */}

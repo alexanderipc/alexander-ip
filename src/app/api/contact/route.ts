@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
     const priorSearch = (formData.get("prior_search") as string) || "";
     const referral = (formData.get("referral") as string) || "";
     const timeline = (formData.get("timeline") as string) || "";
-    const budgetAware = formData.get("budget_aware") === "on";
     const privacyConsent = formData.get("privacy_consent") === "on";
     const attachment = formData.get("attachment") as File | null;
 
@@ -82,7 +81,6 @@ Country: ${countries || "Not specified"}
 Prior Search: ${priorSearch || "Not specified"}
 Timeline: ${timeline || "Not specified"}
 Referral Source: ${referral || "Not specified"}
-Budget Aware: ${budgetAware ? "Yes" : "No"}
 Privacy Consent: ${privacyConsent ? "Yes" : "No"} (${new Date().toISOString()})
 ${attachmentLine}
 Invention Description:

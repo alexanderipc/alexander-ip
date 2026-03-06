@@ -18,10 +18,10 @@ import AdminStatusAdvancer from "@/components/admin/StatusAdvancer";
 import AdminUpdateForm from "@/components/admin/UpdateForm";
 import AdminDocumentUpload from "@/components/admin/DocumentUpload";
 import MilestoneManager from "@/components/admin/MilestoneManager";
+import DocumentThumbnailGrid from "@/components/ui/DocumentThumbnailGrid";
 import TimelineEditor from "@/components/admin/TimelineEditor";
 import AdminMessageThread from "@/components/admin/MessageThread";
-import NotificationMuteControls from "@/components/admin/NotificationMuteControls";
-import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, FolderOpen } from "lucide-react";
+import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -325,30 +325,9 @@ export default async function AdminProjectDetailPage({ params }: Props) {
               Documents ({documents.length})
             </h2>
             <AdminDocumentUpload projectId={project.id} />
-            {documents.length > 0 && (
-              <div className="mt-4 divide-y divide-slate-100">
-                {documents.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="flex items-center justify-between py-2"
-                  >
-                    <div className="min-w-0">
-                      <a
-                        href={doc.signed_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-navy hover:text-blue-600 truncate block"
-                      >
-                        {doc.filename}
-                      </a>
-                      <p className="text-xs text-slate-400">
-                        {doc.client_visible ? "Client visible" : "Admin only"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="mt-4">
+              <DocumentThumbnailGrid documents={documents} showVisibility />
+            </div>
           </div>
 
           {/* Milestones / Phases */}
@@ -395,36 +374,6 @@ export default async function AdminProjectDetailPage({ params }: Props) {
               </div>
             </div>
           )}
-
-          {/* OneDrive Folder */}
-          {project.onedrive_url && (
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
-                Files
-              </h2>
-              <a
-                href={project.onedrive_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                <FolderOpen className="w-4 h-4" />
-                Open in OneDrive
-              </a>
-            </div>
-          )}
-
-          {/* Notification Controls */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
-              Notifications
-            </h2>
-            <NotificationMuteControls
-              projectId={project.id}
-              clientMuted={project.client_notifications_muted ?? false}
-              adminMuted={project.admin_notifications_muted ?? false}
-            />
-          </div>
         </div>
       </div>
     </div>
