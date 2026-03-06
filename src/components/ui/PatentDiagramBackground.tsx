@@ -28,10 +28,8 @@ interface TileDef {
 }
 
 const tiles: TileDef[] = [
-  { src: "/images/diagrams/engine-cross-section.webp", w: 600, h: 451, complexity: "complex" },
   { src: "/images/diagrams/knee-brace.webp", w: 548, h: 800, complexity: "medium" },
   { src: "/images/diagrams/cylindrical-column.webp", w: 334, h: 800, complexity: "simple" },
-  { src: "/images/diagrams/engine-block-gears.webp", w: 800, h: 602, complexity: "complex" },
   { src: "/images/diagrams/cable-car-system.webp", w: 799, h: 729, complexity: "medium" },
   { src: "/images/diagrams/cloud-wearable-schematic.webp", w: 800, h: 629, complexity: "simple" },
   { src: "/images/diagrams/pipe-clamp-3d.webp", w: 777, h: 800, complexity: "medium" },

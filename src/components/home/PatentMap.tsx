@@ -104,7 +104,6 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US2025387034A1", label: "US 2025/387034 A1", title: "Heart Rate Sharing", url: patentUrl("US2025387034A1") },
       { number: "US2025221384A1", label: "US 2025/221384 A1", title: "Smart Dog Collar", url: patentUrl("US2025221384A1") },
       { number: "US2025353392A1", label: "US 2025/353392 A1", title: "EV Docking System", url: patentUrl("US2025353392A1") },
-      { number: "US2025137432A1", label: "US 2025/137432 A1", title: "Pressure-Differential Engine", url: patentUrl("US2025137432A1") },
       { number: "US2025251701A1", label: "US 2025/251701 A1", title: "3D Watch Winder", url: patentUrl("US2025251701A1") },
       { number: "US2025029518A1", label: "US 2025/029518 A1", title: "Magnetic Collectible Display", url: patentUrl("US2025029518A1") },
       { number: "US2025349225A1", label: "US 2025/349225 A1", title: "Musical Instrument Layouts", url: patentUrl("US2025349225A1") },
