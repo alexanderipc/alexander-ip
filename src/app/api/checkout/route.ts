@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
 
       unitAmount = price.amount;
       currency = price.currency;
-      productName = config.name;
+      productName = `${config.name} (${currency.toUpperCase()})`;
       productDescription = config.description;
     }
 
