@@ -43,10 +43,11 @@ export default async function ProjectDetailPage({ params }: Props) {
   }
   if (!user) redirect("/auth/login");
 
-  // Fetch project (RLS ensures only the client's own projects are visible)
+  // Fetch project — use explicit columns to avoid leaking admin-only fields
+  // (e.g. onedrive_url, internal fields) that select("*") would expose in RSC payload
   const { data: project, error } = await supabase
     .from("projects")
-    .select("*")
+    .select("id, client_id, service_type, title, description, status, jurisdictions, start_date, default_timeline_days, estimated_delivery_date, actual_delivery_date, price_paid, currency, client_notifications_muted, created_at, updated_at")
     .eq("id", id)
     .single();
 
@@ -78,18 +79,18 @@ export default async function ProjectDetailPage({ params }: Props) {
     const [updatesResult, docsResult, milestonesResult] = await Promise.all([
       supabase
         .from("project_updates")
-        .select("*")
+        .select("id, project_id, status_from, status_to, note, notify_client, created_at")
         .eq("project_id", id)
         .order("created_at", { ascending: false }),
       supabase
         .from("project_documents")
-        .select("*")
+        .select("id, project_id, filename, file_url, document_type, client_visible, uploaded_at")
         .eq("project_id", id)
         .eq("client_visible", true)
         .order("uploaded_at", { ascending: false }),
       supabase
         .from("project_milestones")
-        .select("*")
+        .select("id, project_id, title, target_date, completed_date, is_client_visible, created_at")
         .eq("project_id", id)
         .eq("is_client_visible", true)
         .order("target_date", { ascending: true }),
@@ -108,7 +109,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   try {
     const messagesResult = await supabase
       .from("project_messages")
-      .select("*")
+      .select("id, project_id, sender_id, body, is_admin, read_at, created_at")
       .eq("project_id", id)
       .order("created_at", { ascending: true });
     if (messagesResult.error) console.error("[Portal] Messages query error:", messagesResult.error.message);

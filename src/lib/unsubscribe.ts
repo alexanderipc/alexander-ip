@@ -4,7 +4,9 @@
  */
 import crypto from "crypto";
 
-const SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Use a dedicated secret for HMAC signing — falls back to service role key
+// for backwards compatibility with existing unsubscribe links
+const SECRET = process.env.UNSUBSCRIBE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export type UnsubscribeType =
   | "status_updates"

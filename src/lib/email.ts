@@ -9,6 +9,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM_EMAIL = "Alexander IP <noreply@alexander-ip.com>";
 
+/** Escape user-supplied text before interpolating into HTML emails */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function sendMagicLinkEmail(
   to: string,
   magicLinkUrl: string
@@ -198,7 +208,7 @@ export async function sendStatusUpdateEmail(
 function statusUpdateHtml(data: StatusUpdateEmailData): string {
   const serviceLabel = SERVICE_LABELS[data.serviceType] || data.serviceType;
   const noteBlock = data.note
-    ? `<p style="margin:0 0 28px;color:#334155;font-size:16px;line-height:1.6;">${data.note.replace(/\n/g, "<br>")}</p>`
+    ? `<p style="margin:0 0 28px;color:#334155;font-size:16px;line-height:1.6;">${escapeHtml(data.note).replace(/\n/g, "<br>")}</p>`
     : "";
 
   const isComplete = data.newStatus === "complete";
@@ -460,7 +470,7 @@ function newMessageHtml(data: MessageEmailData): string {
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin:20px 0 28px;">
                 <tr>
                   <td style="padding:20px 24px;">
-                    <p style="margin:0;color:#334155;font-size:15px;line-height:1.6;font-style:italic;">${preview.replace(/\n/g, "<br>")}</p>
+                    <p style="margin:0;color:#334155;font-size:15px;line-height:1.6;font-style:italic;">${escapeHtml(preview).replace(/\n/g, "<br>")}</p>
                   </td>
                 </tr>
               </table>

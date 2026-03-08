@@ -38,6 +38,32 @@ export async function POST(request: NextRequest) {
     let attachmentUrl: string | null = null;
     let attachmentName: string | null = null;
 
+    // Server-side file validation (client-side checks are easily bypassed)
+    const CONTACT_MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+    const CONTACT_ALLOWED_TYPES = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+    ];
+
+    if (attachment && attachment.size > CONTACT_MAX_SIZE) {
+      return NextResponse.json(
+        { error: "File too large (max 10 MB)" },
+        { status: 400 }
+      );
+    }
+
+    if (attachment && attachment.size > 0 && !CONTACT_ALLOWED_TYPES.includes(attachment.type)) {
+      return NextResponse.json(
+        { error: "File type not supported. Please upload PDF, Word, image, or text files." },
+        { status: 400 }
+      );
+    }
+
     if (attachment && attachment.size > 0) {
       const adminClient = createAdminClient();
       const timestamp = Date.now();
@@ -52,10 +78,10 @@ export async function POST(request: NextRequest) {
         });
 
       if (!uploadError) {
-        // Generate a signed URL valid for 30 days
+        // Generate a signed URL valid for 7 days
         const { data: signedData } = await adminClient.storage
           .from("project-documents")
-          .createSignedUrl(filePath, 60 * 60 * 24 * 30);
+          .createSignedUrl(filePath, 60 * 60 * 24 * 7);
 
         attachmentUrl = signedData?.signedUrl || null;
         attachmentName = attachment.name;

@@ -8,7 +8,11 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const redirect = searchParams.get("redirect") || "/portal";
+  const rawRedirect = searchParams.get("redirect") || "/portal";
+  // Prevent open redirect — only allow relative paths on this origin
+  const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+    ? rawRedirect
+    : "/portal";
 
   if (code) {
     const supabase = await createClient();

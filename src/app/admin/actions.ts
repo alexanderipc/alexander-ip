@@ -404,7 +404,8 @@ export async function uploadDocument(
   if (!file || file.size === 0) throw new Error("No file provided");
 
   // Upload to Supabase Storage using admin client (bypasses storage RLS)
-  const filePath = `${projectId}/${Date.now()}-${file.name}`;
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const filePath = `${projectId}/${Date.now()}-${safeName}`;
   const arrayBuffer = await file.arrayBuffer();
   const { error: uploadError } = await adminClient.storage
     .from("project-documents")

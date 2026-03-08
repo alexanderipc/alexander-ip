@@ -24,10 +24,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use the request origin so links work on both localhost and production
-    const host = request.headers.get("host") || "localhost:3000";
-    const protocol = host.startsWith("localhost") ? "http" : "https";
-    const baseUrl = `${protocol}://${host}`;
+    // Use hardcoded base URL to prevent host header injection
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.alexander-ip.com";
 
     // Generate magic link via Supabase Admin API (no email sent by Supabase)
     const adminClient = createAdminClient();
@@ -40,19 +38,9 @@ export async function POST(request: NextRequest) {
     if (genError || !data?.properties?.hashed_token) {
       console.error("Generate link error:", genError, "| email:", email);
 
-      // If user not found, give helpful message instead of generic 500
-      const isNotFound =
-        genError?.message?.includes("not found") ||
-        genError?.message?.includes("finding user");
-
-      return NextResponse.json(
-        {
-          error: isNotFound
-            ? "No account found with that email. If you purchased a service, check that you're using the same email."
-            : "Failed to generate sign-in link. Please try again.",
-        },
-        { status: isNotFound ? 404 : 500 }
-      );
+      // Always return the same response to prevent user enumeration
+      // (don't reveal whether the email exists in the system)
+      return NextResponse.json({ success: true });
     }
 
     // Construct our own verify URL that the client-side page will handle

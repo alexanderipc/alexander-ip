@@ -192,22 +192,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error: unknown) {
+    // Log full error details server-side only — don't leak to client
     console.error("Stripe checkout error:", error);
 
-    // Extract detailed Stripe error info
-    let message = "Failed to create checkout session";
-    let code = "unknown";
-    let param = "";
-    if (error instanceof Stripe.errors.StripeError) {
-      message = error.message;
-      code = error.code || error.type || "stripe_error";
-      param = (error as Stripe.errors.StripeInvalidRequestError).param || "";
-    } else if (error instanceof Error) {
-      message = error.message;
-    }
-
     return NextResponse.json(
-      { error: message, code, param },
+      { error: "Failed to create checkout session. Please try again." },
       { status: 500 }
     );
   }

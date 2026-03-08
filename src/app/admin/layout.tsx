@@ -85,12 +85,14 @@ export default async function AdminLayout({
               <span className="text-sm text-slate-400">
                 {profile?.name || user.email}
               </span>
-              <a
-                href="/auth/signout"
-                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-300 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </a>
+              <form action="/auth/signout" method="POST" className="inline">
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-300 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </form>
             </div>
           </div>
         </Container>

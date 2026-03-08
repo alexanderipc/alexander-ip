@@ -346,3 +346,22 @@ CREATE TRIGGER projects_updated_at
 CREATE TRIGGER profiles_updated_at
   BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Prevent clients from escalating their own role
+CREATE OR REPLACE FUNCTION protect_role_field()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Only allow role changes if the caller is already an admin
+  -- Regular users (via anon key + RLS) cannot change their role
+  IF NEW.role IS DISTINCT FROM OLD.role THEN
+    IF NOT is_admin() THEN
+      NEW.role := OLD.role;  -- silently revert
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER protect_profiles_role
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION protect_role_field();
