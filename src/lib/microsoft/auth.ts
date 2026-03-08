@@ -52,26 +52,11 @@ export async function getAccessToken(): Promise<string | null> {
  * Called once during the initial OAuth flow.
  */
 export async function exchangeCodeForTokens(code: string): Promise<void> {
-  const clientId = process.env.MICROSOFT_CLIENT_ID || "";
-  const clientSecret = process.env.MICROSOFT_CLIENT_SECRET || "";
-  const redirectUri = process.env.MICROSOFT_REDIRECT_URI || "";
-
-  // Diagnostic logging (safe — only shows lengths and prefixes)
-  console.log("[Microsoft OAuth] Token exchange diagnostics:", {
-    clientId_length: clientId.length,
-    clientId_prefix: clientId.substring(0, 8),
-    secret_length: clientSecret.length,
-    secret_prefix: clientSecret.substring(0, 4),
-    secret_has_whitespace: clientSecret !== clientSecret.trim(),
-    redirect_uri: redirectUri,
-    code_length: code.length,
-  });
-
   const params = new URLSearchParams({
-    client_id: clientId.trim(),
-    client_secret: clientSecret.trim(),
+    client_id: process.env.MICROSOFT_CLIENT_ID!,
+    client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
     code,
-    redirect_uri: redirectUri.trim(),
+    redirect_uri: process.env.MICROSOFT_REDIRECT_URI!,
     grant_type: "authorization_code",
     scope: "Files.ReadWrite offline_access",
   });
