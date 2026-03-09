@@ -898,7 +898,7 @@ export class PatentTree3D {
     const ocx = spheres.reduce((s, c) => s + c.x, 0) / spheres.length;
     const ocy = spheres.reduce((s, c) => s + c.y, 0) / spheres.length;
     const ocz = spheres.reduce((s, c) => s + c.z, 0) / spheres.length;
-    const padding = 50;
+    const padding = 18;
     const nLat = 48, nLon = 64;
     let radii = [];
     for (let i = 0; i <= nLat; i++) {
@@ -917,7 +917,7 @@ export class PatentTree3D {
         radii[i][j] = Math.max(maxReach, padding);
       }
     }
-    for (let pass = 0; pass < 3; pass++) {
+    for (let pass = 0; pass < 2; pass++) {
       const next = [];
       for (let i = 0; i <= nLat; i++) {
         next[i] = [];
@@ -960,14 +960,21 @@ export class PatentTree3D {
         uOpacity: { value: 0.0 },
         uTime: { value: 0 },
       },
-      vertexShader: `varying vec3 vNormal;
+      vertexShader: `uniform float uTime;
+varying vec3 vNormal;
 varying vec3 vViewDir;
 varying vec3 vWorldPos;
 void main(){
   vNormal=normalize(normalMatrix*normal);
-  vec4 mvPos=modelViewMatrix*vec4(position,1.0);
+  vec3 wp=(modelMatrix*vec4(position,1.0)).xyz;
+  float disp=sin(wp.x*0.04+uTime*0.7)*2.5
+            +sin(wp.y*0.05+uTime*0.5)*2.0
+            +sin(wp.z*0.03+uTime*0.6)*2.0
+            +sin(wp.x*0.08+wp.z*0.06+uTime*0.9)*1.5;
+  vec3 displaced=position+normal*disp;
+  vec4 mvPos=modelViewMatrix*vec4(displaced,1.0);
   vViewDir=normalize(-mvPos.xyz);
-  vWorldPos=(modelMatrix*vec4(position,1.0)).xyz;
+  vWorldPos=wp;
   gl_Position=projectionMatrix*mvPos;
 }`,
       fragmentShader: `uniform vec3 uColor;
@@ -978,9 +985,9 @@ varying vec3 vViewDir;
 varying vec3 vWorldPos;
 void main(){
   float fresnel=1.0-abs(dot(vNormal,vViewDir));
-  fresnel=pow(fresnel,2.5);
-  float shimmer=sin(vWorldPos.x*0.03+vWorldPos.y*0.02+uTime*0.5)*0.5+0.5;
-  float alpha=mix(0.01,uOpacity,fresnel)+shimmer*0.008;
+  fresnel=pow(fresnel,2.0);
+  float shimmer=sin(vWorldPos.x*0.04+vWorldPos.y*0.03+uTime*0.6)*0.5+0.5;
+  float alpha=mix(0.05,uOpacity,fresnel)+shimmer*0.015;
   gl_FragColor=vec4(uColor,alpha);
 }`,
     });
@@ -1051,7 +1058,7 @@ void main(){
     if (this._bubbleMesh) {
       const bubbleAge = now - this._bubbleMesh.userData._entryStart;
       const fadeT = Math.max(0, Math.min((bubbleAge - 1200) / 1500, 1));
-      this._bubbleMesh.material.uniforms.uOpacity.value = 0.15 * fadeT * fadeT * (3 - 2 * fadeT);
+      this._bubbleMesh.material.uniforms.uOpacity.value = 0.35 * fadeT * fadeT * (3 - 2 * fadeT);
       this._bubbleMesh.material.uniforms.uTime.value = elapsed;
     }
 
