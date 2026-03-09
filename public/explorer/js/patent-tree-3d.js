@@ -204,6 +204,7 @@ export class PatentTree3D {
     this._controls.dampingFactor = 0.06;
     this._controls.minDistance = 60;
     this._controls.maxDistance = 2500;
+    this._controls.maxPolarAngle = Math.PI * 0.47;  // prevent camera below grid
 
     this._scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const key = new THREE.DirectionalLight(0xffffff, 0.7);
@@ -1103,7 +1104,7 @@ void main(){
     if (this._bubbleMesh) {
       const bubbleAge = now - this._bubbleMesh.userData._entryStart;
       const fadeT = Math.max(0, Math.min((bubbleAge - 1200) / 1500, 1));
-      this._bubbleMesh.material.uniforms.uOpacity.value = 0.35 * fadeT * fadeT * (3 - 2 * fadeT);
+      this._bubbleMesh.material.uniforms.uOpacity.value = 0.45 * fadeT * fadeT * (3 - 2 * fadeT);
       this._bubbleMesh.material.uniforms.uTime.value = elapsed;
     }
 

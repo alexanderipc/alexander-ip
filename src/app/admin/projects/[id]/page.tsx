@@ -21,7 +21,8 @@ import MilestoneManager from "@/components/admin/MilestoneManager";
 import DocumentThumbnailGrid from "@/components/ui/DocumentThumbnailGrid";
 import TimelineEditor from "@/components/admin/TimelineEditor";
 import AdminMessageThread from "@/components/admin/MessageThread";
-import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle } from "lucide-react";
+import NotificationMuteControls from "@/components/admin/NotificationMuteControls";
+import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -374,6 +375,19 @@ export default async function AdminProjectDetailPage({ params }: Props) {
               </div>
             </div>
           )}
+
+          {/* Notification Controls */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <BellOff className="w-4 h-4" />
+              Notifications
+            </h2>
+            <NotificationMuteControls
+              projectId={project.id}
+              clientMuted={project.client_notifications_muted ?? false}
+              adminMuted={project.admin_notifications_muted ?? false}
+            />
+          </div>
         </div>
       </div>
     </div>

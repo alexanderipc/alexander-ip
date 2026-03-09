@@ -11,6 +11,7 @@ import {
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
 import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle } from "lucide-react";
+import CompletedProjects from "@/components/admin/CompletedProjects";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -207,13 +208,11 @@ export default async function AdminDashboard() {
         </div>
       )}
 
-      {/* Completed summary */}
-      {all.filter((p) => isComplete(p.status)).length > 0 && (
-        <div className="text-sm text-slate-400">
-          {all.filter((p) => isComplete(p.status)).length} completed project
-          {all.filter((p) => isComplete(p.status)).length !== 1 ? "s" : ""}
-        </div>
-      )}
+      {/* Completed projects — expandable */}
+      <CompletedProjects
+        projects={all.filter((p) => isComplete(p.status))}
+        getServiceLabel={getServiceLabel as (type: string) => string}
+      />
     </div>
   );
 }
