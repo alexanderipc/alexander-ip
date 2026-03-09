@@ -37,7 +37,7 @@ export default function PatentExplorer({
                 />
               </svg>
             </div>
-            <p className="text-slate-400 text-sm">Loading Patent Explorer...</p>
+            <p className="text-slate-400 text-sm">Loading Portfolio Explorer...</p>
           </div>
         </div>
       )}
@@ -59,10 +59,10 @@ export default function PatentExplorer({
               </svg>
             </div>
             <h3 className="text-white text-lg font-semibold mb-2">
-              Patent Explorer Offline
+              Portfolio Explorer Offline
             </h3>
             <p className="text-slate-400 text-sm mb-4">
-              The Patent Portfolio Explorer is currently running locally.
+              The Portfolio Explorer is currently running locally.
               To view the interactive 3D visualization, start the explorer server.
             </p>
             <code className="block bg-slate-800/50 text-slate-300 text-xs px-4 py-2 rounded-lg font-mono">
@@ -76,7 +76,7 @@ export default function PatentExplorer({
       <iframe
         src={src}
         className="w-full h-full border-0"
-        title="Patent Portfolio Explorer"
+        title="Portfolio Explorer"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}

@@ -31,11 +31,11 @@ export class ChatPanel {
 
   _showStarters() {
     const starters = [
-      'What does this patent portfolio protect?',
-      'What are the key claim differences between the original and CIP?',
+      'What is the overall shape of this portfolio and where is coverage strongest?',
+      'How do the patent families work together to define the portfolio's scope?',
+      'Where are the gaps in coverage that new filings could fill?',
+      'What are the key claim differences between family members?',
       'What are the important upcoming deadlines?',
-      'What prior art was cited and what does it mean?',
-      'How are the patents in this family related?',
     ];
 
     let html = '<div class="chat-starters">';

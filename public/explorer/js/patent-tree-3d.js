@@ -898,7 +898,7 @@ export class PatentTree3D {
     const ocx = spheres.reduce((s, c) => s + c.x, 0) / spheres.length;
     const ocy = spheres.reduce((s, c) => s + c.y, 0) / spheres.length;
     const ocz = spheres.reduce((s, c) => s + c.z, 0) / spheres.length;
-    const padding = 18;
+    const padding = 8;
     const nLat = 48, nLon = 64;
     let radii = [];
     for (let i = 0; i <= nLat; i++) {
@@ -917,7 +917,7 @@ export class PatentTree3D {
         radii[i][j] = Math.max(maxReach, padding);
       }
     }
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < 1; pass++) {
       const next = [];
       for (let i = 0; i <= nLat; i++) {
         next[i] = [];
