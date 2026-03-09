@@ -43,12 +43,16 @@ export default async function ProjectDetailPage({ params }: Props) {
   }
   if (!user) redirect("/auth/login");
 
+  // Use admin client for all DB queries to avoid JWT refresh 400s from PostgREST.
+  // Security: getUser() already validated identity; we add explicit client_id checks.
+  const adminClient = createAdminClient();
+
   // Fetch project — use explicit columns to avoid leaking admin-only fields
-  // (e.g. onedrive_url, internal fields) that select("*") would expose in RSC payload
-  const { data: project, error } = await supabase
+  const { data: project, error } = await adminClient
     .from("projects")
     .select("id, client_id, service_type, title, description, status, jurisdictions, start_date, default_timeline_days, estimated_delivery_date, actual_delivery_date, price_paid, currency, client_notifications_muted, created_at, updated_at")
     .eq("id", id)
+    .eq("client_id", user.id)
     .single();
 
   if (error) {
@@ -77,18 +81,18 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   try {
     const [updatesResult, docsResult, milestonesResult] = await Promise.all([
-      supabase
+      adminClient
         .from("project_updates")
         .select("id, project_id, status_from, status_to, note, notify_client, created_at")
         .eq("project_id", id)
         .order("created_at", { ascending: false }),
-      supabase
+      adminClient
         .from("project_documents")
         .select("id, project_id, filename, file_url, document_type, client_visible, uploaded_at")
         .eq("project_id", id)
         .eq("client_visible", true)
         .order("uploaded_at", { ascending: false }),
-      supabase
+      adminClient
         .from("project_milestones")
         .select("id, project_id, title, target_date, completed_date, is_client_visible, created_at")
         .eq("project_id", id)
@@ -107,7 +111,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   // Fetch messages separately — table may not exist yet
   try {
-    const messagesResult = await supabase
+    const messagesResult = await adminClient
       .from("project_messages")
       .select("id, project_id, sender_id, body, is_admin, read_at, created_at")
       .eq("project_id", id)
@@ -124,7 +128,6 @@ export default async function ProjectDetailPage({ params }: Props) {
   // Each URL is generated individually so one failure doesn't crash the page
   let documents: (typeof rawDocs[number] & { signed_url: string })[] = [];
   try {
-    const adminClient = createAdminClient();
     documents = await Promise.all(
       rawDocs.map(async (doc) => {
         try {

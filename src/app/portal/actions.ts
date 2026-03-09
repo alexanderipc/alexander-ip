@@ -212,7 +212,8 @@ export interface ClientCalendarEvent {
 }
 
 export async function getClientCalendarData(year: number, month: number) {
-  const { supabase, user } = await requireClient();
+  const { user } = await requireClient();
+  const adminClient = createAdminClient();
 
   // Build date range for the month (with padding for next-month calendar rows)
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
@@ -225,7 +226,7 @@ export async function getClientCalendarData(year: number, month: number) {
   const events: ClientCalendarEvent[] = [];
 
   // Fetch this client's projects with delivery dates in range (non-complete)
-  const { data: projects } = await supabase
+  const { data: projects } = await adminClient
     .from("projects")
     .select("id, title, estimated_delivery_date, status")
     .eq("client_id", user.id)
@@ -250,7 +251,7 @@ export async function getClientCalendarData(year: number, month: number) {
   const projectIds = projects?.map((p) => p.id) || [];
 
   // Also get all client's active project IDs (milestones might belong to projects outside date range)
-  const { data: allProjects } = await supabase
+  const { data: allProjects } = await adminClient
     .from("projects")
     .select("id")
     .eq("client_id", user.id);
@@ -258,7 +259,7 @@ export async function getClientCalendarData(year: number, month: number) {
   const allProjectIds = allProjects?.map((p) => p.id) || [];
 
   if (allProjectIds.length > 0) {
-    const { data: milestones } = await supabase
+    const { data: milestones } = await adminClient
       .from("project_milestones")
       .select("id, title, target_date, project_id, projects(title)")
       .in("project_id", allProjectIds)

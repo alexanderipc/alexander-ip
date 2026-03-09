@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import {
   getServiceLabel,
@@ -13,13 +14,15 @@ import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle } from "lucide-re
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
+  const adminClient = createAdminClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Fetch all projects with client info
-  const { data: projects } = await supabase
+  // Use admin client for all DB queries — avoids JWT refresh 400s from PostgREST
+  const { data: projects } = await adminClient
     .from("projects")
     .select("*, profiles(name, email)")
     .order("estimated_delivery_date", { ascending: true });
@@ -32,7 +35,7 @@ export default async function AdminDashboard() {
   let unreadMsgs: Array<{ project_id: string }> = [];
   try {
     const result = activeIds.length
-      ? await supabase
+      ? await adminClient
           .from("project_messages")
           .select("project_id")
           .in("project_id", activeIds)

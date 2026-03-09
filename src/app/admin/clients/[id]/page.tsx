@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import ProjectCard from "@/components/portal/ProjectCard";
 import { ArrowLeft, Mail, Building, Phone } from "lucide-react";
 
@@ -11,14 +12,15 @@ interface Props {
 export default async function AdminClientDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Verify admin
-  const { data: adminProfile } = await supabase
+  // Verify admin (admin client avoids JWT refresh 400s)
+  const { data: adminProfile } = await adminClient
     .from("profiles")
     .select("role")
     .eq("id", user.id)
@@ -26,7 +28,7 @@ export default async function AdminClientDetailPage({ params }: Props) {
   if (adminProfile?.role !== "admin") redirect("/portal");
 
   // Fetch client profile
-  const { data: client, error } = await supabase
+  const { data: client, error } = await adminClient
     .from("profiles")
     .select("*")
     .eq("id", id)
@@ -35,7 +37,7 @@ export default async function AdminClientDetailPage({ params }: Props) {
   if (error || !client) notFound();
 
   // Fetch their projects
-  const { data: projects } = await supabase
+  const { data: projects } = await adminClient
     .from("projects")
     .select("*")
     .eq("client_id", id)

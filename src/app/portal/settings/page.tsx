@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import NotificationSettings from "@/components/portal/NotificationSettings";
@@ -19,7 +20,9 @@ export default async function SettingsPage() {
 
   if (!user) redirect("/auth/login?redirect=/portal/settings");
 
-  const { data: profile } = await supabase
+  // Use admin client for DB query — avoids JWT refresh 400s
+  const adminClient = createAdminClient();
+  const { data: profile } = await adminClient
     .from("profiles")
     .select("notification_preferences")
     .eq("id", user.id)

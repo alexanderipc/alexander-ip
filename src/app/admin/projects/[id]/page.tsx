@@ -30,22 +30,23 @@ interface Props {
 export default async function AdminProjectDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Verify admin
-  const { data: adminProfile } = await supabase
+  // Verify admin (use admin client — avoids JWT refresh 400s from PostgREST)
+  const { data: adminProfile } = await adminClient
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single();
   if (adminProfile?.role !== "admin") redirect("/portal");
 
-  // Fetch project with client info
-  const { data: project, error } = await supabase
+  // Fetch project with client info (admin client bypasses RLS + avoids JWT issues)
+  const { data: project, error } = await adminClient
     .from("projects")
     .select("*, profiles(name, email, company, phone)")
     .eq("id", id)
@@ -81,17 +82,17 @@ export default async function AdminProjectDetailPage({ params }: Props) {
 
   try {
     const [updatesResult, docsResult, milestonesResult] = await Promise.all([
-      supabase
+      adminClient
         .from("project_updates")
         .select("*")
         .eq("project_id", id)
         .order("created_at", { ascending: false }),
-      supabase
+      adminClient
         .from("project_documents")
         .select("*")
         .eq("project_id", id)
         .order("uploaded_at", { ascending: false }),
-      supabase
+      adminClient
         .from("project_milestones")
         .select("*")
         .eq("project_id", id)
@@ -106,7 +107,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
 
   // Fetch messages separately — table may not exist yet
   try {
-    const messagesResult = await supabase
+    const messagesResult = await adminClient
       .from("project_messages")
       .select("*")
       .eq("project_id", id)
@@ -118,9 +119,8 @@ export default async function AdminProjectDetailPage({ params }: Props) {
 
   const unreadMessages = messages.filter((m) => !m.is_admin && !m.read_at).length;
 
-  // Generate signed URLs for documents (bucket is private, use admin client)
+  // Generate signed URLs for documents (bucket is private)
   // Each URL is generated individually so one failure doesn't crash the page
-  const adminClient = createAdminClient();
   const documents = await Promise.all(
     rawDocs.map(async (doc) => {
       try {

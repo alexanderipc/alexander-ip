@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { isComplete } from "@/lib/portal/status";
 import ProjectCard from "@/components/portal/ProjectCard";
@@ -12,8 +13,12 @@ export default async function PortalDashboard() {
 
   if (!user) redirect("/auth/login");
 
+  // Use admin client for DB queries — avoids JWT refresh 400s from PostgREST.
+  // Security: getUser() already validated identity; explicit client_id filters below.
+  const adminClient = createAdminClient();
+
   // Fetch all projects for this client
-  const { data: projects, error } = await supabase
+  const { data: projects, error } = await adminClient
     .from("projects")
     .select("*")
     .eq("client_id", user.id)
@@ -32,7 +37,7 @@ export default async function PortalDashboard() {
   let unreadMsgs: Array<{ project_id: string }> = [];
   try {
     const result = projectIds.length
-      ? await supabase
+      ? await adminClient
           .from("project_messages")
           .select("project_id")
           .in("project_id", projectIds)
@@ -52,7 +57,7 @@ export default async function PortalDashboard() {
 
   // Fetch upcoming milestones across all projects
   const { data: milestones } = projectIds.length
-    ? await supabase
+    ? await adminClient
         .from("project_milestones")
         .select("*, projects(title)")
         .in("project_id", projectIds)

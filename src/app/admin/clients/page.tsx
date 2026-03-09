@@ -1,17 +1,20 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { Users, ArrowRight } from "lucide-react";
 
 export default async function AdminClientsPage() {
   const supabase = await createClient();
+  const adminClient = createAdminClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Verify admin
-  const { data: adminProfile } = await supabase
+  // Verify admin (admin client avoids JWT refresh 400s)
+  const { data: adminProfile } = await adminClient
     .from("profiles")
     .select("role")
     .eq("id", user.id)
@@ -19,7 +22,7 @@ export default async function AdminClientsPage() {
   if (adminProfile?.role !== "admin") redirect("/portal");
 
   // Fetch all client profiles with project counts
-  const { data: clients } = await supabase
+  const { data: clients } = await adminClient
     .from("profiles")
     .select("*")
     .eq("role", "client")
@@ -28,7 +31,7 @@ export default async function AdminClientsPage() {
   // Get project counts per client
   const clientIds = (clients || []).map((c) => c.id);
   const { data: projects } = clientIds.length
-    ? await supabase
+    ? await adminClient
         .from("projects")
         .select("client_id")
         .in("client_id", clientIds)
