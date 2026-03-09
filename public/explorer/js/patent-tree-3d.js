@@ -875,10 +875,19 @@ export class PatentTree3D {
     }
   }
 
-  // --- Portfolio Bubble (radial hull of dot-matrix surface) ---
+  // --- Portfolio Bubble (convex envelope via support function) ---
 
   _createPortfolioBubble() {
     if (this._inventions.length < 1) return;
+    // Dispose previous
+    if (this._bubbleMeshes) {
+      for (const m of this._bubbleMeshes) {
+        this._scene.remove(m);
+        m.geometry.dispose();
+        m.material.dispose();
+      }
+      this._bubbleMeshes = null;
+    }
     if (this._bubbleMesh) {
       this._scene.remove(this._bubbleMesh);
       this._bubbleMesh.geometry.dispose();
@@ -903,73 +912,41 @@ export class PatentTree3D {
     for (let i = 0; i < pts.length; i += 3) { cx += pts[i]; cy += pts[i+1]; cz += pts[i+2]; }
     cx /= nPts; cy /= nPts; cz /= nPts;
 
-    // 3. Build radial distance grid
-    const padding = 14;
-    const nLat = 56, nLon = 80;
+    // 3. Precompute centred points for speed
+    const cp = new Float32Array(pts.length);
+    for (let i = 0; i < pts.length; i += 3) {
+      cp[i] = pts[i] - cx;
+      cp[i + 1] = pts[i + 1] - cy;
+      cp[i + 2] = pts[i + 2] - cz;
+    }
+
+    // 4. Compute support function: for each direction on a lat/lon grid,
+    //    find the maximum projection of any point onto that direction.
+    //    This yields a smooth convex envelope — no gap-filling needed.
+    const padding = 15;
+    const nLat = 48, nLon = 64;
     const stride = nLon + 1;
     const total = (nLat + 1) * stride;
     const radii = new Float32Array(total);
 
-    for (let i = 0; i < pts.length; i += 3) {
-      const dx = pts[i] - cx, dy = pts[i+1] - cy, dz = pts[i+2] - cz;
-      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      if (dist < 0.01) continue;
-      const theta = Math.acos(Math.max(-1, Math.min(1, dy / dist)));
-      let phi = Math.atan2(dz, dx);
-      if (phi < 0) phi += Math.PI * 2;
-      const lat0 = Math.round(theta / Math.PI * nLat);
-      const lon0 = Math.round(phi / (Math.PI * 2) * nLon);
-      for (let di = -2; di <= 2; di++) {
-        const li = lat0 + di;
-        if (li < 0 || li > nLat) continue;
-        for (let dj = -2; dj <= 2; dj++) {
-          let lj = lon0 + dj;
-          while (lj < 0) lj += nLon;
-          while (lj > nLon) lj -= nLon;
-          const idx = li * stride + lj;
-          if (dist > radii[idx]) radii[idx] = dist;
-        }
-      }
-    }
-
-    // 4. Fill empty bins via iterative neighbour flood
-    for (let pass = 0; pass < 30; pass++) {
-      let changed = false;
-      for (let i = 0; i <= nLat; i++) {
-        for (let j = 0; j <= nLon; j++) {
-          const idx = i * stride + j;
-          if (radii[idx] > 0) continue;
-          let sum = 0, cnt = 0;
-          for (let di = -1; di <= 1; di++) {
-            const ni = i + di;
-            if (ni < 0 || ni > nLat) continue;
-            for (let dj = -1; dj <= 1; dj++) {
-              if (di === 0 && dj === 0) continue;
-              let nj = j + dj;
-              while (nj < 0) nj += nLon;
-              while (nj > nLon) nj -= nLon;
-              const nidx = ni * stride + nj;
-              if (radii[nidx] > 0) { sum += radii[nidx]; cnt++; }
-            }
-          }
-          if (cnt > 0) { radii[idx] = sum / cnt; changed = true; }
-        }
-      }
-      if (!changed) break;
-    }
-
-    // Ensure seam consistency
     for (let i = 0; i <= nLat; i++) {
-      const v = Math.max(radii[i * stride], radii[i * stride + nLon]);
-      radii[i * stride] = v;
-      radii[i * stride + nLon] = v;
+      const theta = Math.PI * i / nLat;
+      const st = Math.sin(theta), ct = Math.cos(theta);
+      for (let j = 0; j <= nLon; j++) {
+        const phi = 2 * Math.PI * j / nLon;
+        const dx = st * Math.cos(phi), dy = ct, dz = st * Math.sin(phi);
+
+        let maxProj = 0;
+        for (let k = 0; k < cp.length; k += 3) {
+          const proj = cp[k] * dx + cp[k + 1] * dy + cp[k + 2] * dz;
+          if (proj > maxProj) maxProj = proj;
+        }
+        radii[i * stride + j] = maxProj + padding;
+      }
     }
 
-    // 5. Add padding
-    for (let i = 0; i < total; i++) radii[i] += padding;
-
-    // 6. Smooth for organic look
-    for (let pass = 0; pass < 6; pass++) {
+    // 5. Smooth gently for organic feel (just 3 passes)
+    for (let pass = 0; pass < 3; pass++) {
       const sm = new Float32Array(total);
       for (let i = 0; i <= nLat; i++) {
         for (let j = 0; j <= nLon; j++) {
@@ -985,14 +962,16 @@ export class PatentTree3D {
         }
       }
       for (let k = 0; k < total; k++) radii[k] = sm[k];
-      for (let i = 0; i <= nLat; i++) {
-        const v = (radii[i * stride] + radii[i * stride + nLon]) * 0.5;
-        radii[i * stride] = v;
-        radii[i * stride + nLon] = v;
-      }
     }
 
-    // 7. Generate mesh positions
+    // Ensure seam
+    for (let i = 0; i <= nLat; i++) {
+      const v = (radii[i * stride] + radii[i * stride + nLon]) * 0.5;
+      radii[i * stride] = v;
+      radii[i * stride + nLon] = v;
+    }
+
+    // 6. Generate mesh positions
     const positions = [];
     for (let i = 0; i <= nLat; i++) {
       const theta = Math.PI * i / nLat;
