@@ -92,6 +92,7 @@ async function ensureFolder(
       ? `/me/drive/root/children`
       : `/me/drive/items/${parentItemId}/children`;
 
+  // Try to create — use "fail" so we get a 409 if it already exists
   const res = await fetch(`${GRAPH_BASE}${parentPath}`, {
     method: "POST",
     headers: {
@@ -101,21 +102,44 @@ async function ensureFolder(
     body: JSON.stringify({
       name: folderName,
       folder: {},
-      "@microsoft.graph.conflictBehavior": "useExisting",
+      "@microsoft.graph.conflictBehavior": "fail",
     }),
   });
 
-  if (!res.ok) {
-    const body = await res.text();
+  // 201 Created — folder was created successfully
+  if (res.ok) {
+    return (await res.json()) as DriveItem;
+  }
+
+  // 409 Conflict — folder already exists, look it up by name
+  if (res.status === 409) {
+    const searchPath =
+      parentItemId === "root"
+        ? `/me/drive/root:/${encodeURIComponent(folderName)}`
+        : `/me/drive/items/${parentItemId}:/${encodeURIComponent(folderName)}`;
+
+    const existing = await fetch(`${GRAPH_BASE}${searchPath}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (existing.ok) {
+      return (await existing.json()) as DriveItem;
+    }
+
     console.error(
-      `[OneDrive] Failed to create folder "${folderName}":`,
-      res.status,
-      body
+      `[OneDrive] Folder "${folderName}" exists but lookup failed:`,
+      existing.status
     );
     return null;
   }
 
-  return (await res.json()) as DriveItem;
+  const body = await res.text();
+  console.error(
+    `[OneDrive] Failed to create folder "${folderName}":`,
+    res.status,
+    body
+  );
+  return null;
 }
 
 /**

@@ -36,18 +36,18 @@ export async function clientUploadDocument(
   projectId: string,
   formData: FormData
 ) {
-  const { supabase, user } = await requireClient();
+  const { user } = await requireClient();
   const adminClient = createAdminClient();
 
-  // Verify the client owns this project (RLS would catch this too, but be explicit)
-  const { data: project, error: projectError } = await supabase
+  // Verify the client owns this project (admin client for JWT resilience)
+  const { data: project, error: projectError } = await adminClient
     .from("projects")
     .select("id, client_id")
     .eq("id", projectId)
     .single();
 
   if (projectError) {
-    console.error("[Upload] Project lookup error:", projectError.message, "| projectId:", projectId, "| user:", user.id);
+    console.error("[Upload] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
   }
 
   if (!project || project.client_id !== user.id) {
@@ -105,23 +105,32 @@ export async function clientUploadDocument(
 
 export async function sendClientMessage(projectId: string, body: string) {
   const { supabase, user } = await requireClient();
+  const adminClient = createAdminClient();
 
   if (!body.trim()) throw new Error("Message cannot be empty");
   if (body.length > 2000) throw new Error("Message too long (max 2000 characters)");
 
   // Verify client owns this project
-  const { data: project } = await supabase
+  // Use admin client for ownership check — avoids intermittent 400 errors
+  // when the user's JWT is in a refresh state during server actions.
+  // Security is maintained: getUser() already validated the user server-side.
+  const { data: project, error: projectError } = await adminClient
     .from("projects")
     .select("id, client_id, title, admin_notifications_muted")
     .eq("id", projectId)
     .single();
 
+  if (projectError) {
+    console.error("[SendMessage] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
+  }
+
   if (!project || project.client_id !== user.id) {
     throw new Error("Project not found");
   }
 
-  // Insert message
-  const { error } = await supabase.from("project_messages").insert({
+  // Insert message using admin client (user INSERT RLS works, but keep
+  // consistent with the ownership check to avoid the same JWT issue)
+  const { error } = await adminClient.from("project_messages").insert({
     project_id: projectId,
     sender_id: user.id,
     body: body.trim(),
@@ -133,7 +142,7 @@ export async function sendClientMessage(projectId: string, body: string) {
   // Notify admin via email (skip if project-level admin mute is on)
   if (!project.admin_notifications_muted) {
     try {
-      const { data: clientProfile } = await supabase
+      const { data: clientProfile } = await adminClient
         .from("profiles")
         .select("name, email")
         .eq("id", user.id)
@@ -161,21 +170,26 @@ export async function sendClientMessage(projectId: string, body: string) {
 /* ── Mark Messages Read (Client) ───────────────────────────── */
 
 export async function markMessagesRead(projectId: string) {
-  const { supabase, user } = await requireClient();
+  const { user } = await requireClient();
+  const adminClient = createAdminClient();
 
-  // Verify ownership
-  const { data: project } = await supabase
+  // Verify ownership using admin client (same JWT resilience pattern)
+  const { data: project, error: projectError } = await adminClient
     .from("projects")
     .select("id, client_id")
     .eq("id", projectId)
     .single();
+
+  if (projectError) {
+    console.error("[MarkRead] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
+  }
 
   if (!project || project.client_id !== user.id) {
     throw new Error("Project not found");
   }
 
   // Mark admin messages (is_admin = true) as read
-  await supabase
+  await adminClient
     .from("project_messages")
     .update({ read_at: new Date().toISOString() })
     .eq("project_id", projectId)
@@ -302,21 +316,24 @@ export async function updateNotificationPreferences(
 /* ── Toggle Client Notification Mute ─────────────────────────── */
 
 export async function toggleClientNotificationMute(projectId: string) {
-  const { supabase, user } = await requireClient();
+  const { user } = await requireClient();
+  const adminClient = createAdminClient();
 
-  // Verify client owns this project
-  const { data: project } = await supabase
+  // Verify client owns this project (admin client for JWT resilience)
+  const { data: project, error: projectError } = await adminClient
     .from("projects")
     .select("id, client_id, client_notifications_muted")
     .eq("id", projectId)
     .single();
 
+  if (projectError) {
+    console.error("[ToggleMute] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
+  }
+
   if (!project || project.client_id !== user.id) {
     throw new Error("Project not found");
   }
 
-  // Use admin client to update (clients can only SELECT their projects via RLS)
-  const adminClient = createAdminClient();
   await adminClient
     .from("projects")
     .update({ client_notifications_muted: !project.client_notifications_muted })
