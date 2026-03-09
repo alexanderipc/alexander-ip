@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Container from "@/components/ui/Container";
 import Link from "next/link";
 import { LayoutDashboard, CalendarDays, LogOut, Settings } from "lucide-react";
@@ -23,7 +24,9 @@ export default async function PortalLayout({
     redirect("/auth/login?redirect=/portal");
   }
 
-  const { data: profile } = await supabase
+  // Use admin client for DB query — avoids JWT refresh 400s from PostgREST
+  const adminClient = createAdminClient();
+  const { data: profile } = await adminClient
     .from("profiles")
     .select("name, role")
     .eq("id", user.id)

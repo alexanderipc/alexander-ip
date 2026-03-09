@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Container from "@/components/ui/Container";
 import Link from "next/link";
 import {
@@ -28,7 +29,9 @@ export default async function AdminLayout({
 
   if (!user) redirect("/auth/login?redirect=/admin");
 
-  const { data: profile } = await supabase
+  // Use admin client for DB query — avoids JWT refresh 400s from PostgREST
+  const adminClient = createAdminClient();
+  const { data: profile } = await adminClient
     .from("profiles")
     .select("name, role")
     .eq("id", user.id)
