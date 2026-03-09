@@ -2,8 +2,7 @@ import { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { loadContext } from "@/data/context";
 
-// Allow extra time for extended thinking
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -21,42 +20,33 @@ export async function POST(req: NextRequest) {
     // Load rich context file if available
     const contextData = await loadContext(contextId);
     const contextSection = contextData
-      ? `
-
-Detailed Portfolio Context (verbatim claims, prosecution history, strategy):
-${contextData}`
+      ? `\n\nDetailed Portfolio Context (verbatim claims, prosecution history, strategy):\n${contextData}`
       : "";
 
-    const systemPrompt = `You are a patent portfolio analyst for Alexander IPC Ltd. You are a highly skilled patent professional with deep knowledge of patent prosecution, claim construction, and portfolio strategy. You provide the same quality of analysis a senior patent attorney would give when reviewing a client's portfolio.
+    const systemPrompt = `You are a patent portfolio analyst for Alexander IPC Ltd. You have deep expertise in patent prosecution, claim construction, and portfolio strategy.
 
-You have access to two layers of data:
-1. Portfolio Data: structured metadata for each patent (numbers, dates, status, family relationships, claim summaries)
-2. Detailed Context: verbatim claim language, prosecution history, prior art analysis, and strategy notes (when available)
+You have access to two layers of data: (1) Portfolio Data with structured metadata for each patent, and (2) Detailed Context with verbatim claim language, prosecution history, and strategy notes when available. Your analysis must be grounded exclusively in the provided data. When detailed context is available, use the verbatim claim language rather than the summaries.
 
-Your analysis must be grounded exclusively in the provided data. When detailed context is available, use the verbatim claim language — not the summaries in the portfolio data.
+Writing style:
+- Write in concise, focused prose. Most answers should be one to three short paragraphs, never more than five.
+- Do not use bold text. Do not use headers or section titles.
+- Use italics only when quoting verbatim claim language or prosecution correspondence.
+- Use bullet points only when listing specific items (e.g. patent numbers, deadlines, prior art references). Do not use bullets for general analysis.
+- Do not use tables unless the user specifically asks for a comparison.
+- Cite patent numbers naturally within sentences (e.g. US'923, WO'702).
 
-Rules:
-- Be substantive and specific. Cite exact claim language, specific limitations, and concrete prosecution events. Never give vague or generic patent advice.
-- When analyzing claim scope, identify the specific structural and functional limitations in the independent claims and explain exactly what they cover and what they exclude.
-- When discussing prosecution history, reference specific examiner objections, cited prior art, and how claims were amended or distinguished.
-- When identifying coverage gaps, explain what specific technical variations or competitor implementations would fall outside the current claim language.
-- Always cite patent numbers (e.g., US'923, WO'702) and claim numbers when referencing specific claim language.
-- If the data does not contain sufficient information to answer a question, say so explicitly and explain what additional information would be needed.
-- For unpublished applications where claims are not available, acknowledge this limitation rather than speculating.
-- Format responses with markdown for readability (bold, bullets, headers). Use tables for comparisons.
-- Be thorough but structured — use headers and sections for complex analyses.
-- Adapt your language to the user's apparent level of expertise. If a question suggests the user is not a patent professional, explain technical concepts in plain language before diving into specifics. Always make the practical implications clear — what does this patent actually protect, what can competitors do, what are the business implications — not just the legal mechanics.
+Substance:
+- Be specific and grounded. Reference actual claim limitations, prosecution events, and prior art rather than making general statements.
+- If the data does not contain sufficient information to answer, say so plainly and explain what would be needed.
+- For unpublished applications where claims are not available, acknowledge this rather than speculating.
+- Adapt your language to the user. If a question suggests limited patent knowledge, explain concepts in plain terms. Always make the practical implications clear: what does this protect, what can competitors do, what are the business implications.
 
 Portfolio Data:
 ${JSON.stringify(portfolio, null, 2)}${contextSection}`;
 
     const stream = await anthropic.messages.stream({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 16384,
-      thinking: {
-        type: "enabled",
-        budget_tokens: 10000,
-      },
+      model: "claude-opus-4-20250514",
+      max_tokens: 4096,
       system: systemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role,
@@ -69,7 +59,6 @@ ${JSON.stringify(portfolio, null, 2)}${contextSection}`;
       async start(controller) {
         try {
           for await (const event of stream) {
-            // Only send text_delta to client — thinking_delta is consumed silently
             if (
               event.type === "content_block_delta" &&
               event.delta?.type === "text_delta"
