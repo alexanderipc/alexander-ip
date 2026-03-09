@@ -211,7 +211,6 @@ export default async function AdminDashboard() {
       {/* Completed projects — expandable */}
       <CompletedProjects
         projects={all.filter((p) => isComplete(p.status))}
-        getServiceLabel={getServiceLabel as (type: string) => string}
       />
     </div>
   );

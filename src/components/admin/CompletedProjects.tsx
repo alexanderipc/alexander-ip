@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, CheckCircle2 } from "lucide-react";
 import StatusBadge from "@/components/portal/StatusBadge";
+import { getServiceLabel } from "@/lib/portal/status";
 
 interface CompletedProject {
   id: string;
@@ -17,10 +18,9 @@ interface CompletedProject {
 
 interface Props {
   projects: CompletedProject[];
-  getServiceLabel: (type: string) => string;
 }
 
-export default function CompletedProjects({ projects, getServiceLabel }: Props) {
+export default function CompletedProjects({ projects }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   if (projects.length === 0) return null;
@@ -89,7 +89,7 @@ export default function CompletedProjects({ projects, getServiceLabel }: Props) 
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-xs text-slate-500">
-                        {getServiceLabel(p.service_type)}
+                        {getServiceLabel(p.service_type as Parameters<typeof getServiceLabel>[0])}
                       </span>
                     </td>
                     <td className="px-5 py-3">
