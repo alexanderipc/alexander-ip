@@ -153,6 +153,7 @@ if (q) {
 
 // ─── Waitlist Modal ───
 const waitlistBtn = document.getElementById('waitlist-btn');
+const topbarWaitlistBtn = document.getElementById('topbar-waitlist-btn');
 const waitlistOverlay = document.getElementById('waitlist-overlay');
 const waitlistForm = document.getElementById('waitlist-form');
 const waitlistMessage = document.getElementById('waitlist-message');
@@ -172,6 +173,15 @@ if (waitlistBtn && waitlistOverlay) {
   waitlistOverlay.addEventListener('click', (e) => {
     if (e.target === waitlistOverlay) waitlistOverlay.classList.remove('open');
   });
+
+  if (topbarWaitlistBtn) {
+    topbarWaitlistBtn.addEventListener('click', () => {
+      waitlistOverlay.classList.add('open');
+      waitlistMessage.textContent = '';
+      const firstInput = waitlistForm?.querySelector('input');
+      if (firstInput) setTimeout(() => firstInput.focus(), 100);
+    });
+  }
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && waitlistOverlay.classList.contains('open')) {

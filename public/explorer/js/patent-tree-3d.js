@@ -12,7 +12,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 // ── Constants ──
 
 const BG_COLOR = 0xf0f2f5;
-const GRID_Y = -40;
+const GRID_Y = -80;
 const BASE_RADIUS = 22;
 
 const STATUS_COLORS = {
@@ -283,14 +283,14 @@ export class PatentTree3D {
           // Axes
           float axisX = 1.0 - min(abs(coord.x) / fwidth(coord.x), 1.0);
           float axisZ = 1.0 - min(abs(coord.y) / fwidth(coord.y), 1.0);
-          float axes = max(axisX, axisZ) * 0.08;
+          float axes = max(axisX, axisZ) * 0.15;
           // Fade
           float dist = length(coord);
           float fade = exp(-dist * 0.0005);
-          float intensity = (fine * 0.06 + coarse * 0.18 + axes) * fade;
+          float intensity = (fine * 0.14 + coarse * 0.35 + axes) * fade;
           // Subtle wave
           float wave = sin(dist * 0.02 - uTime * 2.0) * 0.5 + 0.5;
-          intensity += coarse * wave * 0.06 * fade;
+          intensity += coarse * wave * 0.10 * fade;
           vec3 col = mix(uColor1, uColor2, smoothstep(0.0, 800.0, dist));
           gl_FragColor = vec4(col, intensity);
         }
@@ -885,73 +885,104 @@ export class PatentTree3D {
       this._bubbleMesh.material.dispose();
       this._bubbleMesh = null;
     }
+
+    // Build spheres: each lobe tip is the geometric centre of a sphere
     const spheres = [];
     for (const inv of this._inventions) {
-      // Add a base sphere at each invention center
-      spheres.push({ x: inv._x, y: inv._y, z: inv._z, r: BASE_RADIUS });
-      // Add a sphere at each lobe tip (one per patent)
+      // Base sphere at invention centre
+      spheres.push({ x: inv._x, y: inv._y, z: inv._z, r: BASE_RADIUS * 0.6 });
+      // Each lobe tip becomes the centre of its own sphere
       if (inv.lobeTips) {
         for (const tip of inv.lobeTips) {
+          const tipR = tip.length(); // distance from inv centre to tip
           spheres.push({
             x: inv._x + tip.x,
             y: inv._y + tip.y,
             z: inv._z + tip.z,
-            r: BASE_RADIUS * 0.7
+            r: Math.max(tipR * 0.45, BASE_RADIUS * 0.5)
           });
         }
       }
     }
+
+    // Find bounding centre (centroid of all sphere centres)
     const ocx = spheres.reduce((s, c) => s + c.x, 0) / spheres.length;
     const ocy = spheres.reduce((s, c) => s + c.y, 0) / spheres.length;
     const ocz = spheres.reduce((s, c) => s + c.z, 0) / spheres.length;
-    const padding = 8;
-    const nLat = 48, nLon = 64;
-    let radii = [];
+
+    // Find bounding radius (for parametric sweep)
+    let maxExtent = 0;
+    for (const sp of spheres) {
+      const dist = Math.sqrt((sp.x - ocx)**2 + (sp.y - ocy)**2 + (sp.z - ocz)**2) + sp.r;
+      if (dist > maxExtent) maxExtent = dist;
+    }
+
+    const padding = 6;
+    const nLat = 52, nLon = 72;
+    const positions = [];
+
+    // For each direction from centroid, find the surface point of the
+    // union-of-spheres: the farthest point along this ray that lies on
+    // or inside any sphere surface.
     for (let i = 0; i <= nLat; i++) {
-      radii[i] = [];
       const theta = Math.PI * i / nLat;
       const st = Math.sin(theta), ct = Math.cos(theta);
       for (let j = 0; j <= nLon; j++) {
         const phi = 2 * Math.PI * j / nLon;
         const dx = st * Math.cos(phi), dy = ct, dz = st * Math.sin(phi);
-        let maxReach = 0;
-        for (const s of spheres) {
-          const proj = (s.x - ocx) * dx + (s.y - ocy) * dy + (s.z - ocz) * dz;
-          const reach = proj + s.r + padding;
-          if (reach > maxReach) maxReach = reach;
+
+        // Ray from centroid in direction (dx,dy,dz)
+        // For each sphere, find the farthest intersection point along the ray
+        let maxT = padding; // minimum distance
+        for (const sp of spheres) {
+          // Vector from centroid to sphere centre
+          const cx = sp.x - ocx, cy = sp.y - ocy, cz = sp.z - ocz;
+          // Project sphere centre onto ray
+          const proj = cx * dx + cy * dy + cz * dz;
+          // Perpendicular distance squared from ray to sphere centre
+          const perpSq = (cx*cx + cy*cy + cz*cz) - proj * proj;
+          const rPad = sp.r + padding;
+          if (perpSq < rPad * rPad) {
+            // Ray intersects this sphere; farthest intersection point
+            const halfChord = Math.sqrt(rPad * rPad - perpSq);
+            const t = proj + halfChord;
+            if (t > maxT) maxT = t;
+          }
         }
-        radii[i][j] = Math.max(maxReach, padding);
+
+        positions.push(ocx + dx * maxT, ocy + dy * maxT, ocz + dz * maxT);
       }
     }
-    for (let pass = 0; pass < 1; pass++) {
-      const next = [];
+
+    // Smooth the radii slightly to avoid sharp creases at sphere boundaries
+    const stride = nLon + 1;
+    for (let pass = 0; pass < 2; pass++) {
+      const smoothed = new Float32Array(positions.length);
       for (let i = 0; i <= nLat; i++) {
-        next[i] = [];
         for (let j = 0; j <= nLon; j++) {
-          let sum = radii[i][j] * 4, wt = 4;
-          if (i > 0) { sum += radii[i-1][j]; wt++; }
-          if (i < nLat) { sum += radii[i+1][j]; wt++; }
-          sum += radii[i][j > 0 ? j - 1 : nLon - 1]; wt++;
-          sum += radii[i][j < nLon ? j + 1 : 1]; wt++;
-          next[i][j] = sum / wt;
+          const idx = (i * stride + j) * 3;
+          let sx = positions[idx] * 4, sy = positions[idx+1] * 4, sz = positions[idx+2] * 4;
+          let wt = 4;
+          // Latitude neighbours
+          if (i > 0) { const n = ((i-1)*stride+j)*3; sx+=positions[n]; sy+=positions[n+1]; sz+=positions[n+2]; wt++; }
+          if (i < nLat) { const n = ((i+1)*stride+j)*3; sx+=positions[n]; sy+=positions[n+1]; sz+=positions[n+2]; wt++; }
+          // Longitude neighbours (wrap)
+          const jl = j > 0 ? j - 1 : nLon - 1;
+          const jr = j < nLon ? j + 1 : 1;
+          const nl = (i*stride+jl)*3;
+          const nr = (i*stride+jr)*3;
+          sx+=positions[nl]; sy+=positions[nl+1]; sz+=positions[nl+2]; wt++;
+          sx+=positions[nr]; sy+=positions[nr+1]; sz+=positions[nr+2]; wt++;
+          smoothed[idx] = sx/wt; smoothed[idx+1] = sy/wt; smoothed[idx+2] = sz/wt;
         }
       }
-      radii = next;
+      for (let k = 0; k < positions.length; k++) positions[k] = smoothed[k];
     }
-    const positions = [];
-    for (let i = 0; i <= nLat; i++) {
-      const theta = Math.PI * i / nLat;
-      const st = Math.sin(theta), ct = Math.cos(theta);
-      for (let j = 0; j <= nLon; j++) {
-        const phi = 2 * Math.PI * j / nLon;
-        const r = radii[i][j];
-        positions.push(ocx + st*Math.cos(phi)*r, ocy + ct*r, ocz + st*Math.sin(phi)*r);
-      }
-    }
+
     const indices = [];
     for (let i = 0; i < nLat; i++) {
       for (let j = 0; j < nLon; j++) {
-        const a = i * (nLon + 1) + j, b = a + nLon + 1;
+        const a = i * stride + j, b = a + stride;
         indices.push(a, b, a+1, a+1, b, b+1);
       }
     }

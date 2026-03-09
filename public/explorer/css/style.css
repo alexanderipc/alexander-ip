@@ -687,3 +687,25 @@ body {
   text-align: center;
   min-height: 20px;
 }
+
+/* ═══ Topbar Waitlist Button ═══ */
+.topbar-waitlist-btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid #3b82f6;
+  color: #60a5fa;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  margin-left: 4px;
+}
+.topbar-waitlist-btn:hover {
+  background: #1e40af;
+  border-color: #1e40af;
+  color: #e0e6f0;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
