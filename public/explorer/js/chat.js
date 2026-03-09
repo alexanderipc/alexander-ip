@@ -32,7 +32,7 @@ export class ChatPanel {
   _showStarters() {
     const starters = [
       'What is the overall shape of this portfolio and where is coverage strongest?',
-      'How do the patent families work together to define the portfolio's scope?',
+      'How do the patent families work together to define overall coverage?',
       'Where are the gaps in coverage that new filings could fill?',
       'What are the key claim differences between family members?',
       'What are the important upcoming deadlines?',
