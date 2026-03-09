@@ -960,7 +960,7 @@ export class PatentTree3D {
         uOpacity: { value: 0.0 },
         uTime: { value: 0 },
       },
-      vertexShader: "varying vec3 vNormal;
+      vertexShader: `varying vec3 vNormal;
 varying vec3 vViewDir;
 varying vec3 vWorldPos;
 void main(){
@@ -969,8 +969,8 @@ void main(){
   vViewDir=normalize(-mvPos.xyz);
   vWorldPos=(modelMatrix*vec4(position,1.0)).xyz;
   gl_Position=projectionMatrix*mvPos;
-}",
-      fragmentShader: "uniform vec3 uColor;
+}`,
+      fragmentShader: `uniform vec3 uColor;
 uniform float uOpacity;
 uniform float uTime;
 varying vec3 vNormal;
@@ -982,7 +982,7 @@ void main(){
   float shimmer=sin(vWorldPos.x*0.03+vWorldPos.y*0.02+uTime*0.5)*0.5+0.5;
   float alpha=mix(0.01,uOpacity,fresnel)+shimmer*0.008;
   gl_FragColor=vec4(uColor,alpha);
-}",
+}`,
     });
     this._bubbleMesh = new THREE.Mesh(geo, mat);
     this._bubbleMesh.renderOrder = -1;
