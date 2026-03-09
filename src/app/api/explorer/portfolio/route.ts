@@ -10,11 +10,14 @@ const cache = new Map<string, PortfolioResponse>();
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
-  try {
-    const { ual } = await req.json();
-    if (!ual)
-      return NextResponse.json({ error: "UAL required" }, { status: 400 });
+  // Parse body once upfront so it's available in the catch block
+  const body = await req.json().catch(() => ({ ual: "" }));
+  const ual = body.ual || "";
 
+  if (!ual)
+    return NextResponse.json({ error: "UAL required" }, { status: 400 });
+
+  try {
     console.log(`[Explorer] Fetching portfolio for: ${ual}`);
     const nquads = await dkgGet(ual);
     const patents = nquadsToPatents(nquads);
@@ -37,9 +40,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("[Explorer] Portfolio fetch error:", (err as Error).message);
-
-    const body = await req.clone().json().catch(() => ({ ual: "" }));
-    const ual = body.ual || "";
 
     // Try in-memory cache
     const cached = cache.get(ual);
