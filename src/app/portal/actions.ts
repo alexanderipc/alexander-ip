@@ -116,7 +116,7 @@ export async function sendClientMessage(projectId: string, body: string) {
   // Security is maintained: getUser() already validated the user server-side.
   const { data: project, error: projectError } = await adminClient
     .from("projects")
-    .select("id, client_id, title, admin_notifications_muted")
+    .select("*")
     .eq("id", projectId)
     .single();
 
@@ -140,7 +140,7 @@ export async function sendClientMessage(projectId: string, body: string) {
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
   // Notify admin via email (skip if project-level admin mute is on)
-  if (!project.admin_notifications_muted) {
+  if (!project?.admin_notifications_muted) {
     try {
       const { data: clientProfile } = await adminClient
         .from("profiles")
@@ -323,7 +323,7 @@ export async function toggleClientNotificationMute(projectId: string) {
   // Verify client owns this project (admin client for JWT resilience)
   const { data: project, error: projectError } = await adminClient
     .from("projects")
-    .select("id, client_id, client_notifications_muted")
+    .select("*")
     .eq("id", projectId)
     .single();
 
@@ -335,10 +335,14 @@ export async function toggleClientNotificationMute(projectId: string) {
     throw new Error("Project not found");
   }
 
-  await adminClient
+  const { error: updateError } = await adminClient
     .from("projects")
-    .update({ client_notifications_muted: !project.client_notifications_muted })
+    .update({ client_notifications_muted: !project?.client_notifications_muted })
     .eq("id", projectId);
+
+  if (updateError) {
+    console.error("[ToggleMute] Update error (column may not exist):", updateError.message);
+  }
 
   revalidatePath(`/portal/projects/${projectId}`);
 

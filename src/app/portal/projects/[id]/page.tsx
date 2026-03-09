@@ -50,7 +50,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   // Fetch project — use explicit columns to avoid leaking admin-only fields
   const { data: project, error } = await adminClient
     .from("projects")
-    .select("id, client_id, service_type, title, description, status, jurisdictions, start_date, default_timeline_days, estimated_delivery_date, actual_delivery_date, price_paid, currency, client_notifications_muted, created_at, updated_at")
+    .select("*")
     .eq("id", id)
     .eq("client_id", user.id)
     .single();

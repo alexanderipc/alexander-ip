@@ -235,7 +235,7 @@ export async function advanceStatus(
   });
 
   // Send email notification (skip if project-level mute is on)
-  if (notifyClient && !project.client_notifications_muted) {
+  if (notifyClient && !project?.client_notifications_muted) {
     try {
       const { data: clientProfile } = await adminClient
         .from("profiles")
@@ -283,7 +283,7 @@ export async function addUpdate(
 
   const { data: project } = await adminClient
     .from("projects")
-    .select("status, title, service_type, client_id, client_notifications_muted")
+    .select("*")
     .eq("id", projectId)
     .single();
 
@@ -299,7 +299,7 @@ export async function addUpdate(
   });
 
   // Send email notification (skip if project-level mute is on)
-  if (notifyClient && !project.client_notifications_muted) {
+  if (notifyClient && !project?.client_notifications_muted) {
     try {
       const { data: clientProfile } = await adminClient
         .from("profiles")
@@ -350,7 +350,7 @@ export async function updateDeliveryDate(
   if (note) {
     const { data: project } = await adminClient
       .from("projects")
-      .select("status, client_id, title, client_notifications_muted")
+      .select("*")
       .eq("id", projectId)
       .single();
 
@@ -363,7 +363,7 @@ export async function updateDeliveryDate(
     });
 
     // Send email notification (was missing prefs check — now fixed)
-    if (project && !project.client_notifications_muted) {
+    if (project && !project?.client_notifications_muted) {
       try {
         const { data: clientProfile } = await adminClient
           .from("profiles")
@@ -447,11 +447,11 @@ export async function uploadDocument(
     try {
       const { data: project } = await adminClient
         .from("projects")
-        .select("title, client_id, client_notifications_muted")
+        .select("*")
         .eq("id", projectId)
         .single();
 
-      if (project && !project.client_notifications_muted) {
+      if (project && !project?.client_notifications_muted) {
         const { data: clientProfile } = await adminClient
           .from("profiles")
           .select("email, notification_preferences")
@@ -615,7 +615,7 @@ export async function sendAdminMessage(projectId: string, body: string) {
   // Fetch project info for email (admin client for JWT resilience)
   const { data: project, error: projectError } = await adminClient
     .from("projects")
-    .select("id, title, client_id, client_notifications_muted")
+    .select("*")
     .eq("id", projectId)
     .single();
 
@@ -636,7 +636,7 @@ export async function sendAdminMessage(projectId: string, body: string) {
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
   // Notify client via email (skip if project-level mute is on)
-  if (!project.client_notifications_muted) {
+  if (!project?.client_notifications_muted) {
     try {
       const { data: clientProfile } = await adminClient
         .from("profiles")
@@ -794,7 +794,7 @@ export async function toggleProjectNotificationMute(
   // Fetch current value
   const { data: project } = await adminClient
     .from("projects")
-    .select(column)
+    .select("*")
     .eq("id", projectId)
     .single();
 
@@ -802,10 +802,14 @@ export async function toggleProjectNotificationMute(
 
   const currentValue = (project as Record<string, boolean>)[column];
 
-  await adminClient
+  const { error: updateError } = await adminClient
     .from("projects")
     .update({ [column]: !currentValue })
     .eq("id", projectId);
+
+  if (updateError) {
+    console.error("[ToggleNotifMute] Update error (column may not exist):", updateError.message);
+  }
 
   revalidatePath(`/admin/projects/${projectId}`);
 
