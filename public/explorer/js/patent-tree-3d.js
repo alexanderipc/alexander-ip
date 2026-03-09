@@ -130,6 +130,8 @@ export class PatentTree3D {
     this._cameraAnimating = false;
     this._flyingIn = false;
 
+    this._bubbleMesh = null;
+
     // DOM overlays for hover popout
     this._popoutEl = null;
     this._popoutVisible = false;
@@ -153,6 +155,7 @@ export class PatentTree3D {
       this._createInventionMesh(inv);
     }
     this._buildAllConnections();
+    this._createPortfolioBubble();
     this._fitView();
   }
 
@@ -872,6 +875,120 @@ export class PatentTree3D {
     }
   }
 
+  // --- Portfolio Bubble ---
+
+  _createPortfolioBubble() {
+    if (this._inventions.length < 1) return;
+    if (this._bubbleMesh) {
+      this._scene.remove(this._bubbleMesh);
+      this._bubbleMesh.geometry.dispose();
+      this._bubbleMesh.material.dispose();
+      this._bubbleMesh = null;
+    }
+    const spheres = this._inventions.map(inv => {
+      let maxR = BASE_RADIUS;
+      if (inv.lobeTips) {
+        for (const tip of inv.lobeTips) {
+          const d = tip.length();
+          if (d > maxR) maxR = d;
+        }
+      }
+      return { x: inv._x, y: inv._y, z: inv._z, r: maxR };
+    });
+    const ocx = spheres.reduce((s, c) => s + c.x, 0) / spheres.length;
+    const ocy = spheres.reduce((s, c) => s + c.y, 0) / spheres.length;
+    const ocz = spheres.reduce((s, c) => s + c.z, 0) / spheres.length;
+    const padding = 50;
+    const nLat = 48, nLon = 64;
+    let radii = [];
+    for (let i = 0; i <= nLat; i++) {
+      radii[i] = [];
+      const theta = Math.PI * i / nLat;
+      const st = Math.sin(theta), ct = Math.cos(theta);
+      for (let j = 0; j <= nLon; j++) {
+        const phi = 2 * Math.PI * j / nLon;
+        const dx = st * Math.cos(phi), dy = ct, dz = st * Math.sin(phi);
+        let maxReach = 0;
+        for (const s of spheres) {
+          const proj = (s.x - ocx) * dx + (s.y - ocy) * dy + (s.z - ocz) * dz;
+          const reach = proj + s.r + padding;
+          if (reach > maxReach) maxReach = reach;
+        }
+        radii[i][j] = Math.max(maxReach, padding);
+      }
+    }
+    for (let pass = 0; pass < 3; pass++) {
+      const next = [];
+      for (let i = 0; i <= nLat; i++) {
+        next[i] = [];
+        for (let j = 0; j <= nLon; j++) {
+          let sum = radii[i][j] * 4, wt = 4;
+          if (i > 0) { sum += radii[i-1][j]; wt++; }
+          if (i < nLat) { sum += radii[i+1][j]; wt++; }
+          sum += radii[i][j > 0 ? j - 1 : nLon - 1]; wt++;
+          sum += radii[i][j < nLon ? j + 1 : 1]; wt++;
+          next[i][j] = sum / wt;
+        }
+      }
+      radii = next;
+    }
+    const positions = [];
+    for (let i = 0; i <= nLat; i++) {
+      const theta = Math.PI * i / nLat;
+      const st = Math.sin(theta), ct = Math.cos(theta);
+      for (let j = 0; j <= nLon; j++) {
+        const phi = 2 * Math.PI * j / nLon;
+        const r = radii[i][j];
+        positions.push(ocx + st*Math.cos(phi)*r, ocy + ct*r, ocz + st*Math.sin(phi)*r);
+      }
+    }
+    const indices = [];
+    for (let i = 0; i < nLat; i++) {
+      for (let j = 0; j < nLon; j++) {
+        const a = i * (nLon + 1) + j, b = a + nLon + 1;
+        indices.push(a, b, a+1, a+1, b, b+1);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    const mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      uniforms: {
+        uColor: { value: new THREE.Color(0x4488cc) },
+        uOpacity: { value: 0.0 },
+        uTime: { value: 0 },
+      },
+      vertexShader: "varying vec3 vNormal;
+varying vec3 vViewDir;
+varying vec3 vWorldPos;
+void main(){
+  vNormal=normalize(normalMatrix*normal);
+  vec4 mvPos=modelViewMatrix*vec4(position,1.0);
+  vViewDir=normalize(-mvPos.xyz);
+  vWorldPos=(modelMatrix*vec4(position,1.0)).xyz;
+  gl_Position=projectionMatrix*mvPos;
+}",
+      fragmentShader: "uniform vec3 uColor;
+uniform float uOpacity;
+uniform float uTime;
+varying vec3 vNormal;
+varying vec3 vViewDir;
+varying vec3 vWorldPos;
+void main(){
+  float fresnel=1.0-abs(dot(vNormal,vViewDir));
+  fresnel=pow(fresnel,2.5);
+  float shimmer=sin(vWorldPos.x*0.03+vWorldPos.y*0.02+uTime*0.5)*0.5+0.5;
+  float alpha=mix(0.01,uOpacity,fresnel)+shimmer*0.008;
+  gl_FragColor=vec4(uColor,alpha);
+}",
+    });
+    this._bubbleMesh = new THREE.Mesh(geo, mat);
+    this._bubbleMesh.renderOrder = -1;
+    this._bubbleMesh.userData._entryStart = performance.now();
+    this._scene.add(this._bubbleMesh);
+  }
   // ─── Animation Loop ───
 
   _animate() {
@@ -929,6 +1046,13 @@ export class PatentTree3D {
 
     if (this._gridPlane) {
       this._gridPlane.material.uniforms.uTime.value = elapsed;
+    }
+
+    if (this._bubbleMesh) {
+      const bubbleAge = now - this._bubbleMesh.userData._entryStart;
+      const fadeT = Math.max(0, Math.min((bubbleAge - 1200) / 1500, 1));
+      this._bubbleMesh.material.uniforms.uOpacity.value = 0.15 * fadeT * fadeT * (3 - 2 * fadeT);
+      this._bubbleMesh.material.uniforms.uTime.value = elapsed;
     }
 
     if (this._cameraAnimating && this._cameraLookAt) {
@@ -1294,6 +1418,12 @@ export class PatentTree3D {
           child.material.dispose();
         }
       });
+    }
+    if (this._bubbleMesh) {
+      this._scene.remove(this._bubbleMesh);
+      this._bubbleMesh.geometry.dispose();
+      this._bubbleMesh.material.dispose();
+      this._bubbleMesh = null;
     }
     this._inventionGroups.clear();
     this._hitMeshes = [];
