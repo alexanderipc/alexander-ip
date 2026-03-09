@@ -86,7 +86,6 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US20260018000A1", label: "US 2026/0018000 A1", title: "Smart Package Pod", url: patentUrl("US20260018000A1") },
       { number: "US20260052163A1", label: "US 2026/0052163 A1", title: "Cybersecurity Honeypot", url: patentUrl("US20260052163A1") },
       { number: "US2024270289A1", label: "US 2024/270289 A1", title: "Gondola Transport System", url: patentUrl("US2024270289A1") },
-      { number: "US20260016255A1", label: "US 2026/0016255 A1", title: "Modular Archery Bow", url: patentUrl("US20260016255A1") },
       { number: "US2025191492A1", label: "US 2025/191492 A1", title: "VR Medical Training", url: patentUrl("US2025191492A1") },
       { number: "US2025256054A1", label: "US 2025/256054 A1", title: "Baby Patting Device", url: patentUrl("US2025256054A1") },
       { number: "US2025366786A1", label: "US 2025/366786 A1", title: "Health Monitoring Diaper", url: patentUrl("US2025366786A1") },
