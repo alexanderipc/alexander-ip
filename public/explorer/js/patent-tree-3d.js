@@ -12,7 +12,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 // ── Constants ──
 
 const BG_COLOR = 0xf0f2f5;
-const GRID_Y = -80;
+const GRID_Y = -120;
 const BASE_RADIUS = 22;
 
 const STATUS_COLORS = {
@@ -283,14 +283,14 @@ export class PatentTree3D {
           // Axes
           float axisX = 1.0 - min(abs(coord.x) / fwidth(coord.x), 1.0);
           float axisZ = 1.0 - min(abs(coord.y) / fwidth(coord.y), 1.0);
-          float axes = max(axisX, axisZ) * 0.15;
+          float axes = max(axisX, axisZ) * 0.30;
           // Fade
           float dist = length(coord);
           float fade = exp(-dist * 0.0005);
-          float intensity = (fine * 0.14 + coarse * 0.35 + axes) * fade;
+          float intensity = (fine * 0.25 + coarse * 0.55 + axes) * fade;
           // Subtle wave
           float wave = sin(dist * 0.02 - uTime * 2.0) * 0.5 + 0.5;
-          intensity += coarse * wave * 0.10 * fade;
+          intensity += coarse * wave * 0.18 * fade;
           vec3 col = mix(uColor1, uColor2, smoothstep(0.0, 800.0, dist));
           gl_FragColor = vec4(col, intensity);
         }
@@ -875,7 +875,7 @@ export class PatentTree3D {
     }
   }
 
-  // --- Portfolio Bubble ---
+  // --- Portfolio Bubble (radial hull of dot-matrix surface) ---
 
   _createPortfolioBubble() {
     if (this._inventions.length < 1) return;
@@ -886,110 +886,137 @@ export class PatentTree3D {
       this._bubbleMesh = null;
     }
 
-    // Build spheres: each lobe tip is the geometric centre of a sphere
-    const spheres = [];
+    // 1. Collect all dot-matrix surface points in world space
+    const pts = [];
     for (const inv of this._inventions) {
-      // Base sphere at invention centre
-      spheres.push({ x: inv._x, y: inv._y, z: inv._z, r: BASE_RADIUS * 0.6 });
-      // Each lobe tip becomes the centre of its own sphere
-      if (inv.lobeTips) {
-        for (const tip of inv.lobeTips) {
-          const tipR = tip.length(); // distance from inv centre to tip
-          spheres.push({
-            x: inv._x + tip.x,
-            y: inv._y + tip.y,
-            z: inv._z + tip.z,
-            r: Math.max(tipR * 0.45, BASE_RADIUS * 0.5)
-          });
+      if (!inv.originalPositions) continue;
+      const p = inv.originalPositions;
+      for (let i = 0; i < p.length; i += 3) {
+        pts.push(inv._x + p[i], inv._y + p[i + 1], inv._z + p[i + 2]);
+      }
+    }
+    if (pts.length < 9) return;
+
+    // 2. Centroid
+    const nPts = pts.length / 3;
+    let cx = 0, cy = 0, cz = 0;
+    for (let i = 0; i < pts.length; i += 3) { cx += pts[i]; cy += pts[i+1]; cz += pts[i+2]; }
+    cx /= nPts; cy /= nPts; cz /= nPts;
+
+    // 3. Build radial distance grid
+    const padding = 14;
+    const nLat = 56, nLon = 80;
+    const stride = nLon + 1;
+    const total = (nLat + 1) * stride;
+    const radii = new Float32Array(total);
+
+    for (let i = 0; i < pts.length; i += 3) {
+      const dx = pts[i] - cx, dy = pts[i+1] - cy, dz = pts[i+2] - cz;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (dist < 0.01) continue;
+      const theta = Math.acos(Math.max(-1, Math.min(1, dy / dist)));
+      let phi = Math.atan2(dz, dx);
+      if (phi < 0) phi += Math.PI * 2;
+      const lat0 = Math.round(theta / Math.PI * nLat);
+      const lon0 = Math.round(phi / (Math.PI * 2) * nLon);
+      for (let di = -2; di <= 2; di++) {
+        const li = lat0 + di;
+        if (li < 0 || li > nLat) continue;
+        for (let dj = -2; dj <= 2; dj++) {
+          let lj = lon0 + dj;
+          while (lj < 0) lj += nLon;
+          while (lj > nLon) lj -= nLon;
+          const idx = li * stride + lj;
+          if (dist > radii[idx]) radii[idx] = dist;
         }
       }
     }
 
-    // Find bounding centre (centroid of all sphere centres)
-    const ocx = spheres.reduce((s, c) => s + c.x, 0) / spheres.length;
-    const ocy = spheres.reduce((s, c) => s + c.y, 0) / spheres.length;
-    const ocz = spheres.reduce((s, c) => s + c.z, 0) / spheres.length;
-
-    // Find bounding radius (for parametric sweep)
-    let maxExtent = 0;
-    for (const sp of spheres) {
-      const dist = Math.sqrt((sp.x - ocx)**2 + (sp.y - ocy)**2 + (sp.z - ocz)**2) + sp.r;
-      if (dist > maxExtent) maxExtent = dist;
+    // 4. Fill empty bins via iterative neighbour flood
+    for (let pass = 0; pass < 30; pass++) {
+      let changed = false;
+      for (let i = 0; i <= nLat; i++) {
+        for (let j = 0; j <= nLon; j++) {
+          const idx = i * stride + j;
+          if (radii[idx] > 0) continue;
+          let sum = 0, cnt = 0;
+          for (let di = -1; di <= 1; di++) {
+            const ni = i + di;
+            if (ni < 0 || ni > nLat) continue;
+            for (let dj = -1; dj <= 1; dj++) {
+              if (di === 0 && dj === 0) continue;
+              let nj = j + dj;
+              while (nj < 0) nj += nLon;
+              while (nj > nLon) nj -= nLon;
+              const nidx = ni * stride + nj;
+              if (radii[nidx] > 0) { sum += radii[nidx]; cnt++; }
+            }
+          }
+          if (cnt > 0) { radii[idx] = sum / cnt; changed = true; }
+        }
+      }
+      if (!changed) break;
     }
 
-    const padding = 6;
-    const nLat = 52, nLon = 72;
-    const positions = [];
+    // Ensure seam consistency
+    for (let i = 0; i <= nLat; i++) {
+      const v = Math.max(radii[i * stride], radii[i * stride + nLon]);
+      radii[i * stride] = v;
+      radii[i * stride + nLon] = v;
+    }
 
-    // For each direction from centroid, find the surface point of the
-    // union-of-spheres: the farthest point along this ray that lies on
-    // or inside any sphere surface.
+    // 5. Add padding
+    for (let i = 0; i < total; i++) radii[i] += padding;
+
+    // 6. Smooth for organic look
+    for (let pass = 0; pass < 6; pass++) {
+      const sm = new Float32Array(total);
+      for (let i = 0; i <= nLat; i++) {
+        for (let j = 0; j <= nLon; j++) {
+          const idx = i * stride + j;
+          let s = radii[idx] * 4, w = 4;
+          if (i > 0) { s += radii[(i - 1) * stride + j]; w++; }
+          if (i < nLat) { s += radii[(i + 1) * stride + j]; w++; }
+          const jl = j > 0 ? j - 1 : nLon;
+          const jr = j < nLon ? j + 1 : 0;
+          s += radii[i * stride + jl]; w++;
+          s += radii[i * stride + jr]; w++;
+          sm[idx] = s / w;
+        }
+      }
+      for (let k = 0; k < total; k++) radii[k] = sm[k];
+      for (let i = 0; i <= nLat; i++) {
+        const v = (radii[i * stride] + radii[i * stride + nLon]) * 0.5;
+        radii[i * stride] = v;
+        radii[i * stride + nLon] = v;
+      }
+    }
+
+    // 7. Generate mesh positions
+    const positions = [];
     for (let i = 0; i <= nLat; i++) {
       const theta = Math.PI * i / nLat;
       const st = Math.sin(theta), ct = Math.cos(theta);
       for (let j = 0; j <= nLon; j++) {
         const phi = 2 * Math.PI * j / nLon;
-        const dx = st * Math.cos(phi), dy = ct, dz = st * Math.sin(phi);
-
-        // Ray from centroid in direction (dx,dy,dz)
-        // For each sphere, find the farthest intersection point along the ray
-        let maxT = padding; // minimum distance
-        for (const sp of spheres) {
-          // Vector from centroid to sphere centre
-          const cx = sp.x - ocx, cy = sp.y - ocy, cz = sp.z - ocz;
-          // Project sphere centre onto ray
-          const proj = cx * dx + cy * dy + cz * dz;
-          // Perpendicular distance squared from ray to sphere centre
-          const perpSq = (cx*cx + cy*cy + cz*cz) - proj * proj;
-          const rPad = sp.r + padding;
-          if (perpSq < rPad * rPad) {
-            // Ray intersects this sphere; farthest intersection point
-            const halfChord = Math.sqrt(rPad * rPad - perpSq);
-            const t = proj + halfChord;
-            if (t > maxT) maxT = t;
-          }
-        }
-
-        positions.push(ocx + dx * maxT, ocy + dy * maxT, ocz + dz * maxT);
+        const r = radii[i * stride + j];
+        positions.push(cx + st * Math.cos(phi) * r, cy + ct * r, cz + st * Math.sin(phi) * r);
       }
-    }
-
-    // Smooth the radii slightly to avoid sharp creases at sphere boundaries
-    const stride = nLon + 1;
-    for (let pass = 0; pass < 2; pass++) {
-      const smoothed = new Float32Array(positions.length);
-      for (let i = 0; i <= nLat; i++) {
-        for (let j = 0; j <= nLon; j++) {
-          const idx = (i * stride + j) * 3;
-          let sx = positions[idx] * 4, sy = positions[idx+1] * 4, sz = positions[idx+2] * 4;
-          let wt = 4;
-          // Latitude neighbours
-          if (i > 0) { const n = ((i-1)*stride+j)*3; sx+=positions[n]; sy+=positions[n+1]; sz+=positions[n+2]; wt++; }
-          if (i < nLat) { const n = ((i+1)*stride+j)*3; sx+=positions[n]; sy+=positions[n+1]; sz+=positions[n+2]; wt++; }
-          // Longitude neighbours (wrap)
-          const jl = j > 0 ? j - 1 : nLon - 1;
-          const jr = j < nLon ? j + 1 : 1;
-          const nl = (i*stride+jl)*3;
-          const nr = (i*stride+jr)*3;
-          sx+=positions[nl]; sy+=positions[nl+1]; sz+=positions[nl+2]; wt++;
-          sx+=positions[nr]; sy+=positions[nr+1]; sz+=positions[nr+2]; wt++;
-          smoothed[idx] = sx/wt; smoothed[idx+1] = sy/wt; smoothed[idx+2] = sz/wt;
-        }
-      }
-      for (let k = 0; k < positions.length; k++) positions[k] = smoothed[k];
     }
 
     const indices = [];
     for (let i = 0; i < nLat; i++) {
       for (let j = 0; j < nLon; j++) {
         const a = i * stride + j, b = a + stride;
-        indices.push(a, b, a+1, a+1, b, b+1);
+        indices.push(a, b, a + 1, a + 1, b, b + 1);
       }
     }
+
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
     geo.setIndex(indices);
     geo.computeVertexNormals();
+
     const mat = new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, side: THREE.DoubleSide,
       uniforms: {
@@ -1028,12 +1055,14 @@ void main(){
   gl_FragColor=vec4(uColor,alpha);
 }`,
     });
+
     this._bubbleMesh = new THREE.Mesh(geo, mat);
     this._bubbleMesh.renderOrder = -1;
     this._bubbleMesh.userData._entryStart = performance.now();
     this._scene.add(this._bubbleMesh);
   }
-  // ─── Animation Loop ───
+
+    // ─── Animation Loop ───
 
   _animate() {
     this._animFrameId = requestAnimationFrame(() => this._animate());
