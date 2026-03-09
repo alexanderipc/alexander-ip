@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { sendClientMessage, markMessagesRead } from "@/app/portal/actions";
 import { Send } from "lucide-react";
 
@@ -25,32 +24,10 @@ export default function MessageThread({
   messages,
   userId,
 }: MessageThreadProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const prevCountRef = useRef(messages.length);
-
-  // Merge server messages with optimistic ones
-  const serverIds = new Set(messages.map((m) => m.id));
-  const pendingOptimistic = optimisticMessages.filter(
-    (m) => !serverIds.has(m.id)
-  );
-  const allMessages = [...messages, ...pendingOptimistic];
-
-  const sorted = [...allMessages].sort(
-    (a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
-
-  // Scroll to bottom of the message container (not the page)
-  const scrollToBottom = useCallback(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
-  }, []);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // Mark unread admin messages as read when component mounts
   useEffect(() => {
@@ -60,68 +37,21 @@ export default function MessageThread({
     }
   }, [projectId, messages]);
 
-  // Scroll to bottom when new messages appear
+  // Scroll to bottom on new messages
   useEffect(() => {
-    if (messages.length !== prevCountRef.current || pendingOptimistic.length > 0) {
-      scrollToBottom();
-      prevCountRef.current = messages.length;
-    }
-  }, [messages.length, pendingOptimistic.length, scrollToBottom]);
-
-  // Initial scroll to bottom
-  useEffect(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
-
-  // Poll for new messages every 15 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      router.refresh();
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [router]);
-
-  // Clean up optimistic messages that are now in server data
-  useEffect(() => {
-    if (optimisticMessages.length > 0 && serverIds.size > 0) {
-      const remaining = optimisticMessages.filter((m) => !serverIds.has(m.id));
-      if (remaining.length !== optimisticMessages.length) {
-        setOptimisticMessages(remaining);
-      }
-    }
-  }, [messages, optimisticMessages, serverIds]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length]);
 
   function handleSend() {
     if (!body.trim() || isPending) return;
     setError(null);
 
-    const messageText = body.trim();
-
-    // Add optimistic message immediately
-    const optimisticMsg: Message = {
-      id: `optimistic-${Date.now()}`,
-      body: messageText,
-      is_admin: false,
-      read_at: null,
-      created_at: new Date().toISOString(),
-      sender_id: userId,
-    };
-    setOptimisticMessages((prev) => [...prev, optimisticMsg]);
-    setBody("");
-
     startTransition(async () => {
       try {
-        await sendClientMessage(projectId, messageText);
-        router.refresh();
+        await sendClientMessage(projectId, body.trim());
+        setBody("");
       } catch (err) {
-        // Remove optimistic message on error
-        setOptimisticMessages((prev) =>
-          prev.filter((m) => m.id !== optimisticMsg.id)
-        );
-        setBody(messageText);
-        setError(
-          err instanceof Error ? err.message : "Failed to send message"
-        );
+        setError(err instanceof Error ? err.message : "Failed to send message");
       }
     });
   }
@@ -133,13 +63,15 @@ export default function MessageThread({
     }
   }
 
+  // Show messages in chronological order (oldest first)
+  const sorted = [...messages].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
   return (
     <div>
       {/* Message list */}
-      <div
-        ref={containerRef}
-        className="space-y-3 max-h-96 overflow-y-auto mb-4 pr-1"
-      >
+      <div className="space-y-3 max-h-96 overflow-y-auto mb-4 pr-1">
         {sorted.length === 0 ? (
           <p className="text-sm text-slate-400 italic py-4 text-center">
             No messages yet. Send a message to start a conversation.
@@ -147,7 +79,6 @@ export default function MessageThread({
         ) : (
           sorted.map((msg) => {
             const isMe = msg.sender_id === userId;
-            const isOptimistic = msg.id.startsWith("optimistic-");
             return (
               <div
                 key={msg.id}
@@ -158,10 +89,14 @@ export default function MessageThread({
                     isMe
                       ? "bg-blue-600 text-white"
                       : "bg-slate-100 text-slate-800"
-                  } ${isOptimistic ? "opacity-70" : ""}`}
+                  }`}
                 >
                   {!isMe && (
-                    <p className="text-[11px] font-medium text-blue-600 mb-0.5">
+                    <p
+                      className={`text-[11px] font-medium mb-0.5 ${
+                        isMe ? "text-blue-200" : "text-blue-600"
+                      }`}
+                    >
                       Alexander IP
                     </p>
                   )}
@@ -173,20 +108,19 @@ export default function MessageThread({
                       isMe ? "text-blue-200" : "text-slate-400"
                     }`}
                   >
-                    {isOptimistic
-                      ? "Sending..."
-                      : new Date(msg.created_at).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                    {new Date(msg.created_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </time>
                 </div>
               </div>
             );
           })
         )}
+        <div ref={bottomRef} />
       </div>
 
       {/* Input */}
@@ -212,20 +146,18 @@ export default function MessageThread({
 
       <div className="flex items-center justify-between mt-1">
         <p className="text-[11px] text-slate-400">
-          Enter to send &middot; Shift+Enter for new line
+          {isPending ? "Sending..." : "Enter to send \u00B7 Shift+Enter for new line"}
         </p>
         {body.length > 1800 && (
-          <p
-            className={`text-[11px] ${
-              body.length >= 2000 ? "text-red-500" : "text-slate-400"
-            }`}
-          >
+          <p className={`text-[11px] ${body.length >= 2000 ? "text-red-500" : "text-slate-400"}`}>
             {body.length}/2000
           </p>
         )}
       </div>
 
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-500 mt-1">{error}</p>
+      )}
     </div>
   );
 }

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patent Portfolio Explorer — Alexander IPC</title>
+<meta name="description" content="Interactive patent portfolio visualization powered by the OriginTrail Decentralized Knowledge Graph">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/explorer/css/style.css">
+</head>
+<body>
+
+<!-- ═══ Landing / Search Screen ═══ -->
+<div id="landing" class="landing">
+  <canvas id="landing-canvas"></canvas>
+  <div class="landing-content">
+    <div class="landing-logo">
+      <svg viewBox="0 0 40 40" width="48" height="48">
+        <path d="M20 2 L36 11 L36 29 L20 38 L4 29 L4 11 Z" fill="none" stroke="#3b82f6" stroke-width="2"/>
+        <path d="M20 8 L30 14 L30 26 L20 32 L10 26 L10 14 Z" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.4"/>
+      </svg>
+    </div>
+    <h1 class="landing-title">Patent Portfolio Explorer</h1>
+    <p class="landing-sub">Visualize interconnected patent families from the OriginTrail Decentralized Knowledge Graph</p>
+
+    <div class="search-box">
+      <input type="text" id="search-input"
+        placeholder="Enter a patent number (e.g. US12236923B2) or a DKG UAL..."
+        value="US12236923B2"
+        autofocus>
+      <button id="search-btn">Explore</button>
+    </div>
+
+    <div class="landing-examples">
+      <span>Try:</span>
+      <button onclick="document.getElementById('search-input').value='US12236923B2'; document.getElementById('search-btn').click()">US 12,236,923 B2</button>
+      <button onclick="document.getElementById('search-input').value='moye'; document.getElementById('search-btn').click()">Moye Portfolio</button>
+    </div>
+
+    <div class="source-badge loading" id="source-badge" style="margin-top:16px">Ready</div>
+    <div id="status-text" class="status-text" style="display:none"></div>
+
+    <div class="landing-footer">
+      <span>Powered by</span>
+      <a href="https://origintrail.io" target="_blank" rel="noopener">OriginTrail DKG</a>
+      <span>&bull;</span>
+      <span>Alexander IPC Ltd</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Main Workspace (hidden until search) ═══ -->
+<div id="workspace" class="workspace" style="display:none">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-logo" onclick="document.getElementById('landing').style.display='flex'; document.getElementById('workspace').style.display='none';">
+        <svg viewBox="0 0 40 40" width="24" height="24">
+          <path d="M20 2 L36 11 L36 29 L20 38 L4 29 L4 11 Z" fill="none" stroke="#3b82f6" stroke-width="2"/>
+        </svg>
+      </button>
+      <input type="text" class="topbar-search" id="topbar-search" placeholder="Patent number or UAL...">
+      <button class="topbar-search-btn" id="topbar-search-btn">Search</button>
+    </div>
+    <div class="topbar-center">
+      <div class="source-badge live" id="topbar-badge"></div>
+    </div>
+    <div class="topbar-right">
+      <label class="filter-toggle-label">
+        <input type="checkbox" class="filter-toggle" data-filter="unpublished" checked> Unpublished
+      </label>
+      <label class="filter-toggle-label">
+        <input type="checkbox" class="filter-toggle" data-filter="pct" checked> PCT
+      </label>
+      <label class="filter-toggle-label">
+        <input type="checkbox" class="filter-toggle" data-filter="expired" checked> Expired
+      </label>
+    </div>
+  </div>
+
+  <!-- Main content area (viz + chat side by side) -->
+  <div class="main-content">
+    <!-- Visualization area -->
+    <div class="viz-area">
+      <div id="viz" class="viz-container"></div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-title">Application Type</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#1a9baa"></span> Granted Patent</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#3672b8"></span> Pending Patent</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#7b4fb0"></span> PCT Application</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#6a7a8c"></span> Unpublished</div>
+        <div class="legend-title" style="margin-top:8px">Structure</div>
+        <div class="legend-item"><span class="legend-circle"></span> Invention (multi-lobe)</div>
+        <div class="legend-item"><span class="legend-line dash" style="background:#8899aa"></span> Relationship</div>
+      </div>
+    </div>
+
+    <!-- Chat panel -->
+    <div id="chat" class="chat-panel">
+    <div class="chat-header">
+      <button class="chat-toggle">&#x2190;</button>
+      <div class="chat-header-title">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        AI Patent Analyst
+      </div>
+      <div class="chat-header-sub">Answers grounded in DKG data</div>
+    </div>
+    <div class="chat-messages"></div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" placeholder="Ask about the portfolio..." rows="2"></textarea>
+      <button class="chat-send">Send</button>
+    </div>
+  </div>
+
+  </div><!-- end main-content -->
+
+</div>
+
+<!-- ═══ Loading Overlay ═══ -->
+<div id="loading-overlay" class="loading-overlay" style="display:none">
+  <div class="loading-inner">
+    <div class="loading-hex">
+      <svg viewBox="0 0 60 60" width="60" height="60">
+        <path d="M30 2 L54 16 L54 44 L30 58 L6 44 L6 16 Z" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+        <path d="M30 12 L44 20 L44 36 L30 48 L16 36 L16 20 Z" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+        <circle cx="30" cy="30" r="4" fill="#3b82f6" opacity="0.8"/>
+      </svg>
+    </div>
+    <div class="loading-text">Decoding Knowledge Graph...</div>
+    <div class="loading-bars">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Detail Panel (slides from right) ═══ -->
+<div id="panel" class="detail-panel">
+  <div class="panel-header">
+    <button class="panel-close">&times;</button>
+    <div class="panel-title"></div>
+    <div class="panel-number"></div>
+    <div class="panel-status"></div>
+  </div>
+  <div class="panel-body"></div>
+</div>
+
+<!-- ═══ Tooltip ═══ -->
+<div id="tooltip" class="tooltip">
+  <div class="tooltip-title"></div>
+  <div class="tooltip-number"></div>
+  <div class="tooltip-status"></div>
+  <div class="tooltip-hint">Click for details</div>
+</div>
+
+<!-- ═══ Lightbox ═══ -->
+<div id="lightbox" class="lightbox" onclick="this.classList.remove('open')">
+  <img id="lightbox-img" src="" alt="Patent Drawing">
+</div>
+
+<script type="module" src="/explorer/js/app.js"></script>
+</body>
+</html>

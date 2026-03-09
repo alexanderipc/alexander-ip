@@ -61,8 +61,8 @@ export default function ServicesOverview() {
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Every service has a clear, fixed fee &mdash; no hidden costs, no
-            hourly billing, no platform fees. Most clients start with a search,
-            then move to drafting.
+            hourly billing. Most clients start with a search, then move to
+            drafting.
           </p>
         </div>
 
