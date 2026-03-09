@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Patent Portfolio Explorer — Alexander IPC</title>
-<meta name="description" content="Interactive patent portfolio visualization powered by the OriginTrail Decentralized Knowledge Graph">
+<meta name="description" content="Interactive 3D patent portfolio visualization — see the shape of your patent protection at a glance">
 <script type="importmap">
 {
   "imports": {
@@ -28,11 +28,11 @@
       </svg>
     </div>
     <h1 class="landing-title">Patent Portfolio Explorer</h1>
-    <p class="landing-sub">Visualize interconnected patent families from the OriginTrail Decentralized Knowledge Graph</p>
+    <p class="landing-sub">See the shape of your patent protection at a glance — explore how your filings connect, where your coverage extends, and ask an AI analyst trained on patent law about your portfolio</p>
 
     <div class="search-box">
       <input type="text" id="search-input"
-        placeholder="Enter a patent number (e.g. US12236923B2) or a DKG UAL..."
+        placeholder="Enter a patent number (e.g. US12236923B2)..."
         value="US12236923B2"
         autofocus>
       <button id="search-btn">Explore</button>
@@ -48,9 +48,9 @@
     <div id="status-text" class="status-text" style="display:none"></div>
 
     <div class="landing-footer">
-      <span>Powered by</span>
-      <a href="https://origintrail.io" target="_blank" rel="noopener">OriginTrail DKG</a>
-      <span>&bull;</span>
+      <span>Built by</span>
+      
+      
       <span>Alexander IPC Ltd</span>
     </div>
   </div>
@@ -67,7 +67,7 @@
           <path d="M20 2 L36 11 L36 29 L20 38 L4 29 L4 11 Z" fill="none" stroke="#3b82f6" stroke-width="2"/>
         </svg>
       </button>
-      <input type="text" class="topbar-search" id="topbar-search" placeholder="Patent number or UAL...">
+      <input type="text" class="topbar-search" id="topbar-search" placeholder="Patent number...">
       <button class="topbar-search-btn" id="topbar-search-btn">Search</button>
     </div>
     <div class="topbar-center">
@@ -115,7 +115,7 @@
         </svg>
         AI Patent Analyst
       </div>
-      <div class="chat-header-sub">Answers grounded in DKG data</div>
+      <div class="chat-header-sub">Grounded in your actual filing data</div>
     </div>
     <div class="chat-messages"></div>
     <div class="chat-input-area">
@@ -138,7 +138,7 @@
         <circle cx="30" cy="30" r="4" fill="#3b82f6" opacity="0.8"/>
       </svg>
     </div>
-    <div class="loading-text">Decoding Knowledge Graph...</div>
+    <div class="loading-text">Loading portfolio data...</div>
     <div class="loading-bars">
       <span></span><span></span><span></span><span></span>
       <span></span><span></span><span></span><span></span>

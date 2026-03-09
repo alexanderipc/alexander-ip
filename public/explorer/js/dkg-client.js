@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════
-// DKG Client — fetches & parses patent Knowledge Assets
+// Patent Client — fetches & parses patent portfolio data
 // ═══════════════════════════════════════════════════
 
 export class DKGClient {
@@ -7,7 +7,7 @@ export class DKGClient {
     this.baseUrl = baseUrl; // server API base (empty = same origin)
   }
 
-  // Search for a patent by number → returns UAL
+  // Search for a patent by number → returns portfolio identifier
   async search(query) {
     const res = await fetch(`${this.baseUrl}/api/explorer/search`, {
       method: 'POST',
@@ -21,7 +21,7 @@ export class DKGClient {
     return res.json();
   }
 
-  // Fetch full portfolio by UAL → returns { source, patents[] }
+  // Fetch full portfolio → returns { source, patents[] }
   async fetchPortfolio(ual) {
     const res = await fetch(`${this.baseUrl}/api/explorer/portfolio`, {
       method: 'POST',
@@ -35,7 +35,7 @@ export class DKGClient {
     return res.json();
   }
 
-  // Smart load: accepts patent number OR UAL, returns portfolio
+  // Smart load: accepts patent number, returns portfolio
   async load(input) {
     input = input.trim();
     let ual;

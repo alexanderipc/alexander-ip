@@ -6,7 +6,7 @@ import fallbackData from "@/data/moye-portfolio.json";
 // Vercel has no persistent filesystem — use in-memory cache
 const cache = new Map<string, PortfolioResponse>();
 
-// Allow up to 30s for DKG polling
+// Allow up to 30s for data fetching
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     if (!patents.length)
       return NextResponse.json(
-        { error: "No patents found in Knowledge Asset" },
+        { error: "No patents found in portfolio" },
         { status: 404 }
       );
 

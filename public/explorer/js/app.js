@@ -36,7 +36,7 @@ async function search() {
 
   searchBtn.disabled = true;
   searchBtn.textContent = 'Loading...';
-  setBadge('loading', 'Fetching from DKG...');
+  setBadge('loading', 'Loading portfolio...');
 
   // Show loading overlay (cinematic transition)
   const isFirstLoad = document.getElementById('landing').style.display !== 'none';
@@ -51,14 +51,11 @@ async function search() {
     const result = await dkg.load(query);
     currentPortfolio = result;
 
-    const source = result.source === 'dkg-live' ? 'Live from DKG' :
-      result.source === 'cache' ? 'Cached data' : 'Fallback data';
     const count = result.patents?.length || 0;
-    setBadge(result.source === 'dkg-live' ? 'live' : 'fallback',
-      `${source} \u2022 ${count} patents`);
+    setBadge('live', `${count} patent${count !== 1 ? 's' : ''} loaded`);
 
     if (result.error) {
-      statusText.textContent = `DKG warning: ${result.error}`;
+      statusText.textContent = `Note: ${result.error}`;
       statusText.style.display = 'block';
     } else {
       statusText.style.display = 'none';
@@ -148,7 +145,7 @@ function setBadge(type, text) {
 
 // ─── Auto-load if URL has a query ───
 const params = new URLSearchParams(window.location.search);
-const q = params.get('q') || params.get('ual');
+const q = params.get('q');
 if (q) {
   searchInput.value = q;
   search();

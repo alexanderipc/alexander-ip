@@ -24,12 +24,12 @@ export class DetailPanel {
 
     let html = '';
 
-    // DKG Verification Badge
+    // Verified Data Badge
     html += `<div class="dkg-badge">
       <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#22c55e" stroke-width="2">
         <path d="M2 8l4 4 8-8"/>
       </svg>
-      Verified on OriginTrail DKG
+      Verified patent data
     </div>`;
 
     // Identity

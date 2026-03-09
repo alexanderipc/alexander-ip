@@ -197,7 +197,7 @@ body {
   width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
   border: 1px dashed #6b7a8a; background: rgba(26,155,170,0.08);
 }
-/* ═══ DKG Badge ═══ */
+/* ═══ Verified Badge ═══ */
 .dkg-badge {
   display: flex; align-items: center; gap: 6px;
   font-size: 11px; color: #22c55e; font-weight: 600;
