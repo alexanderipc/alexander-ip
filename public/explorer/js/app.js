@@ -150,3 +150,71 @@ if (q) {
   searchInput.value = q;
   search();
 }
+
+// ─── Waitlist Modal ───
+const waitlistBtn = document.getElementById('waitlist-btn');
+const waitlistOverlay = document.getElementById('waitlist-overlay');
+const waitlistForm = document.getElementById('waitlist-form');
+const waitlistMessage = document.getElementById('waitlist-message');
+
+if (waitlistBtn && waitlistOverlay) {
+  waitlistBtn.addEventListener('click', () => {
+    waitlistOverlay.classList.add('open');
+    waitlistMessage.textContent = '';
+    const firstInput = waitlistForm?.querySelector('input');
+    if (firstInput) setTimeout(() => firstInput.focus(), 100);
+  });
+
+  waitlistOverlay.querySelector('.waitlist-close')?.addEventListener('click', () => {
+    waitlistOverlay.classList.remove('open');
+  });
+
+  waitlistOverlay.addEventListener('click', (e) => {
+    if (e.target === waitlistOverlay) waitlistOverlay.classList.remove('open');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && waitlistOverlay.classList.contains('open')) {
+      waitlistOverlay.classList.remove('open');
+    }
+  });
+}
+
+if (waitlistForm) {
+  waitlistForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = waitlistForm.name.value.trim();
+    const email = waitlistForm.email.value.trim();
+    if (!name || !email) return;
+
+    const submitBtn = waitlistForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    waitlistMessage.textContent = '';
+
+    try {
+      const res = await fetch('/api/explorer/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        waitlistMessage.style.color = '#22c55e';
+        waitlistMessage.textContent = data.message || "You're on the list! Check your email.";
+        waitlistForm.reset();
+        setTimeout(() => waitlistOverlay.classList.remove('open'), 3000);
+      } else {
+        waitlistMessage.style.color = '#ef4444';
+        waitlistMessage.textContent = data.error || 'Something went wrong.';
+      }
+    } catch {
+      waitlistMessage.style.color = '#ef4444';
+      waitlistMessage.textContent = 'Network error. Please try again.';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign Up';
+    }
+  });
+}

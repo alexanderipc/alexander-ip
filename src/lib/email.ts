@@ -707,3 +707,136 @@ function projectCreatedHtml(data: ProjectEmailData): string {
 </body>
 </html>`;
 }
+
+/* ── Explorer Waitlist Emails ──────────────────────────────── */
+
+export async function sendWaitlistConfirmationEmail(
+  to: string,
+  name: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: "You're on the list — Portfolio Explorer",
+      html: waitlistConfirmationHtml(escapeHtml(name)),
+    });
+
+    if (error) {
+      console.error("Resend error (waitlist confirmation):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Waitlist confirmation email failed:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+export async function sendAdminWaitlistNotificationEmail(data: {
+  name: string;
+  email: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: `New Explorer waitlist sign-up: ${data.name}`,
+      html: adminWaitlistHtml(data),
+    });
+
+    if (error) {
+      console.error("Resend error (admin waitlist):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Admin waitlist notification failed:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function waitlistConfirmationHtml(name: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+        <tr><td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
+          <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Portfolio Explorer</p>
+        </td></tr>
+        <tr><td style="padding:36px 32px 40px;">
+          <h2 style="margin:0 0 8px;color:#0f1729;font-size:22px;font-weight:700;">You&rsquo;re on the list!</h2>
+          <p style="margin:0 0 20px;color:#334155;font-size:16px;line-height:1.6;">
+            Hi ${name}, thanks for your interest in the Portfolio Explorer. We&rsquo;ll let you know as soon as you can visualize your own patent portfolio.
+          </p>
+          <p style="margin:0 0 28px;color:#334155;font-size:16px;line-height:1.6;">
+            In the meantime, you can explore our demo portfolio to see how patent families combine to define the shape of your protection.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+            <a href="https://www.alexander-ip.com/explorer" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:14px 40px;border-radius:10px;">
+              Try the Demo &rarr;
+            </a>
+          </td></tr></table>
+        </td></tr>
+        <tr><td style="padding:0 32px 32px;text-align:center;">
+          <p style="margin:0;color:#94a3b8;font-size:12px;">Alexander IP Ltd &middot; <a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;">Privacy Policy</a></p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+function adminWaitlistHtml(data: { name: string; email: string }): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+        <tr><td style="background-color:#2563eb;padding:28px 32px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800;">New Waitlist Sign-up</h1>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:24px;">
+            <tr><td style="padding:16px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:14px;width:100px;">Name</td>
+                  <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.name)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:14px;">Email</td>
+                  <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.email)}</td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+            <a href="https://www.alexander-ip.com/admin/waitlist" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:14px 40px;border-radius:10px;">
+              View Waitlist &rarr;
+            </a>
+          </td></tr></table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}

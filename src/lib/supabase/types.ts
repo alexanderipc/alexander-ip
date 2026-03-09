@@ -133,6 +133,7 @@ export interface LinkedProject {
   relationship_type: RelationshipType;
   created_at: string;
 }
+export interface ExplorerWaitlistEntry {  id: string;  name: string;  email: string;  created_at: string;}
 
 /**
  * We intentionally don't use a Database generic with the Supabase client.

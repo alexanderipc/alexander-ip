@@ -36,6 +36,7 @@
         value="US12236923B2"
         autofocus>
       <button id="search-btn">Explore</button>
+      <button id="waitlist-btn" class="waitlist-btn">Join Waitlist</button>
     </div>
 
     <div class="landing-examples">
@@ -163,6 +164,22 @@
 <!-- ═══ Lightbox ═══ -->
 <div id="lightbox" class="lightbox" onclick="this.classList.remove('open')">
   <img id="lightbox-img" src="" alt="Patent Drawing">
+</div>
+
+
+<!-- ═══ Waitlist Modal ═══ -->
+<div id="waitlist-overlay" class="waitlist-overlay">
+  <div class="waitlist-modal">
+    <button class="waitlist-close">&times;</button>
+    <h2 class="waitlist-title">Join the Waitlist</h2>
+    <p class="waitlist-sub">Be the first to visualize your own patent portfolio. We'll let you know when it's ready.</p>
+    <form id="waitlist-form">
+      <input type="text" name="name" class="waitlist-input" placeholder="Your name" required>
+      <input type="email" name="email" class="waitlist-input" placeholder="your@email.com" required>
+      <button type="submit" class="waitlist-submit">Sign Up</button>
+    </form>
+    <div id="waitlist-message" class="waitlist-message"></div>
+  </div>
 </div>
 
 <script type="module" src="/explorer/js/app.js"></script>
