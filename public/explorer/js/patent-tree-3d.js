@@ -885,16 +885,22 @@ export class PatentTree3D {
       this._bubbleMesh.material.dispose();
       this._bubbleMesh = null;
     }
-    const spheres = this._inventions.map(inv => {
-      let maxR = BASE_RADIUS;
+    const spheres = [];
+    for (const inv of this._inventions) {
+      // Add a base sphere at each invention center
+      spheres.push({ x: inv._x, y: inv._y, z: inv._z, r: BASE_RADIUS });
+      // Add a sphere at each lobe tip (one per patent)
       if (inv.lobeTips) {
         for (const tip of inv.lobeTips) {
-          const d = tip.length();
-          if (d > maxR) maxR = d;
+          spheres.push({
+            x: inv._x + tip.x,
+            y: inv._y + tip.y,
+            z: inv._z + tip.z,
+            r: BASE_RADIUS * 0.7
+          });
         }
       }
-      return { x: inv._x, y: inv._y, z: inv._z, r: maxR };
-    });
+    }
     const ocx = spheres.reduce((s, c) => s + c.x, 0) / spheres.length;
     const ocy = spheres.reduce((s, c) => s + c.y, 0) / spheres.length;
     const ocz = spheres.reduce((s, c) => s + c.z, 0) / spheres.length;
