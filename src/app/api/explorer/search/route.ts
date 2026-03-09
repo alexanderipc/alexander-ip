@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveContextId } from "@/data/context";
 
 const knownMappings: Record<string, string> = {
   "US12236923B2":
@@ -40,7 +41,8 @@ export async function POST(req: NextRequest) {
       )?.[1];
 
     if (ual) {
-      return NextResponse.json({ ual, matchedBy: "lookup-table" });
+      const contextId = resolveContextId(ual, normalized);
+      return NextResponse.json({ ual, matchedBy: "lookup-table", contextId });
     }
     return NextResponse.json(
       { error: `No portfolio found for "${query}". Try a UAL directly.` },

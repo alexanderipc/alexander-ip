@@ -22,8 +22,9 @@ export class ChatPanel {
     if (toggle) toggle.addEventListener('click', () => this.el.classList.toggle('collapsed'));
   }
 
-  setPortfolio(portfolio) {
+  setPortfolio(portfolio, contextId = null) {
     this.portfolio = portfolio;
+    this.contextId = contextId;
     this.messages = [];
     this.messagesEl.innerHTML = '';
     this._showStarters();
@@ -31,11 +32,11 @@ export class ChatPanel {
 
   _showStarters() {
     const starters = [
-      'What is the overall shape of this portfolio and where is coverage strongest?',
-      'How do the patent families work together to define overall coverage?',
-      'Where are the gaps in coverage that new filings could fill?',
-      'What are the key claim differences between family members?',
-      'What are the important upcoming deadlines?',
+      'What does this portfolio protect and how strong is the coverage?',
+      'Walk me through the strategy behind how this portfolio was built.',
+      'What makes these patents difficult for competitors to design around?',
+      'What opportunities exist to expand or strengthen this portfolio?',
+      'What are the key upcoming deadlines and recommended next steps?',
     ];
 
     let html = '<div class="chat-starters">';
@@ -80,7 +81,8 @@ export class ChatPanel {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: this.messages,
-          portfolio: this.portfolio
+          portfolio: this.portfolio,
+          contextId: this.contextId
         })
       });
 

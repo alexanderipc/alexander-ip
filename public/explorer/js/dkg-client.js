@@ -39,14 +39,18 @@ export class DKGClient {
   async load(input) {
     input = input.trim();
     let ual;
+    let contextId = null;
 
     if (input.startsWith('did:dkg:')) {
       ual = input;
     } else {
       const result = await this.search(input);
       ual = result.ual;
+      contextId = result.contextId || null;
     }
 
-    return this.fetchPortfolio(ual);
+    const portfolio = await this.fetchPortfolio(ual);
+    portfolio.contextId = contextId;
+    return portfolio;
   }
 }

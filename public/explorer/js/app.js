@@ -68,7 +68,7 @@ async function search() {
     tree.render(result.patents);
 
     // Load into chat
-    chat.setPortfolio(result.patents);
+    chat.setPortfolio(result.patents, result.contextId || null);
 
     // Fade out loading overlay after a brief moment
     if (loadingOverlay.style.display !== 'none') {
