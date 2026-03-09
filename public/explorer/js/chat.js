@@ -32,11 +32,11 @@ export class ChatPanel {
 
   _showStarters() {
     const starters = [
-      'What does this portfolio protect and how strong is the coverage?',
+      'What does this portfolio cover and how is it structured?',
       'Walk me through the strategy behind how this portfolio was built.',
       'What makes these patents difficult for competitors to design around?',
-      'What opportunities exist to expand or strengthen this portfolio?',
-      'What are the key upcoming deadlines and recommended next steps?',
+      'How do the patent families relate to each other?',
+      'What geographic coverage does this portfolio have?',
     ];
 
     let html = '<div class="chat-starters">';
