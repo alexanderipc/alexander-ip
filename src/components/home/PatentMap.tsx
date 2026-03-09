@@ -142,8 +142,6 @@ const jurisdictions: Jurisdiction[] = [
       "528", "578", "616", "620", "642", "703", "705", "724", "752", "756", "792",
     ],
     patents: [
-      // ── Granted ──
-      { number: "EP4576048B1", label: "EP 4,576,048 B1", title: "Spatial Memory Aid", url: patentUrl("EP4576048B1") },
       // ── Published ──
       { number: "EP4655775A1", label: "EP 4,655,775 A1", title: "Modular Smart Frame", url: patentUrl("EP4655775A1") },
       { number: "EP4035264A1", label: "EP 4,035,264 A1", title: "Audio Data Processing", url: patentUrl("EP4035264A1") },
