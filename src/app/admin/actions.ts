@@ -31,11 +31,18 @@ async function requireAdmin() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  const { data: profile } = await supabase
+  // Use admin client for role check — the user's JWT can intermittently
+  // return 400 from PostgREST during server actions (token refresh timing).
+  const adminClient = createAdminClient();
+  const { data: profile, error: profileError } = await adminClient
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single();
+
+  if (profileError) {
+    console.error("[Admin] Profile lookup error:", profileError.message, profileError.code, "| user:", user.id);
+  }
 
   if (profile?.role !== "admin") throw new Error("Not authorized");
   return { supabase, user };
@@ -44,7 +51,7 @@ async function requireAdmin() {
 /* ── Create Project ──────────────────────────────────────── */
 
 export async function createProject(formData: FormData) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
   const adminClient = createAdminClient();
 
   const clientEmail = formData.get("client_email") as string;
@@ -80,7 +87,7 @@ export async function createProject(formData: FormData) {
     // Update name/email if provided
     const updates: Record<string, string> = { email: clientEmail };
     if (clientName) updates.name = clientName;
-    await supabase.from("profiles").update(updates).eq("id", clientId);
+    await adminClient.from("profiles").update(updates).eq("id", clientId);
   } else {
     // Create new user (triggers auto-profile via DB trigger)
     const { data: newUser, error: createError } =
@@ -100,7 +107,7 @@ export async function createProject(formData: FormData) {
 
     // Update profile name
     if (clientName) {
-      await supabase
+      await adminClient
         .from("profiles")
         .update({ name: clientName })
         .eq("id", clientId);
@@ -114,7 +121,7 @@ export async function createProject(formData: FormData) {
     : null;
 
   // Create project
-  const { data: project, error: projectError } = await supabase
+  const { data: project, error: projectError } = await adminClient
     .from("projects")
     .insert({
       client_id: clientId,
@@ -139,7 +146,7 @@ export async function createProject(formData: FormData) {
   }
 
   // Create initial update
-  await supabase.from("project_updates").insert({
+  await adminClient.from("project_updates").insert({
     project_id: project.id,
     status_to: "payment_received",
     note:
@@ -168,7 +175,7 @@ export async function createProject(formData: FormData) {
   try {
     const folderUrl = await createProjectFolders(clientName || clientEmail.split("@")[0], title);
     if (folderUrl) {
-      await supabase
+      await adminClient
         .from("projects")
         .update({ onedrive_url: folderUrl })
         .eq("id", project.id);
@@ -191,10 +198,11 @@ export async function advanceStatus(
   internalNote?: string,
   notifyClient: boolean = true
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
   // Fetch current project
-  const { data: project } = await supabase
+  const { data: project } = await adminClient
     .from("projects")
     .select("*")
     .eq("id", projectId)
@@ -213,10 +221,10 @@ export async function advanceStatus(
     updateData.actual_delivery_date = new Date().toISOString().split("T")[0];
   }
 
-  await supabase.from("projects").update(updateData).eq("id", projectId);
+  await adminClient.from("projects").update(updateData).eq("id", projectId);
 
   // Create update record
-  await supabase.from("project_updates").insert({
+  await adminClient.from("project_updates").insert({
     project_id: projectId,
     status_from: project.status,
     status_to: nextStatus,
@@ -229,7 +237,7 @@ export async function advanceStatus(
   // Send email notification (skip if project-level mute is on)
   if (notifyClient && !project.client_notifications_muted) {
     try {
-      const { data: clientProfile } = await supabase
+      const { data: clientProfile } = await adminClient
         .from("profiles")
         .select("email, notification_preferences")
         .eq("id", project.client_id)
@@ -270,9 +278,10 @@ export async function addUpdate(
   internalNote?: string,
   notifyClient: boolean = true
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
-  const { data: project } = await supabase
+  const { data: project } = await adminClient
     .from("projects")
     .select("status, title, service_type, client_id, client_notifications_muted")
     .eq("id", projectId)
@@ -280,7 +289,7 @@ export async function addUpdate(
 
   if (!project) throw new Error("Project not found");
 
-  await supabase.from("project_updates").insert({
+  await adminClient.from("project_updates").insert({
     project_id: projectId,
     status_from: project.status,
     status_to: project.status,
@@ -292,7 +301,7 @@ export async function addUpdate(
   // Send email notification (skip if project-level mute is on)
   if (notifyClient && !project.client_notifications_muted) {
     try {
-      const { data: clientProfile } = await supabase
+      const { data: clientProfile } = await adminClient
         .from("profiles")
         .select("email, notification_preferences")
         .eq("id", project.client_id)
@@ -330,21 +339,22 @@ export async function updateDeliveryDate(
   newDate: string,
   note?: string
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
-  await supabase
+  await adminClient
     .from("projects")
     .update({ estimated_delivery_date: newDate })
     .eq("id", projectId);
 
   if (note) {
-    const { data: project } = await supabase
+    const { data: project } = await adminClient
       .from("projects")
       .select("status, client_id, title, client_notifications_muted")
       .eq("id", projectId)
       .single();
 
-    await supabase.from("project_updates").insert({
+    await adminClient.from("project_updates").insert({
       project_id: projectId,
       status_from: project?.status || "",
       status_to: project?.status || "",
@@ -355,7 +365,7 @@ export async function updateDeliveryDate(
     // Send email notification (was missing prefs check — now fixed)
     if (project && !project.client_notifications_muted) {
       try {
-        const { data: clientProfile } = await supabase
+        const { data: clientProfile } = await adminClient
           .from("profiles")
           .select("email, notification_preferences")
           .eq("id", project.client_id)
@@ -393,7 +403,7 @@ export async function uploadDocument(
   projectId: string,
   formData: FormData
 ) {
-  const { supabase, user } = await requireAdmin();
+  const { user } = await requireAdmin();
   const adminClient = createAdminClient();
 
   const file = formData.get("file") as File;
@@ -419,7 +429,7 @@ export async function uploadDocument(
 
   // Store the storage path (not a URL) — we'll generate signed URLs on demand
   // Create document record
-  const { error: insertError } = await supabase.from("project_documents").insert({
+  const { error: insertError } = await adminClient.from("project_documents").insert({
     project_id: projectId,
     filename: file.name,
     file_url: filePath,
@@ -435,14 +445,14 @@ export async function uploadDocument(
   // Send email notification for client-visible documents (skip if project-level mute is on)
   if (clientVisible) {
     try {
-      const { data: project } = await supabase
+      const { data: project } = await adminClient
         .from("projects")
         .select("title, client_id, client_notifications_muted")
         .eq("id", projectId)
         .single();
 
       if (project && !project.client_notifications_muted) {
-        const { data: clientProfile } = await supabase
+        const { data: clientProfile } = await adminClient
           .from("profiles")
           .select("email, notification_preferences")
           .eq("id", project.client_id)
@@ -479,9 +489,10 @@ export async function addMilestone(
   targetDate: string | null,
   clientVisible: boolean = true
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
-  await supabase.from("project_milestones").insert({
+  await adminClient.from("project_milestones").insert({
     project_id: projectId,
     title,
     target_date: targetDate,
@@ -500,10 +511,11 @@ export async function completeMilestone(
   milestoneId: string,
   projectId: string
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
   const today = new Date().toISOString().split("T")[0];
-  await supabase
+  await adminClient
     .from("project_milestones")
     .update({ completed_date: today })
     .eq("id", milestoneId);
@@ -520,9 +532,10 @@ export async function uncompleteMilestone(
   milestoneId: string,
   projectId: string
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
-  await supabase
+  await adminClient
     .from("project_milestones")
     .update({ completed_date: null })
     .eq("id", milestoneId);
@@ -539,9 +552,10 @@ export async function deleteMilestone(
   milestoneId: string,
   projectId: string
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
-  await supabase
+  await adminClient
     .from("project_milestones")
     .delete()
     .eq("id", milestoneId);
@@ -558,9 +572,10 @@ export async function updateTimelineDays(
   projectId: string,
   timelineDays: number | null
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
-  const { data: project } = await supabase
+  const { data: project } = await adminClient
     .from("projects")
     .select("start_date")
     .eq("id", projectId)
@@ -573,7 +588,7 @@ export async function updateTimelineDays(
       ? calculateDeliveryDate(project.start_date, timelineDays)
       : null;
 
-  await supabase
+  await adminClient
     .from("projects")
     .update({
       default_timeline_days: timelineDays,
@@ -591,22 +606,27 @@ export async function updateTimelineDays(
 /* ── Send Message (Admin) ─────────────────────────────────── */
 
 export async function sendAdminMessage(projectId: string, body: string) {
-  const { supabase, user } = await requireAdmin();
+  const { user } = await requireAdmin();
+  const adminClient = createAdminClient();
 
   if (!body.trim()) throw new Error("Message cannot be empty");
   if (body.length > 2000) throw new Error("Message too long (max 2000 characters)");
 
-  // Fetch project info for email
-  const { data: project } = await supabase
+  // Fetch project info for email (admin client for JWT resilience)
+  const { data: project, error: projectError } = await adminClient
     .from("projects")
     .select("id, title, client_id, client_notifications_muted")
     .eq("id", projectId)
     .single();
 
+  if (projectError) {
+    console.error("[SendAdminMessage] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId);
+  }
+
   if (!project) throw new Error("Project not found");
 
   // Insert message
-  const { error } = await supabase.from("project_messages").insert({
+  const { error } = await adminClient.from("project_messages").insert({
     project_id: projectId,
     sender_id: user.id,
     body: body.trim(),
@@ -618,7 +638,7 @@ export async function sendAdminMessage(projectId: string, body: string) {
   // Notify client via email (skip if project-level mute is on)
   if (!project.client_notifications_muted) {
     try {
-      const { data: clientProfile } = await supabase
+      const { data: clientProfile } = await adminClient
         .from("profiles")
         .select("email, notification_preferences")
         .eq("id", project.client_id)
@@ -650,10 +670,11 @@ export async function sendAdminMessage(projectId: string, body: string) {
 /* ── Mark Messages Read (Admin) ───────────────────────────── */
 
 export async function markAdminMessagesRead(projectId: string) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
   // Mark client messages (is_admin = false) as read
-  await supabase
+  await adminClient
     .from("project_messages")
     .update({ read_at: new Date().toISOString() })
     .eq("project_id", projectId)
@@ -762,7 +783,8 @@ export async function toggleProjectNotificationMute(
   projectId: string,
   target: "client" | "admin"
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminClient = createAdminClient();
 
   const column =
     target === "client"
@@ -770,7 +792,7 @@ export async function toggleProjectNotificationMute(
       : "admin_notifications_muted";
 
   // Fetch current value
-  const { data: project } = await supabase
+  const { data: project } = await adminClient
     .from("projects")
     .select(column)
     .eq("id", projectId)
@@ -780,7 +802,7 @@ export async function toggleProjectNotificationMute(
 
   const currentValue = (project as Record<string, boolean>)[column];
 
-  await supabase
+  await adminClient
     .from("projects")
     .update({ [column]: !currentValue })
     .eq("id", projectId);
