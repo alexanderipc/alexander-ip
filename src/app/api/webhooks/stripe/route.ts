@@ -8,6 +8,7 @@ import {
 import { sendProjectCreatedEmail, sendAdminNewOrderEmail } from "@/lib/email";
 import type { ServiceType } from "@/lib/supabase/types";
 import { createProjectFolders } from "@/lib/microsoft/onedrive";
+import { generateAndStoreInvoice } from "@/lib/invoice";
 
 export const runtime = "nodejs";
 
@@ -298,6 +299,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error("[webhook] OneDrive folder creation failed:", driveErr);
   }
 
+  // 7c. Generate invoice PDF (non-blocking)
+  try {
+    await generateAndStoreInvoice({
+      projectId: project.id,
+      clientName: customerName,
+      clientEmail: email,
+      title,
+      amountTotal: amountTotal || 0,
+      amountTax: session.total_details?.amount_tax || 0,
+      currency,
+    });
+  } catch (invoiceErr) {
+    console.error("[webhook] Invoice generation failed:", invoiceErr);
+  }
+
   // 8. Send admin notification email
   try {
     await sendAdminNewOrderEmail({
@@ -484,6 +500,21 @@ async function handleOfferPayment(
     }
   } catch (driveErr) {
     console.error("[webhook] OneDrive folder creation failed:", driveErr);
+  }
+
+  // 8b. Generate invoice PDF (non-blocking)
+  try {
+    await generateAndStoreInvoice({
+      projectId: project.id,
+      clientName: customerName,
+      clientEmail: email,
+      title: offer.title,
+      amountTotal: session.amount_total || offer.amount,
+      amountTax: session.total_details?.amount_tax || 0,
+      currency: offer.currency,
+    });
+  } catch (invoiceErr) {
+    console.error("[webhook] Invoice generation failed:", invoiceErr);
   }
 
   // 9. Send admin notification

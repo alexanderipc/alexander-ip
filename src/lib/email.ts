@@ -646,7 +646,7 @@ function projectCreatedHtml(data: ProjectEmailData): string {
             <td style="padding:36px 32px 40px;">
               <h2 style="margin:0 0 8px;color:#0f1729;font-size:22px;font-weight:700;">Your project is ready</h2>
               <p style="margin:0 0 28px;color:#334155;font-size:16px;line-height:1.6;">
-                Thank you for your payment. Your project has been created and you can track its progress in your account.
+                Thank you for your payment. Your project has been created and you can track its progress in your account. Your tax invoice is available in your project documents.
               </p>
 
               <!-- Project details card -->
