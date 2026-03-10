@@ -840,3 +840,130 @@ function adminWaitlistHtml(data: { name: string; email: string }): string {
 </body>
 </html>`;
 }
+
+/* ── Custom Offer Email ──────────────────────────────────────── */
+
+interface OfferEmailData {
+  clientName: string | null;
+  title: string;
+  description: string | null;
+  serviceType: ServiceType;
+  formattedAmount: string;
+  timelineDays: number | null;
+  offerUrl: string;
+}
+
+export async function sendOfferEmail(
+  to: string,
+  data: OfferEmailData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `You have a new offer from Alexander IP — ${data.title}`,
+      html: offerHtml(data),
+    });
+
+    if (error) {
+      console.error("Resend error (offer):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Offer email failed:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function offerHtml(data: OfferEmailData): string {
+  const serviceLabel = SERVICE_LABELS[data.serviceType] || data.serviceType;
+  const greeting = data.clientName ? `Hi ${escapeHtml(data.clientName)},` : "Hi,";
+  const descBlock = data.description
+    ? `<p style="margin:0 0 24px;color:#334155;font-size:15px;line-height:1.6;">${escapeHtml(data.description).replace(/\n/g, "<br>")}</p>`
+    : "";
+  const timelineLine = data.timelineDays
+    ? `<tr>
+        <td style="padding:6px 0;color:#64748b;font-size:14px;width:140px;">Timeline</td>
+        <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${data.timelineDays} days</td>
+       </tr>`
+    : "";
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+        <!-- Header -->
+        <tr>
+          <td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
+            <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
+            <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Custom Offer</p>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 32px 40px;">
+            <p style="margin:0 0 8px;color:#334155;font-size:16px;line-height:1.6;">${greeting}</p>
+            <h2 style="margin:0 0 16px;color:#0f1729;font-size:22px;font-weight:700;">You have a custom offer</h2>
+
+            ${descBlock}
+
+            <!-- Offer details card -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:28px;">
+              <tr>
+                <td style="padding:20px 24px;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding:6px 0;color:#64748b;font-size:14px;width:140px;">Project</td>
+                      <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.title)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:6px 0;color:#64748b;font-size:14px;">Service</td>
+                      <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${serviceLabel}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:6px 0;color:#64748b;font-size:14px;">Price</td>
+                      <td style="padding:6px 0;color:#0f1729;font-size:20px;font-weight:800;">${data.formattedAmount}</td>
+                    </tr>
+                    ${timelineLine}
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+              <a href="${data.offerUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:17px;font-weight:700;padding:16px 48px;border-radius:10px;letter-spacing:0.2px;">
+                View Offer &amp; Pay &rarr;
+              </a>
+            </td></tr></table>
+
+            <p style="margin:28px 0 0;color:#64748b;font-size:14px;line-height:1.5;">
+              Once payment is processed your project will be created automatically and you&rsquo;ll receive access to your project dashboard.
+            </p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
+            <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">
+              Alexander IP &mdash; Patent Drafting &amp; Office Correspondence
+            </p>
+            <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;">
+              <a href="https://www.alexander-ip.com/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy Policy</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}

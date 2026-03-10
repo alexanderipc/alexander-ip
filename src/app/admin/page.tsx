@@ -10,7 +10,7 @@ import {
 } from "@/lib/portal/status";
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
-import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle } from "lucide-react";
+import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle, Send } from "lucide-react";
 import CompletedProjects from "@/components/admin/CompletedProjects";
 
 export default async function AdminDashboard() {
@@ -51,6 +51,18 @@ export default async function AdminDashboard() {
   unreadMsgs.forEach((m) => {
     unreadMap[m.project_id] = (unreadMap[m.project_id] || 0) + 1;
   });
+  // Fetch pending offers count
+  let pendingOffersCount = 0;
+  try {
+    const { count } = await adminClient
+      .from("offers")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+    pendingOffersCount = count || 0;
+  } catch {
+    pendingOffersCount = 0;
+  }
+
   const overdue = active.filter(
     (p) =>
       p.estimated_delivery_date &&
@@ -82,8 +94,17 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Alerts */}
-      {(overdue.length > 0 || dueSoon.length > 0) && (
+      {(overdue.length > 0 || dueSoon.length > 0 || pendingOffersCount > 0) && (
         <div className="flex gap-4 mb-6">
+          {pendingOffersCount > 0 && (
+            <Link
+              href="/admin/offers"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm hover:bg-blue-100 transition-colors"
+            >
+              <Send className="w-4 h-4" />
+              {pendingOffersCount} pending offer{pendingOffersCount !== 1 ? "s" : ""}
+            </Link>
+          )}
           {overdue.length > 0 && (
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
               <AlertTriangle className="w-4 h-4" />

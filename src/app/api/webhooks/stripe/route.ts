@@ -127,6 +127,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log(`[webhook] Processing checkout: ${session.id}`);
   const adminClient = createAdminClient();
 
+  // ── Offer payment detection ──────────────────────────────────
+  const offerId = session.metadata?.offer_id;
+  if (offerId) {
+    await handleOfferPayment(session, offerId, adminClient);
+    return;
+  }
+
   // 1. Extract data from session
   const stripeServiceId = session.metadata?.service;
   const email = session.customer_details?.email;
@@ -332,4 +339,189 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error("Failed to send welcome email:", emailErr);
   }
 
+}
+
+
+/* ── Offer payment handler ──────────────────────────────────────── */
+
+async function handleOfferPayment(
+  session: Stripe.Checkout.Session,
+  offerId: string,
+  adminClient: ReturnType<typeof createAdminClient>
+) {
+  console.log(`[webhook] Processing offer payment: ${offerId}`);
+
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id || null;
+
+  // 1. Fetch the offer
+  const { data: offer, error: offerError } = await adminClient
+    .from("offers")
+    .select("*")
+    .eq("id", offerId)
+    .single();
+
+  if (offerError || !offer) {
+    throw new Error(`Offer not found: ${offerId}`);
+  }
+
+  // 2. Idempotency — already accepted?
+  if (offer.status === "accepted") {
+    console.log(`[webhook] Offer ${offerId} already accepted, skipping`);
+    return;
+  }
+
+  // 3. Find or create client
+  let clientId: string;
+  const email = offer.client_email;
+  const customerName =
+    session.customer_details?.name ||
+    offer.client_name ||
+    email.split("@")[0];
+
+  const { data: existingProfile } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    clientId = existingProfile.id;
+    await adminClient
+      .from("profiles")
+      .update({ name: customerName })
+      .eq("id", clientId);
+  } else {
+    const { data: newUser, error: createError } =
+      await adminClient.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { name: customerName },
+      });
+
+    if (createError || !newUser?.user) {
+      throw new Error(
+        `Failed to create client: ${createError?.message || "Unknown error"}`
+      );
+    }
+    clientId = newUser.user.id;
+  }
+
+  // 4. Calculate delivery date
+  const serviceType = (offer.service_type || "custom") as ServiceType;
+  const timelineDays =
+    offer.timeline_days || DEFAULT_TIMELINES[serviceType] || null;
+  const startDate = new Date().toISOString().split("T")[0];
+  const estimatedDelivery = timelineDays
+    ? calculateDeliveryDate(startDate, timelineDays)
+    : null;
+
+  // 5. Create project
+  const { data: project, error: projectError } = await adminClient
+    .from("projects")
+    .insert({
+      client_id: clientId,
+      service_type: serviceType,
+      title: offer.title,
+      description: offer.description,
+      status: "payment_received",
+      jurisdictions: [],
+      start_date: startDate,
+      default_timeline_days: timelineDays,
+      estimated_delivery_date: estimatedDelivery,
+      price_paid: session.amount_total || offer.amount,
+      currency: offer.currency,
+      stripe_payment_id: paymentIntentId,
+    })
+    .select()
+    .single();
+
+  if (projectError || !project) {
+    throw new Error(
+      `Failed to create project from offer: ${projectError?.message || "Unknown error"}`
+    );
+  }
+
+  // 6. Update offer → accepted
+  await adminClient
+    .from("offers")
+    .update({
+      status: "accepted",
+      stripe_payment_id: paymentIntentId,
+      project_id: project.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", offerId);
+
+  // 7. Create initial update
+  const deliveryNote = estimatedDelivery
+    ? `Estimated delivery: ${new Date(estimatedDelivery).toLocaleDateString(
+        "en-GB",
+        { day: "numeric", month: "long", year: "numeric" }
+      )}.`
+    : "";
+
+  await adminClient.from("project_updates").insert({
+    project_id: project.id,
+    status_to: "payment_received",
+    note: `Payment received. ${deliveryNote}`,
+    internal_note: `Auto-created from custom offer ${offerId}. Payment: ${paymentIntentId}`,
+    notify_client: true,
+  });
+
+  console.log(`[webhook] Offer ${offerId} accepted, project created: ${project.id}`);
+
+  // 8. Create OneDrive folder structure (non-blocking)
+  try {
+    const folderUrl = await createProjectFolders(customerName, offer.title);
+    if (folderUrl) {
+      await adminClient
+        .from("projects")
+        .update({ onedrive_url: folderUrl })
+        .eq("id", project.id);
+    }
+  } catch (driveErr) {
+    console.error("[webhook] OneDrive folder creation failed:", driveErr);
+  }
+
+  // 9. Send admin notification
+  try {
+    await sendAdminNewOrderEmail({
+      clientName: customerName,
+      clientEmail: email,
+      title: offer.title,
+      serviceType,
+      amount: session.amount_total || offer.amount,
+      currency: offer.currency,
+      estimatedDelivery,
+      projectId: project.id,
+    });
+  } catch (adminEmailErr) {
+    console.error("Failed to send admin notification:", adminEmailErr);
+  }
+
+  // 10. Send welcome email with portal link
+  try {
+    const { data: linkData } =
+      await adminClient.auth.admin.generateLink({
+        type: "magiclink",
+        email,
+      });
+
+    const hashedToken = linkData?.properties?.hashed_token;
+    const portalUrl = hashedToken
+      ? `https://www.alexander-ip.com/auth/verify?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink`
+      : "https://www.alexander-ip.com/auth/login";
+
+    await sendProjectCreatedEmail(email, {
+      title: offer.title,
+      serviceType,
+      estimatedDelivery,
+      portalUrl,
+    });
+  } catch (emailErr) {
+    console.error("Failed to send welcome email:", emailErr);
+  }
 }
