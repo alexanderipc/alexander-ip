@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  outputFileTracingIncludes: {
-    "/api/webhooks/stripe": ["./node_modules/pdfkit/js/data/**/*"],
-  },
+  serverExternalPackages: ["pdfkit"],
   async rewrites() {
     return [
       {
