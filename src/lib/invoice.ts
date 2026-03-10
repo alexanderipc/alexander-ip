@@ -334,7 +334,7 @@ export async function generateInvoicePdf(
     }
 
     // ── Footer ──
-    const footerY = 780;
+    const footerY = 760;
     doc
       .moveTo(margin, footerY)
       .lineTo(margin + contentWidth, footerY)
