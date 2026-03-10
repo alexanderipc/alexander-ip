@@ -116,7 +116,7 @@ export async function generateInvoicePdf(
       .fontSize(10)
       .font("Helvetica")
       .fillColor("#94a3b8")
-      .text("Patent Attorneys & IP Consultants", margin, 62, {
+      .text("Patent Drafting & IP Consultancy", margin, 62, {
         width: contentWidth,
       });
 

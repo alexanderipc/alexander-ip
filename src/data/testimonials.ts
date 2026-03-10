@@ -138,7 +138,7 @@ export const testimonials: Testimonial[] = [
     attribution: "@tanasetudor200",
     country: "Netherlands",
     service: "Consultation",
-    highlight: "best patent attorney",
+    highlight: "best patent consultant",
     isRepeat: true,
   },
 
