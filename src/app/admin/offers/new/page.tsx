@@ -49,7 +49,7 @@ export default function NewOfferPage() {
     setTimelineDays(defaultDays ? String(defaultDays) : "");
   }
 
-  const displayAmount = amount ? (parseInt(amount) / 100).toFixed(2) : "0.00";
+  const displayAmount = amount ? parseFloat(amount).toFixed(2) : "0.00";
   const symbol = CURRENCY_SYMBOLS[currency] || "$";
 
   async function handleSubmit(formData: FormData) {
@@ -216,22 +216,23 @@ export default function NewOfferPage() {
                 htmlFor="amount"
                 className="block text-sm font-medium text-slate-700 mb-1"
               >
-                Price (pence/cents) *
+                Price ({symbol}) *
               </label>
               <input
                 id="amount"
                 name="amount"
                 type="number"
                 required
-                min="50"
+                min="0.50"
+                step="0.01"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="e.g., 99500"
+                placeholder="e.g., 850.00"
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-              {amount && parseInt(amount) > 0 && (
+              {amount && parseFloat(amount) > 0 && (
                 <p className="text-xs text-slate-500 mt-1">
-                  = {symbol}{displayAmount}
+                  {symbol}{displayAmount} + VAT where applicable
                 </p>
               )}
             </div>

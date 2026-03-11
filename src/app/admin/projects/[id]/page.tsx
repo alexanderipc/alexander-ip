@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import Markdown from "react-markdown";
 import {
   getServiceLabel,
   getStatusLabel,
@@ -301,7 +302,9 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                       )}
                     </div>
                     {update.note && (
-                      <p className="text-sm text-slate-700">{update.note}</p>
+                      <div className="prose prose-sm prose-slate max-w-none">
+                        <Markdown>{update.note}</Markdown>
+                      </div>
                     )}
                     {update.internal_note && (
                       <p className="text-sm text-amber-700 bg-amber-50 rounded px-2 py-1 mt-1">

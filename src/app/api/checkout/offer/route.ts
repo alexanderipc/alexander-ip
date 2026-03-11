@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
       success_url: `${BASE_URL}/offer/${token}/success`,
       cancel_url: `${BASE_URL}/offer/${token}`,
       customer_email: offer.client_email,
+      customer_creation: "always",
       billing_address_collection: "required",
       automatic_tax: { enabled: true },
       metadata: {

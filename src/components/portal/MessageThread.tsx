@@ -131,7 +131,7 @@ export default function MessageThread({
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           rows={2}
-          maxLength={2000}
+          maxLength={10000}
           className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
         <button
@@ -148,9 +148,9 @@ export default function MessageThread({
         <p className="text-[11px] text-slate-400">
           {isPending ? "Sending..." : "Enter to send \u00B7 Shift+Enter for new line"}
         </p>
-        {body.length > 1800 && (
-          <p className={`text-[11px] ${body.length >= 2000 ? "text-red-500" : "text-slate-400"}`}>
-            {body.length}/2000
+        {body.length > 9000 && (
+          <p className={`text-[11px] ${body.length >= 10000 ? "text-red-500" : "text-slate-400"}`}>
+            {body.length.toLocaleString()}/10,000
           </p>
         )}
       </div>

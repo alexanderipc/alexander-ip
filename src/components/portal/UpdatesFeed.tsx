@@ -1,6 +1,7 @@
 import type { ProjectUpdate } from "@/lib/supabase/types";
 import { getStatusLabel } from "@/lib/portal/status";
 import StatusBadge from "./StatusBadge";
+import Markdown from "react-markdown";
 
 interface UpdatesFeedProps {
   updates: ProjectUpdate[];
@@ -45,9 +46,9 @@ export default function UpdatesFeed({ updates }: UpdatesFeedProps) {
               )}
             </div>
             {update.note && (
-              <p className="text-sm text-slate-700 leading-relaxed">
-                {update.note}
-              </p>
+              <div className="prose prose-sm prose-slate max-w-none">
+                <Markdown>{update.note}</Markdown>
+              </div>
             )}
           </div>
         </div>

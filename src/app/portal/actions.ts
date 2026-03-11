@@ -21,7 +21,7 @@ async function requireClient() {
 
 /* ── Upload Document (Client) ─────────────────────────────── */
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 const ALLOWED_TYPES = [
   "application/pdf",
   "image/png",
@@ -30,6 +30,14 @@ const ALLOWED_TYPES = [
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "text/plain",
+  "application/zip",
+  "application/x-zip-compressed",
+  "application/x-rar-compressed",
+  "application/x-7z-compressed",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/octet-stream", // fallback for archives
 ];
 
 export async function clientUploadDocument(
@@ -56,8 +64,14 @@ export async function clientUploadDocument(
 
   const file = formData.get("file") as File;
   if (!file || file.size === 0) throw new Error("No file provided");
-  if (file.size > MAX_FILE_SIZE) throw new Error("File too large (max 10 MB)");
-  if (!ALLOWED_TYPES.includes(file.type)) {
+  if (file.size > MAX_FILE_SIZE) throw new Error("File too large (max 50 MB)");
+
+  // Extension-based fallback for archives (browsers often send application/octet-stream)
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  const archiveExts = ["zip", "rar", "7z"];
+  const isArchiveByExt = archiveExts.includes(ext);
+
+  if (!ALLOWED_TYPES.includes(file.type) && !isArchiveByExt) {
     throw new Error("File type not supported");
   }
 
@@ -108,7 +122,7 @@ export async function sendClientMessage(projectId: string, body: string) {
   const adminClient = createAdminClient();
 
   if (!body.trim()) throw new Error("Message cannot be empty");
-  if (body.length > 2000) throw new Error("Message too long (max 2000 characters)");
+  if (body.length > 10000) throw new Error("Message too long (max 10,000 characters)");
 
   // Verify client owns this project
   // Use admin client for ownership check — avoids intermittent 400 errors

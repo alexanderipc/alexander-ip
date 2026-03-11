@@ -38,6 +38,8 @@ interface InvoiceData {
   currency: string; // "GBP", "USD", etc.
   lineItems: InvoiceLineItem[];
   isPaid: boolean;
+  stripePaymentIntentId?: string | null;
+  stripeSessionId?: string | null;
 }
 
 interface GenerateInvoiceParams {
@@ -48,6 +50,8 @@ interface GenerateInvoiceParams {
   amountTotal: number; // cents/pence (Stripe smallest unit)
   amountTax: number; // from session.total_details.amount_tax
   currency: string; // "GBP", "USD", etc.
+  stripePaymentIntentId?: string | null; // pi_xxx — links invoice to Stripe payment
+  stripeSessionId?: string | null; // cs_xxx — checkout session reference
 }
 
 /* ── Currency helpers ─────────────────────────────────────────── */
@@ -333,6 +337,20 @@ export async function generateInvoicePdf(
       doc.restore();
     }
 
+    // ── Stripe payment reference ──
+    if (data.stripePaymentIntentId || data.stripeSessionId) {
+      const refY = tY + (data.isPaid ? 60 : 20);
+      doc
+        .fontSize(7.5)
+        .font("Helvetica")
+        .fillColor("#94a3b8");
+
+      const refs: string[] = [];
+      if (data.stripePaymentIntentId) refs.push(`Payment: ${data.stripePaymentIntentId}`);
+      if (data.stripeSessionId) refs.push(`Session: ${data.stripeSessionId}`);
+      doc.text(refs.join("  \u00B7  "), margin, refY, { width: contentWidth });
+    }
+
     // ── Footer ──
     const footerY = 760;
     doc
@@ -392,6 +410,8 @@ export async function generateAndStoreInvoice(
       currency: params.currency.toUpperCase(),
       lineItems,
       isPaid: true,
+      stripePaymentIntentId: params.stripePaymentIntentId,
+      stripeSessionId: params.stripeSessionId,
     });
 
     console.log(`[Invoice] PDF generated: ${pdfBuffer.length} bytes`);

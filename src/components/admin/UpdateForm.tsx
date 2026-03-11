@@ -38,10 +38,13 @@ export default function UpdateForm({ projectId }: UpdateFormProps) {
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          rows={2}
+          rows={3}
           placeholder="Update for the client..."
-          className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
         />
+        <p className="text-[11px] text-slate-400 mt-0.5">
+          Supports Markdown — **bold**, *italic*, ## headings, - lists, [links](url)
+        </p>
       </div>
       <div>
         <label className="block text-xs font-medium text-slate-600 mb-1">

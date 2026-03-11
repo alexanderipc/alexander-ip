@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import NotificationSettings from "@/components/portal/NotificationSettings";
+import PasswordSettings from "@/components/portal/PasswordSettings";
 import type { NotificationPreferences } from "@/lib/supabase/types";
 import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/supabase/types";
 
@@ -47,6 +48,11 @@ export default async function SettingsPage() {
       {/* Notification preferences */}
       <div className="mb-10">
         <NotificationSettings initial={prefs} />
+      </div>
+
+      {/* Password */}
+      <div className="border-t border-slate-200 pt-8 mb-10">
+        <PasswordSettings />
       </div>
 
       {/* GDPR Data Rights */}

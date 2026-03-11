@@ -309,6 +309,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       amountTotal: amountTotal || 0,
       amountTax: session.total_details?.amount_tax || 0,
       currency,
+      stripePaymentIntentId: paymentIntentId,
+      stripeSessionId: session.id,
     });
   } catch (invoiceErr) {
     console.error("[webhook] Invoice generation failed:", invoiceErr);
@@ -512,6 +514,8 @@ async function handleOfferPayment(
       amountTotal: session.amount_total || offer.amount,
       amountTax: session.total_details?.amount_tax || 0,
       currency: offer.currency,
+      stripePaymentIntentId: paymentIntentId,
+      stripeSessionId: session.id,
     });
   } catch (invoiceErr) {
     console.error("[webhook] Invoice generation failed:", invoiceErr);

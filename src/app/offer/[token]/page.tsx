@@ -80,6 +80,7 @@ export default async function OfferPage({
             {/* Title & Price */}
             <h2 className="text-xl font-bold text-navy mb-2">{offer.title}</h2>
             <p className="text-3xl font-extrabold text-navy mb-1">{displayAmount}</p>
+            <p className="text-xs text-slate-400 mb-1">Exclusive of VAT where applicable</p>
             <p className="text-sm text-slate-500 mb-6">{serviceLabel}</p>
 
             {/* Description */}
