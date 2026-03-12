@@ -329,9 +329,34 @@ export default async function AdminProjectDetailPage({ params }: Props) {
               Documents ({documents.length})
             </h2>
             <AdminDocumentUpload projectId={project.id} />
-            <div className="mt-4">
-              <DocumentThumbnailGrid documents={documents} showVisibility />
-            </div>
+
+            {(() => {
+              const adminDocs = documents.filter(
+                (d) => d.uploaded_by !== project.client_id
+              );
+              const clientDocs = documents.filter(
+                (d) => d.uploaded_by === project.client_id
+              );
+              return (
+                <div className="mt-4 space-y-4">
+                  {adminDocs.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 mb-2">Uploaded by you</p>
+                      <DocumentThumbnailGrid documents={adminDocs} showVisibility />
+                    </div>
+                  )}
+                  {clientDocs.length > 0 && (
+                    <div className={adminDocs.length > 0 ? "pt-4 border-t border-slate-100" : ""}>
+                      <p className="text-xs font-medium text-slate-500 mb-2">Uploaded by client</p>
+                      <DocumentThumbnailGrid documents={clientDocs} showVisibility />
+                    </div>
+                  )}
+                  {documents.length === 0 && (
+                    <p className="text-sm text-slate-400 italic">No documents yet.</p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Milestones / Phases */}

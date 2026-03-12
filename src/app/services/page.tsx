@@ -19,6 +19,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
+import PackageBuilderSection from "@/components/home/PackageBuilderSection";
 import { services, rushSurcharges } from "@/data/services";
 
 export const metadata: Metadata = {
@@ -161,6 +162,9 @@ export default function ServicesPage() {
           </div>
         </Container>
       </section>
+
+      {/* Build Your Patent Package — top of page */}
+      <PackageBuilderSection />
 
       {/* All Services */}
       <section className="py-20 bg-white">

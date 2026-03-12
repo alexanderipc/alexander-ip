@@ -12,7 +12,7 @@ import StatusBadge from "@/components/portal/StatusBadge";
 import ProgressBar from "@/components/portal/ProgressBar";
 import ProjectTimeline from "@/components/portal/ProjectTimeline";
 import UpdatesFeed from "@/components/portal/UpdatesFeed";
-import DocumentsList from "@/components/portal/DocumentsList";
+import DocumentThumbnailGrid from "@/components/ui/DocumentThumbnailGrid";
 import ClientDocumentUpload from "@/components/portal/ClientDocumentUpload";
 import MilestonesList from "@/components/portal/MilestonesList";
 import MessageThread from "@/components/portal/MessageThread";
@@ -88,7 +88,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         .order("created_at", { ascending: false }),
       adminClient
         .from("project_documents")
-        .select("id, project_id, filename, file_url, document_type, client_visible, uploaded_at")
+        .select("id, project_id, filename, file_url, document_type, client_visible, uploaded_at, uploaded_by")
         .eq("project_id", id)
         .eq("client_visible", true)
         .order("uploaded_at", { ascending: false }),
@@ -286,7 +286,38 @@ export default async function ProjectDetailPage({ params }: Props) {
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
               Documents
             </h2>
-            <DocumentsList documents={documents} />
+
+            {/* Documents from Alexander IP */}
+            {(() => {
+              const adminDocs = documents.filter(
+                (d) => d.uploaded_by !== user.id
+              );
+              const clientDocs = documents.filter(
+                (d) => d.uploaded_by === user.id
+              );
+              return (
+                <>
+                  {adminDocs.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-slate-500 mb-2">From Alexander IP</p>
+                      <DocumentThumbnailGrid documents={adminDocs} />
+                    </div>
+                  )}
+                  {clientDocs.length > 0 && (
+                    <div className={adminDocs.length > 0 ? "pt-4 border-t border-slate-100" : ""}>
+                      <p className="text-xs font-medium text-slate-500 mb-2">Your uploads</p>
+                      <DocumentThumbnailGrid documents={clientDocs} />
+                    </div>
+                  )}
+                  {documents.length === 0 && (
+                    <p className="text-sm text-slate-400 italic">
+                      No documents yet — files will appear here as they become available.
+                    </p>
+                  )}
+                </>
+              );
+            })()}
+
             {!complete && (
               <div className="mt-4 pt-4 border-t border-slate-100">
                 <ClientDocumentUpload projectId={project.id} />

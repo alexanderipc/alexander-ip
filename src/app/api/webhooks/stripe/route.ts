@@ -7,7 +7,6 @@ import {
 } from "@/lib/portal/status";
 import { sendProjectCreatedEmail, sendAdminNewOrderEmail } from "@/lib/email";
 import type { ServiceType } from "@/lib/supabase/types";
-import { createProjectFolders } from "@/lib/microsoft/onedrive";
 import { generateAndStoreInvoice } from "@/lib/invoice";
 
 export const runtime = "nodejs";
@@ -285,21 +284,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   console.log(`[webhook] Project created: ${project.id}`);
 
-  // 7b. Create OneDrive folder structure (non-blocking)
-  try {
-    const folderUrl = await createProjectFolders(customerName, title);
-    if (folderUrl) {
-      await adminClient
-        .from("projects")
-        .update({ onedrive_url: folderUrl })
-        .eq("id", project.id);
-      console.log(`[webhook] OneDrive folder created: ${folderUrl}`);
-    }
-  } catch (driveErr) {
-    console.error("[webhook] OneDrive folder creation failed:", driveErr);
-  }
-
-  // 7c. Generate invoice PDF (non-blocking)
+  // 7b. Generate invoice PDF (non-blocking)
   try {
     await generateAndStoreInvoice({
       projectId: project.id,
@@ -314,6 +299,46 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     });
   } catch (invoiceErr) {
     console.error("[webhook] Invoice generation failed:", invoiceErr);
+  }
+
+  // 7d. Auto-generate welcome message from admin (non-blocking)
+  try {
+    // Find admin user to send from
+    const { data: adminUser } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .single();
+
+    if (adminUser) {
+      const welcomeBody = [
+        `Hi ${customerName.split(" ")[0]},`,
+        "",
+        `Thank you for your order — **${title}**. I'm looking forward to working with you on this.`,
+        "",
+        "A few things to note:",
+        "",
+        "- **Your VAT invoice** has been automatically generated and is already available in the Documents section of this project.",
+        "- **Upload any relevant files** (invention descriptions, sketches, prior art, etc.) using the upload area in the Documents section — this is the easiest way to share materials with me.",
+        "- **Use this Messages area** to send me any questions or additional information at any time.",
+        "- **Updates on progress** will appear in the Updates feed on this page, and you'll receive email notifications for key milestones.",
+        "",
+        "If you have any questions at all, just drop me a message here or email me directly.",
+        "",
+        "Best regards,",
+        "Alex",
+      ].join("\n");
+
+      await adminClient.from("project_messages").insert({
+        project_id: project.id,
+        sender_id: adminUser.id,
+        body: welcomeBody,
+        is_admin: true,
+      });
+    }
+  } catch (welcomeMsgErr) {
+    console.error("[webhook] Welcome message failed:", welcomeMsgErr);
   }
 
   // 8. Send admin notification email
@@ -491,20 +516,7 @@ async function handleOfferPayment(
 
   console.log(`[webhook] Offer ${offerId} accepted, project created: ${project.id}`);
 
-  // 8. Create OneDrive folder structure (non-blocking)
-  try {
-    const folderUrl = await createProjectFolders(customerName, offer.title);
-    if (folderUrl) {
-      await adminClient
-        .from("projects")
-        .update({ onedrive_url: folderUrl })
-        .eq("id", project.id);
-    }
-  } catch (driveErr) {
-    console.error("[webhook] OneDrive folder creation failed:", driveErr);
-  }
-
-  // 8b. Generate invoice PDF (non-blocking)
+  // 8. Generate invoice PDF (non-blocking)
   try {
     await generateAndStoreInvoice({
       projectId: project.id,
@@ -519,6 +531,45 @@ async function handleOfferPayment(
     });
   } catch (invoiceErr) {
     console.error("[webhook] Invoice generation failed:", invoiceErr);
+  }
+
+  // 8c. Auto-generate welcome message from admin (non-blocking)
+  try {
+    const { data: adminUser } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .single();
+
+    if (adminUser) {
+      const welcomeBody = [
+        `Hi ${customerName.split(" ")[0]},`,
+        "",
+        `Thank you for your order — **${offer.title}**. I'm looking forward to working with you on this.`,
+        "",
+        "A few things to note:",
+        "",
+        "- **Your VAT invoice** has been automatically generated and is already available in the Documents section of this project.",
+        "- **Upload any relevant files** (invention descriptions, sketches, prior art, etc.) using the upload area in the Documents section — this is the easiest way to share materials with me.",
+        "- **Use this Messages area** to send me any questions or additional information at any time.",
+        "- **Updates on progress** will appear in the Updates feed on this page, and you'll receive email notifications for key milestones.",
+        "",
+        "If you have any questions at all, just drop me a message here or email me directly.",
+        "",
+        "Best regards,",
+        "Alex",
+      ].join("\n");
+
+      await adminClient.from("project_messages").insert({
+        project_id: project.id,
+        sender_id: adminUser.id,
+        body: welcomeBody,
+        is_admin: true,
+      });
+    }
+  } catch (welcomeMsgErr) {
+    console.error("[webhook] Welcome message failed:", welcomeMsgErr);
   }
 
   // 9. Send admin notification
