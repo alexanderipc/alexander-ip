@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   ArrowRight,
   Clock,
-  Zap,
   AlertCircle,
   HelpCircle,
   Wrench,
@@ -20,7 +19,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import PackageBuilderSection from "@/components/home/PackageBuilderSection";
-import { services, rushSurcharges } from "@/data/services";
+import { services } from "@/data/services";
 
 export const metadata: Metadata = {
   title: "Services & Pricing | Alexander IP",
@@ -45,26 +44,6 @@ const startingPriceUsd: Record<string, number | null> = {
   "international-filing": 540,
   fto: 540,
 };
-
-const draftingTiers = [
-  {
-    name: "Simple Invention",
-    usd: 895,
-    description: "Physical products with straightforward mechanics — tools, accessories, furniture, simple devices. Fewer than roughly 10 functional components.",
-  },
-  {
-    name: "Standard Invention",
-    usd: 1075,
-    description: "Electrical systems, multi-component mechanisms, consumer electronics, medical devices. Moderate technical complexity.",
-  },
-  {
-    name: "Complex Invention",
-    usd: 1255,
-    description: "Software-implemented inventions, AI/ML systems, biotech, chemical compositions, telecommunications. Requires detailed technical specification.",
-  },
-];
-
-const rushUsd: Record<number, number> = { 30: 180, 21: 360, 14: 630 };
 
 const notOffered = [
   "Trademark registration",
@@ -259,137 +238,6 @@ export default function ServicesPage() {
               </span>
             </div>
           </Link>
-        </Container>
-      </section>
-
-      {/* Complexity guide + Drafting pricing */}
-      <section className="py-20 bg-slate-50">
-        <Container>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-navy mb-4">
-              Patent Drafting Pricing by Complexity
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Pricing depends on the technical complexity of your invention. Not
-              sure where yours falls? Describe it briefly in your enquiry and
-              Alexander IP will let you know &mdash; no charge, no obligation.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-10">
-            {draftingTiers.map((tier) => (
-              <Card
-                key={tier.name}
-                padding="lg"
-                className="text-center"
-              >
-                <h3 className="text-lg font-semibold text-navy mb-3">
-                  {tier.name}
-                </h3>
-                <p className="text-sm text-slate-500 mb-4 leading-relaxed">
-                  {tier.description}
-                </p>
-                <div className="text-3xl font-bold text-navy mb-6">
-                  <LocalizedPrice
-                    amount={tier.usd}
-                    fallback={`$${tier.usd.toLocaleString()}`}
-                  />
-                </div>
-                <Button
-                  href="/services/patent-drafting"
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  Learn More
-                </Button>
-              </Card>
-            ))}
-          </div>
-
-          <p className="text-center text-sm text-slate-500 max-w-xl mx-auto">
-            Most clients also add a patent search, illustrations, and filing.
-            See the{" "}
-            <Link
-              href="/services/patent-drafting"
-              className="text-blue hover:text-blue-dark underline"
-            >
-              full pricing breakdown
-            </Link>{" "}
-            for package options and add-ons.
-          </p>
-        </Container>
-      </section>
-
-      {/* Rush Surcharges */}
-      <section className="py-20 bg-white">
-        <Container size="narrow">
-          <div className="text-center mb-10">
-            <div className="w-12 h-12 bg-amber/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-6 h-6 text-amber-light" />
-            </div>
-            <h2 className="text-3xl font-bold text-navy mb-4">
-              Rush Delivery Options
-            </h2>
-            <p className="text-lg text-slate-600 max-w-xl mx-auto">
-              Need your patent application faster? Rush delivery is available
-              for patent drafting at the following surcharges.
-            </p>
-          </div>
-
-          <Card padding="lg">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-navy">
-                      Delivery Timeline
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-navy">
-                      Surcharge
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-slate-100">
-                    <td className="py-3 px-4 text-slate-600">
-                      Standard (45 days)
-                    </td>
-                    <td className="py-3 px-4 text-right text-slate-600">
-                      No surcharge
-                    </td>
-                  </tr>
-                  {rushSurcharges.map((rush) => (
-                    <tr
-                      key={rush.days}
-                      className="border-b border-slate-100 last:border-0"
-                    >
-                      <td className="py-3 px-4 text-slate-600">
-                        {rush.days} days
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold text-navy">
-                        {rushUsd[rush.days] ? (
-                          <>
-                            <span>+</span>
-                            <LocalizedPrice
-                              amount={rushUsd[rush.days]}
-                              fallback={rush.surcharge}
-                            />
-                          </>
-                        ) : (
-                          rush.surcharge
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-xs text-slate-400 mt-4 text-center">
-              You must specify a target date when ordering rush delivery.
-              &quot;ASAP&quot; is not accepted.
-            </p>
-          </Card>
         </Container>
       </section>
 
