@@ -89,8 +89,10 @@
     <div class="viz-area">
       <div id="viz" class="viz-container"></div>
 
+      <!-- Legend toggle (mobile) -->
+      <button class="legend-toggle" id="legend-toggle" title="Toggle legend">&#x1F5FA;</button>
       <!-- Legend -->
-      <div class="legend">
+      <div class="legend" id="legend">
         <div class="legend-title">Application Type</div>
         <div class="legend-item"><span class="legend-dot" style="background:#1a9baa"></span> Granted Patent</div>
         <div class="legend-item"><span class="legend-dot" style="background:#3672b8"></span> Pending Patent</div>
@@ -104,6 +106,15 @@
 
     <!-- Chat panel -->
     <div id="chat" class="chat-panel">
+    <div class="chat-mobile-bar" id="chat-mobile-bar">
+      <span class="chat-mobile-bar-title">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#60a5fa" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        AI Patent Analyst
+      </span>
+      <span class="chat-mobile-bar-arrow">&#x25B2;</span>
+    </div>
     <div class="chat-header">
       <button class="chat-toggle">&#x2190;</button>
       <div class="chat-header-title">

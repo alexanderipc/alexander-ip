@@ -14,7 +14,7 @@ export default function PatentExplorer({
 
   return (
     <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-[#070b14]"
-         style={{ height: "calc(100vh - 220px)", minHeight: "600px" }}>
+         style={{ height: "calc(100vh - 220px)", minHeight: "400px" }}>
       {/* Loading state */}
       {!loaded && !error && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#070b14]">

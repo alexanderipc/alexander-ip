@@ -709,3 +709,152 @@ body {
   color: #e0e6f0;
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
 }
+
+/* ═══ Legend Toggle Button (mobile) ═══ */
+.legend-toggle {
+  display: none; /* shown only on mobile */
+  position: absolute; bottom: 16px; left: 16px;
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,0.92); border: 1px solid #d0d8e0;
+  backdrop-filter: blur(8px); z-index: 10; cursor: pointer;
+  align-items: center; justify-content: center;
+  font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ═══ Mobile Chat Bar (collapsed state) ═══ */
+.chat-mobile-bar {
+  display: none; /* shown only on mobile when chat collapsed */
+  align-items: center; justify-content: space-between;
+  padding: 0 16px; height: 44px;
+  background: rgba(15,20,32,0.97); border-top: 1px solid #1e293b;
+  cursor: pointer; flex-shrink: 0;
+}
+.chat-mobile-bar-title {
+  font-size: 13px; font-weight: 600; color: #e0e6f0;
+  display: flex; align-items: center; gap: 6px;
+}
+.chat-mobile-bar-arrow {
+  color: #64748b; font-size: 14px; transition: transform 0.2s;
+}
+
+/* ═══ Mobile Responsive ═══ */
+@media (max-width: 768px) {
+  /* ── Landing ── */
+  .landing { padding: 16px; }
+  .landing-title { font-size: 22px; }
+  .landing-sub { font-size: 13px; margin-bottom: 20px; }
+  .landing-content { max-width: 100%; }
+
+  .search-box {
+    flex-wrap: wrap; max-width: 100%;
+  }
+  .search-box input {
+    width: 100%; flex: none; height: 44px; font-size: 14px;
+  }
+  .search-box button {
+    flex: 1; height: 44px; font-size: 14px; min-width: 0;
+  }
+  .waitlist-btn { flex: 1; font-size: 13px; padding: 0 14px; }
+
+  .landing-examples {
+    flex-wrap: wrap; justify-content: center;
+    gap: 6px; margin-top: 12px;
+  }
+  .landing-examples span:first-child { width: 100%; text-align: center; }
+
+  .landing-footer { flex-wrap: wrap; justify-content: center; }
+
+  /* ── Topbar ── */
+  .topbar {
+    flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px;
+  }
+  .topbar-left {
+    flex: 1; min-width: 0; flex-wrap: nowrap;
+  }
+  .topbar-search {
+    width: 0; flex: 1; min-width: 80px; height: 32px; font-size: 12px;
+  }
+  .topbar-waitlist-btn { display: none; }
+  .topbar-center { display: none; }
+  .topbar-right {
+    width: 100%; justify-content: flex-start; gap: 10px;
+    padding-top: 4px; border-top: 1px solid #1e293b;
+  }
+  .filter-toggle-label { font-size: 11px; }
+
+  /* ── Main Layout ── */
+  .main-content {
+    flex-direction: column;
+  }
+
+  /* ── Viz Area ── */
+  .viz-area {
+    flex: 1; min-height: 45vh;
+  }
+
+  /* ── Legend ── */
+  .legend { display: none; }
+  .legend.mobile-visible {
+    display: block; bottom: 56px; left: 12px;
+    padding: 8px 12px; font-size: 10px;
+  }
+  .legend.mobile-visible .legend-title { font-size: 9px; }
+  .legend.mobile-visible .legend-item { font-size: 10px; gap: 6px; }
+  .legend-toggle { display: flex; }
+
+  /* ── Chat Panel ── */
+  .chat-panel {
+    width: 100% !important; flex-shrink: 0;
+    max-height: 44px; /* collapsed by default — just the bar */
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .chat-panel .chat-header,
+  .chat-panel .chat-messages,
+  .chat-panel .chat-input-area {
+    display: none; /* hidden when collapsed */
+  }
+  .chat-mobile-bar { display: flex; }
+
+  .chat-panel.mobile-expanded {
+    max-height: 50vh;
+  }
+  .chat-panel.mobile-expanded .chat-header,
+  .chat-panel.mobile-expanded .chat-messages,
+  .chat-panel.mobile-expanded .chat-input-area {
+    display: flex;
+  }
+  .chat-panel.mobile-expanded .chat-header { display: block; }
+  .chat-panel.mobile-expanded .chat-mobile-bar { display: none; }
+
+  .chat-panel.collapsed { width: 100% !important; }
+  .chat-toggle { display: none; } /* hide desktop toggle on mobile */
+
+  /* When detail panel is open, don't add spacer on mobile */
+  .chat-panel.detail-open::before { display: none; }
+
+  /* ── Detail Panel ── */
+  .detail-panel {
+    position: fixed; top: auto; right: 0;
+    bottom: -70vh; left: 0; width: 100%;
+    height: 70vh;
+    border-left: none; border-top: 2px solid rgba(59,130,246,0.3);
+    transition: bottom 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .detail-panel.open { bottom: 0; right: 0; }
+
+  /* Hide HUD brackets on mobile */
+  .detail-panel::before, .detail-panel::after { display: none; }
+
+  /* ── Tooltip ── */
+  .tooltip { display: none !important; } /* hover not useful on touch */
+
+  /* ── Waitlist Modal ── */
+  .waitlist-modal { padding: 24px 20px; }
+}
+
+@media (max-width: 480px) {
+  .landing-title { font-size: 20px; }
+  .topbar-search { font-size: 11px; }
+  .filter-toggle-label { font-size: 10px; gap: 3px; }
+}

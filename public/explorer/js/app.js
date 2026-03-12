@@ -8,6 +8,14 @@ import { DetailPanel } from './panel.js';
 import { ChatPanel } from './chat.js';
 import { LandingScene } from './landing-scene.js';
 
+// ─── Mobile Detection ───
+function isMobile() { return window.innerWidth <= 768; }
+function updateMobileClass() {
+  document.body.classList.toggle('mobile', isMobile());
+}
+updateMobileClass();
+window.addEventListener('resize', updateMobileClass);
+
 // ─── Init ───
 const dkg = new DKGClient();
 const tree = new PatentTree(document.getElementById('viz'));
@@ -189,6 +197,37 @@ if (waitlistBtn && waitlistOverlay) {
     }
   });
 }
+
+// ─── Mobile: Chat bar toggle ───
+const chatMobileBar = document.getElementById('chat-mobile-bar');
+const chatPanel = document.getElementById('chat');
+if (chatMobileBar && chatPanel) {
+  chatMobileBar.addEventListener('click', () => {
+    chatPanel.classList.toggle('mobile-expanded');
+    const arrow = chatMobileBar.querySelector('.chat-mobile-bar-arrow');
+    if (arrow) arrow.textContent = chatPanel.classList.contains('mobile-expanded') ? '\u25BC' : '\u25B2';
+  });
+}
+
+// ─── Mobile: Legend toggle ───
+const legendToggle = document.getElementById('legend-toggle');
+const legend = document.getElementById('legend');
+if (legendToggle && legend) {
+  legendToggle.addEventListener('click', () => {
+    legend.classList.toggle('mobile-visible');
+  });
+}
+
+// ─── Mobile: Auto-collapse chat when detail panel opens ───
+const origPanelOpen = panel.open.bind(panel);
+panel.open = function(patent) {
+  if (isMobile() && chatPanel) {
+    chatPanel.classList.remove('mobile-expanded');
+    const arrow = chatMobileBar?.querySelector('.chat-mobile-bar-arrow');
+    if (arrow) arrow.textContent = '\u25B2';
+  }
+  origPanelOpen(patent);
+};
 
 if (waitlistForm) {
   waitlistForm.addEventListener('submit', async (e) => {
