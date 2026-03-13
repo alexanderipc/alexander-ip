@@ -4,24 +4,11 @@ import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import CheckoutButton from "@/components/ui/CheckoutButton";
-import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
-import LocalizedPrice from "@/components/ui/LocalizedPrice";
+import SearchDeliveryPicker from "@/components/services/SearchDeliveryPicker";
 import { getServiceBySlug } from "@/data/services";
 
 const service = getServiceBySlug("patent-search")!;
-
-const searchTierUsd: Record<string, number> = {
-  Basic: 300,
-  Standard: 340,
-  Premium: 435,
-};
-
-const searchTierService: Record<string, string> = {
-  Basic: "patent-search-basic",
-  Standard: "patent-search-standard",
-  Premium: "patent-search-premium",
-};
 
 export const metadata: Metadata = {
   title: `${service.title} | Alexander IP Consulting`,
@@ -150,7 +137,7 @@ export default function PatentSearchPage() {
         </Container>
       </section>
 
-      {/* Pricing — 3 Tiers */}
+      {/* Pricing — 3 Tiers with Delivery Options */}
       <section className="py-20 bg-white">
         <Container>
           <div className="text-center mb-12">
@@ -159,56 +146,10 @@ export default function PatentSearchPage() {
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Three tiers depending on the depth of search and level of
-              strategic guidance you need.
+              strategic guidance you need. Need it faster? Choose Rush or Express delivery.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {service.pricing.map((tier) => (
-              <Card
-                key={tier.name}
-                padding="lg"
-                className={`flex flex-col ${
-                  tier.popular
-                    ? "border-2 border-teal ring-1 ring-teal/20"
-                    : ""
-                }`}
-              >
-                {tier.popular && (
-                  <div className="text-center mb-4">
-                    <Badge variant="teal">Most Popular</Badge>
-                  </div>
-                )}
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-semibold text-navy mb-2">
-                    {tier.name}
-                  </h3>
-                  <p className="text-sm text-slate-500 mb-4">
-                    {tier.description}
-                  </p>
-                  <div className="text-4xl font-bold text-navy">
-                    <LocalizedPrice amount={searchTierUsd[tier.name]} fallback={tier.price} />
-                  </div>
-                  <p className="text-sm text-slate-400 mt-2">
-                    {service.delivery} delivery
-                  </p>
-                </div>
-                <div className="space-y-3 mb-8 flex-1">
-                  {tier.features.map((feature) => (
-                    <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-600 text-sm">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-                <CheckoutButton
-                  service={searchTierService[tier.name]}
-                  size="md"
-                  label={`Order ${tier.name}`}
-                  className="w-full"
-                />
-              </Card>
-            ))}
-          </div>
+          <SearchDeliveryPicker />
         </Container>
       </section>
 

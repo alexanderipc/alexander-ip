@@ -90,9 +90,9 @@ const extras: Extra[] = [
 
 const timelines: Timeline[] = [
   { key: "standard", name: "Standard", days: 45, surchargeUsd: 0 },
-  { key: "30", name: "Express", days: 30, surchargeUsd: 180 },
-  { key: "21", name: "Rush", days: 21, surchargeUsd: 360 },
-  { key: "14", name: "Urgent", days: 14, surchargeUsd: 630 },
+  { key: "30", name: "Express", days: 30, surchargeUsd: 360 },
+  { key: "21", name: "Rush", days: 21, surchargeUsd: 540 },
+  { key: "14", name: "Urgent", days: 14, surchargeUsd: 945 },
   { key: "7", name: "Emergency", days: 7, surchargeUsd: null },
 ];
 
