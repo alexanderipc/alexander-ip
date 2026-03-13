@@ -466,7 +466,7 @@ export const rushSurcharges = [
   { days: 30, surcharge: "+$360" },
   { days: 21, surcharge: "+$540" },
   { days: 14, surcharge: "+$945" },
-  { days: 7, surcharge: "+100% of base price" },
+  { days: 7, surcharge: "+$1,420" },
 ];
 
 export function getServiceBySlug(slug: string): Service | undefined {

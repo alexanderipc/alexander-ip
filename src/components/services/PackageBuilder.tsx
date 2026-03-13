@@ -31,7 +31,7 @@ interface Timeline {
   key: string;
   name: string;
   days: number;
-  surchargeUsd: number | null; // null = 100% of base
+  surchargeUsd: number;
 }
 
 const complexityTiers: ComplexityTier[] = [
@@ -93,7 +93,7 @@ const timelines: Timeline[] = [
   { key: "30", name: "Express", days: 30, surchargeUsd: 360 },
   { key: "21", name: "Rush", days: 21, surchargeUsd: 540 },
   { key: "14", name: "Urgent", days: 14, surchargeUsd: 945 },
-  { key: "7", name: "Emergency", days: 7, surchargeUsd: null },
+  { key: "7", name: "Emergency", days: 7, surchargeUsd: 1420 },
 ];
 
 /* ── Flow line types & helpers ────────────────────────────── */
@@ -280,11 +280,7 @@ export default function PackageBuilder() {
     if (timeline) {
       const tl = timelines.find((t) => t.key === timeline);
       if (tl) {
-        if (tl.surchargeUsd !== null) {
-          total += tl.surchargeUsd;
-        } else {
-          total += tier.usd; // 100% of base
-        }
+        total += tl.surchargeUsd;
       }
     }
     return total;
@@ -522,11 +518,7 @@ export default function PackageBuilder() {
             const isSelected = timeline === tl.key;
             const tier = complexityTiers.find((t) => t.key === complexity);
             const surchargeDisplay =
-              tl.surchargeUsd === null
-                ? tier
-                  ? `+${convertPrice(tier.usd, currency)}`
-                  : "+100%"
-                : tl.surchargeUsd === 0
+              tl.surchargeUsd === 0
                 ? "Included"
                 : `+${convertPrice(tl.surchargeUsd, currency)}`;
 
