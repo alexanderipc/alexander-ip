@@ -122,22 +122,34 @@ export default async function AdminProjectDetailPage({ params }: Props) {
 
   const unreadMessages = messages.filter((m) => !m.is_admin && !m.read_at).length;
 
-  // Fetch team members
+  // Fetch team members (two-step: members then profiles, since no FK from project_members to profiles)
   let teamMembers: { id: string; user_id: string; role: string; name: string | null; email: string | null }[] = [];
   try {
     const { data: members } = await adminClient
       .from("project_members")
-      .select("id, user_id, role, profiles(name, email)")
+      .select("id, user_id, role")
       .eq("project_id", id)
       .order("created_at", { ascending: true });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    teamMembers = (members || []).map((m: any) => ({
-      id: m.id,
-      user_id: m.user_id,
-      role: m.role,
-      name: m.profiles?.name || null,
-      email: m.profiles?.email || null,
-    }));
+
+    if (members && members.length > 0) {
+      const userIds = members.map((m) => m.user_id);
+      const { data: profiles } = await adminClient
+        .from("profiles")
+        .select("id, name, email")
+        .in("id", userIds);
+
+      const profileMap = new Map(
+        (profiles || []).map((p) => [p.id, { name: p.name, email: p.email }])
+      );
+
+      teamMembers = members.map((m) => ({
+        id: m.id,
+        user_id: m.user_id,
+        role: m.role,
+        name: profileMap.get(m.user_id)?.name || null,
+        email: profileMap.get(m.user_id)?.email || null,
+      }));
+    }
   } catch {
     teamMembers = [];
   }
