@@ -27,61 +27,76 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient();
 
-    // Create user via admin API (auto-confirms email)
-    const { data: userData, error: createError } =
-      await adminClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: { name: name || "" },
-      });
+    // Check if the user already exists (e.g. created via magic link or Stripe checkout)
+    const { data: existingProfile } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
 
-    if (createError) {
-      console.error("[Signup] Create user error:", createError.message);
+    let userId: string;
 
-      // Don't reveal whether the email already exists
-      if (
-        createError.message.includes("already") ||
-        createError.message.includes("duplicate")
-      ) {
+    if (existingProfile) {
+      // Existing user — set their password (allows returning clients to create a password)
+      const { error: updateError } =
+        await adminClient.auth.admin.updateUserById(existingProfile.id, {
+          password,
+          email_confirm: true,
+          user_metadata: { name: name || undefined },
+        });
+
+      if (updateError) {
+        console.error("[Signup] Update password error:", updateError.message);
         return NextResponse.json(
-          {
-            error:
-              "An account with this email may already exist. Try signing in instead.",
-          },
-          { status: 409 }
+          { error: "Failed to set password. Please try again." },
+          { status: 500 }
         );
       }
 
-      return NextResponse.json(
-        { error: "Failed to create account. Please try again." },
-        { status: 500 }
-      );
+      userId = existingProfile.id;
+    } else {
+      // New user — create via admin API (auto-confirms email)
+      const { data: userData, error: createError } =
+        await adminClient.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: { name: name || "" },
+        });
+
+      if (createError) {
+        console.error("[Signup] Create user error:", createError.message);
+        return NextResponse.json(
+          { error: "Failed to create account. Please try again." },
+          { status: 500 }
+        );
+      }
+
+      if (!userData.user) {
+        return NextResponse.json(
+          { error: "Failed to create account" },
+          { status: 500 }
+        );
+      }
+
+      userId = userData.user.id;
     }
 
-    if (!userData.user) {
-      return NextResponse.json(
-        { error: "Failed to create account" },
-        { status: 500 }
-      );
-    }
-
-    // Insert profile (the trigger may have already done this, but upsert to be safe)
+    // Upsert profile (trigger may have already created it, but ensure name is set)
     const { error: profileError } = await adminClient
       .from("profiles")
       .upsert(
         {
-          id: userData.user.id,
+          id: userId,
           email,
           name: name || null,
-          role: "client",
+          role: existingProfile ? undefined : "client",
         },
         { onConflict: "id" }
       );
 
     if (profileError) {
       console.error("[Signup] Profile upsert error:", profileError.message);
-      // User was created, profile insert failed — not critical, trigger may handle it
     }
 
     return NextResponse.json({ success: true });

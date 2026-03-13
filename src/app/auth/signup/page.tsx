@@ -107,7 +107,7 @@ export default function SignUpPage() {
               Create an account
             </h1>
             <p className="text-slate-500">
-              Track your projects, view documents, and stay updated.
+              Set up a password to access your portal. Works for new and returning clients.
             </p>
           </div>
 
