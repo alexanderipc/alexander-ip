@@ -17,6 +17,7 @@ import {
   sendDocumentUploadedEmail,
   sendNewMessageEmail,
   sendOfferEmail,
+  sendMagicLinkEmail,
 } from "@/lib/email";
 import { buildUnsubscribeUrl } from "@/lib/unsubscribe";
 
@@ -982,13 +983,17 @@ export async function addTeamMemberAdmin(projectId: string, email: string) {
 
   if (error) throw new Error(`Failed to add member: ${error.message}`);
 
-  await adminClient.auth.admin.generateLink({
+  // Send magic link email so the invitee can log in
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.alexander-ip.com";
+  const { data: linkData } = await adminClient.auth.admin.generateLink({
     type: "magiclink",
     email,
-    options: {
-      redirectTo: `https://www.alexander-ip.com/portal/projects/${projectId}`,
-    },
   });
+
+  if (linkData?.properties?.hashed_token) {
+    const verifyUrl = `${baseUrl}/auth/verify?token_hash=${encodeURIComponent(linkData.properties.hashed_token)}&type=magiclink`;
+    await sendMagicLinkEmail(email, verifyUrl);
+  }
 
   revalidatePath(`/admin/projects/${projectId}`);
   return { success: true };

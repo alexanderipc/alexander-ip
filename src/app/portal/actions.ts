@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import { sendNewMessageEmail } from "@/lib/email";
+import { sendNewMessageEmail, sendMagicLinkEmail } from "@/lib/email";
 import { canAccessProject, getAccessibleProjectIds } from "@/lib/portal/access";
 import type { NotificationPreferences } from "@/lib/supabase/types";
 
@@ -398,14 +398,17 @@ export async function inviteTeamMember(projectId: string, email: string) {
 
   if (insertError) throw new Error(`Failed to add team member: ${insertError.message}`);
 
-  // Send magic link so the invitee can log in
-  await adminClient.auth.admin.generateLink({
+  // Send magic link email so the invitee can log in
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.alexander-ip.com";
+  const { data: linkData } = await adminClient.auth.admin.generateLink({
     type: "magiclink",
     email,
-    options: {
-      redirectTo: `https://www.alexander-ip.com/portal/projects/${projectId}`,
-    },
   });
+
+  if (linkData?.properties?.hashed_token) {
+    const verifyUrl = `${baseUrl}/auth/verify?token_hash=${encodeURIComponent(linkData.properties.hashed_token)}&type=magiclink`;
+    await sendMagicLinkEmail(email, verifyUrl);
+  }
 
   revalidatePath(`/portal/projects/${projectId}`);
   revalidatePath(`/admin/projects/${projectId}`);
