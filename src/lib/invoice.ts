@@ -11,7 +11,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const COMPANY = {
   name: "Alexander IPC Ltd",
-  address: "4 Victoria Square, Bristol, BS8 4EU",
+  address: "61 Bridge Street, Kington, HR5 3DJ",
   vatNumber: "488116857",
 };
 
