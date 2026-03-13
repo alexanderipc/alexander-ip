@@ -126,6 +126,14 @@ export interface ProjectMessage {
   created_at: string;
 }
 
+export interface ProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: "owner" | "member";
+  created_at: string;
+}
+
 export interface LinkedProject {
   id: string;
   project_a_id: string;

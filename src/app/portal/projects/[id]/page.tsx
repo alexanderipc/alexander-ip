@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { canAccessProject } from "@/lib/portal/access";
 import {
   getServiceLabel,
   getProgressPercent,
@@ -17,7 +18,8 @@ import ClientDocumentUpload from "@/components/portal/ClientDocumentUpload";
 import MilestonesList from "@/components/portal/MilestonesList";
 import MessageThread from "@/components/portal/MessageThread";
 import ClientNotificationMute from "@/components/portal/ClientNotificationMute";
-import { ArrowLeft, Calendar, Globe, Clock, MessageCircle } from "lucide-react";
+import TeamMembers from "@/components/portal/TeamMembers";
+import { ArrowLeft, Calendar, Globe, Clock, MessageCircle, Users } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -47,12 +49,14 @@ export default async function ProjectDetailPage({ params }: Props) {
   // Security: getUser() already validated identity; we add explicit client_id checks.
   const adminClient = createAdminClient();
 
-  // Fetch project — use explicit columns to avoid leaking admin-only fields
+  // Check team membership (project_members) or legacy client_id
+  const hasAccess = await canAccessProject(user.id, id);
+  if (!hasAccess) notFound();
+
   const { data: project, error } = await adminClient
     .from("projects")
     .select("*")
     .eq("id", id)
-    .eq("client_id", user.id)
     .single();
 
   if (error) {
@@ -123,6 +127,35 @@ export default async function ProjectDetailPage({ params }: Props) {
   }
 
   const unreadMessages = messages.filter((m) => m.is_admin && !m.read_at).length;
+
+  // Fetch team members
+  interface TeamMember {
+    id: string;
+    user_id: string;
+    role: "owner" | "member";
+    profiles: { name: string | null; email: string | null } | null;
+  }
+  let teamMembers: { id: string; user_id: string; role: "owner" | "member"; name: string | null; email: string | null }[] = [];
+  try {
+    const { data: members } = await adminClient
+      .from("project_members")
+      .select("id, user_id, role, profiles(name, email)")
+      .eq("project_id", id)
+      .order("created_at", { ascending: true });
+    teamMembers = ((members as unknown as TeamMember[]) || []).map((m) => ({
+      id: m.id,
+      user_id: m.user_id,
+      role: m.role,
+      name: m.profiles?.name || null,
+      email: m.profiles?.email || null,
+    }));
+  } catch {
+    teamMembers = [];
+  }
+
+  const isOwner = teamMembers.some(
+    (m) => m.user_id === user.id && m.role === "owner"
+  ) || project.client_id === user.id;
 
   // Generate signed URLs for documents (bucket is private, use admin client)
   // Each URL is generated individually so one failure doesn't crash the page
@@ -333,6 +366,19 @@ export default async function ProjectDetailPage({ params }: Props) {
               <MilestonesList milestones={milestones} />
             </div>
           )}
+
+          {/* Team Members */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Team ({teamMembers.length})
+            </h2>
+            <TeamMembers
+              projectId={project.id}
+              members={teamMembers}
+              isOwner={isOwner}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { isComplete } from "@/lib/portal/status";
+import { getAccessibleProjectIds } from "@/lib/portal/access";
 import ProjectCard from "@/components/portal/ProjectCard";
 import { FolderOpen } from "lucide-react";
 
@@ -17,12 +18,15 @@ export default async function PortalDashboard() {
   // Security: getUser() already validated identity; explicit client_id filters below.
   const adminClient = createAdminClient();
 
-  // Fetch all projects for this client
-  const { data: projects, error } = await adminClient
-    .from("projects")
-    .select("*")
-    .eq("client_id", user.id)
-    .order("created_at", { ascending: false });
+  // Fetch all projects this client can access (owned + team member)
+  const accessibleIds = await getAccessibleProjectIds(user.id);
+  const { data: projects, error } = accessibleIds.length
+    ? await adminClient
+        .from("projects")
+        .select("*")
+        .in("id", accessibleIds)
+        .order("created_at", { ascending: false })
+    : { data: [], error: null };
 
   if (error) {
     console.error("Error fetching projects:", error);

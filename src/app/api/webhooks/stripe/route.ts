@@ -282,6 +282,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     notify_client: true,
   });
 
+  // 7b. Add client as project owner in project_members
+  await adminClient.from("project_members").insert({
+    project_id: project.id,
+    user_id: clientId,
+    role: "owner",
+  });
+
   console.log(`[webhook] Project created: ${project.id}`);
 
   // 7b. Generate invoice PDF (non-blocking)
@@ -513,6 +520,13 @@ async function handleOfferPayment(
     note: `Payment received. ${deliveryNote}`,
     internal_note: `Auto-created from custom offer ${offerId}. Payment: ${paymentIntentId}`,
     notify_client: true,
+  });
+
+  // 7b. Add client as project owner in project_members
+  await adminClient.from("project_members").insert({
+    project_id: project.id,
+    user_id: clientId,
+    role: "owner",
   });
 
   console.log(`[webhook] Offer ${offerId} accepted, project created: ${project.id}`);

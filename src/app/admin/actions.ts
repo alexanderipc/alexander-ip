@@ -934,3 +934,83 @@ export async function resendOfferEmail(offerId: string) {
   revalidatePath("/admin/offers");
   return { success: true };
 }
+
+/* ── Admin: Add Team Member ────────────────────────────────────── */
+
+export async function addTeamMemberAdmin(projectId: string, email: string) {
+  await requireAdmin();
+  const adminClient = createAdminClient();
+
+  email = email.trim().toLowerCase();
+  if (!email || !email.includes("@")) throw new Error("Invalid email");
+
+  let userId: string;
+
+  const { data: existingProfile } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    userId = existingProfile.id;
+  } else {
+    const { data: newUser, error: createError } =
+      await adminClient.auth.admin.createUser({
+        email,
+        email_confirm: false,
+      });
+    if (createError)
+      throw new Error(`Failed to create user: ${createError.message}`);
+    userId = newUser.user.id;
+  }
+
+  const { data: existing } = await adminClient
+    .from("project_members")
+    .select("id")
+    .eq("project_id", projectId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing) throw new Error("Already a team member");
+
+  const { error } = await adminClient.from("project_members").insert({
+    project_id: projectId,
+    user_id: userId,
+    role: "member",
+  });
+
+  if (error) throw new Error(`Failed to add member: ${error.message}`);
+
+  await adminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email,
+    options: {
+      redirectTo: `https://www.alexander-ip.com/portal/projects/${projectId}`,
+    },
+  });
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  return { success: true };
+}
+
+/* ── Admin: Remove Team Member ─────────────────────────────────── */
+
+export async function removeTeamMemberAdmin(
+  projectId: string,
+  userId: string
+) {
+  await requireAdmin();
+  const adminClient = createAdminClient();
+
+  const { error } = await adminClient
+    .from("project_members")
+    .delete()
+    .eq("project_id", projectId)
+    .eq("user_id", userId);
+
+  if (error) throw new Error(`Failed to remove member: ${error.message}`);
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  return { success: true };
+}

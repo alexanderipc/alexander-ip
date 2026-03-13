@@ -23,7 +23,8 @@ import DocumentThumbnailGrid from "@/components/ui/DocumentThumbnailGrid";
 import TimelineEditor from "@/components/admin/TimelineEditor";
 import AdminMessageThread from "@/components/admin/MessageThread";
 import NotificationMuteControls from "@/components/admin/NotificationMuteControls";
-import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff } from "lucide-react";
+import AdminTeamManager from "@/components/admin/TeamManager";
+import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff, Users } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -120,6 +121,26 @@ export default async function AdminProjectDetailPage({ params }: Props) {
   }
 
   const unreadMessages = messages.filter((m) => !m.is_admin && !m.read_at).length;
+
+  // Fetch team members
+  let teamMembers: { id: string; user_id: string; role: string; name: string | null; email: string | null }[] = [];
+  try {
+    const { data: members } = await adminClient
+      .from("project_members")
+      .select("id, user_id, role, profiles(name, email)")
+      .eq("project_id", id)
+      .order("created_at", { ascending: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    teamMembers = (members || []).map((m: any) => ({
+      id: m.id,
+      user_id: m.user_id,
+      role: m.role,
+      name: m.profiles?.name || null,
+      email: m.profiles?.email || null,
+    }));
+  } catch {
+    teamMembers = [];
+  }
 
   // Generate signed URLs for documents (bucket is private)
   // Each URL is generated individually so one failure doesn't crash the page
@@ -384,6 +405,18 @@ export default async function AdminProjectDetailPage({ params }: Props) {
               />
             </div>
           )}
+
+          {/* Team Members */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Team ({teamMembers.length})
+            </h2>
+            <AdminTeamManager
+              projectId={project.id}
+              members={teamMembers}
+            />
+          </div>
 
           {/* Client info */}
           {client && (

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { sendNewMessageEmail } from "@/lib/email";
+import { canAccessProject, getAccessibleProjectIds } from "@/lib/portal/access";
 import type { NotificationPreferences } from "@/lib/supabase/types";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
@@ -47,20 +48,9 @@ export async function clientUploadDocument(
   const { user } = await requireClient();
   const adminClient = createAdminClient();
 
-  // Verify the client owns this project (admin client for JWT resilience)
-  const { data: project, error: projectError } = await adminClient
-    .from("projects")
-    .select("id, client_id")
-    .eq("id", projectId)
-    .single();
-
-  if (projectError) {
-    console.error("[Upload] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
-  }
-
-  if (!project || project.client_id !== user.id) {
-    throw new Error("Project not found");
-  }
+  // Verify the client can access this project (team member or owner)
+  const hasAccess = await canAccessProject(user.id, projectId);
+  if (!hasAccess) throw new Error("Project not found");
 
   const file = formData.get("file") as File;
   if (!file || file.size === 0) throw new Error("No file provided");
@@ -124,23 +114,17 @@ export async function sendClientMessage(projectId: string, body: string) {
   if (!body.trim()) throw new Error("Message cannot be empty");
   if (body.length > 10000) throw new Error("Message too long (max 10,000 characters)");
 
-  // Verify client owns this project
-  // Use admin client for ownership check — avoids intermittent 400 errors
-  // when the user's JWT is in a refresh state during server actions.
-  // Security is maintained: getUser() already validated the user server-side.
-  const { data: project, error: projectError } = await adminClient
+  // Verify client can access this project (team member or owner)
+  const hasAccess = await canAccessProject(user.id, projectId);
+  if (!hasAccess) throw new Error("Project not found");
+
+  const { data: project } = await adminClient
     .from("projects")
     .select("*")
     .eq("id", projectId)
     .single();
 
-  if (projectError) {
-    console.error("[SendMessage] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
-  }
-
-  if (!project || project.client_id !== user.id) {
-    throw new Error("Project not found");
-  }
+  if (!project) throw new Error("Project not found");
 
   // Insert message using admin client (user INSERT RLS works, but keep
   // consistent with the ownership check to avoid the same JWT issue)
@@ -187,20 +171,9 @@ export async function markMessagesRead(projectId: string) {
   const { user } = await requireClient();
   const adminClient = createAdminClient();
 
-  // Verify ownership using admin client (same JWT resilience pattern)
-  const { data: project, error: projectError } = await adminClient
-    .from("projects")
-    .select("id, client_id")
-    .eq("id", projectId)
-    .single();
-
-  if (projectError) {
-    console.error("[MarkRead] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
-  }
-
-  if (!project || project.client_id !== user.id) {
-    throw new Error("Project not found");
-  }
+  // Verify client can access this project
+  const hasAccess = await canAccessProject(user.id, projectId);
+  if (!hasAccess) throw new Error("Project not found");
 
   // Mark admin messages (is_admin = true) as read
   await adminClient
@@ -239,14 +212,17 @@ export async function getClientCalendarData(year: number, month: number) {
 
   const events: ClientCalendarEvent[] = [];
 
-  // Fetch this client's projects with delivery dates in range (non-complete)
-  const { data: projects } = await adminClient
-    .from("projects")
-    .select("id, title, estimated_delivery_date, status")
-    .eq("client_id", user.id)
-    .gte("estimated_delivery_date", startDate)
-    .lte("estimated_delivery_date", endDate)
-    .not("status", "in", '("complete","complete_granted")');
+  // Fetch this client's accessible projects with delivery dates in range (non-complete)
+  const accessibleIds = await getAccessibleProjectIds(user.id);
+  const { data: projects } = accessibleIds.length
+    ? await adminClient
+        .from("projects")
+        .select("id, title, estimated_delivery_date, status")
+        .in("id", accessibleIds)
+        .gte("estimated_delivery_date", startDate)
+        .lte("estimated_delivery_date", endDate)
+        .not("status", "in", '("complete","complete_granted")')
+    : { data: [] };
 
   if (projects) {
     for (const p of projects) {
@@ -264,13 +240,8 @@ export async function getClientCalendarData(year: number, month: number) {
   // Fetch client-visible incomplete milestones with target dates in range
   const projectIds = projects?.map((p) => p.id) || [];
 
-  // Also get all client's active project IDs (milestones might belong to projects outside date range)
-  const { data: allProjects } = await adminClient
-    .from("projects")
-    .select("id")
-    .eq("client_id", user.id);
-
-  const allProjectIds = allProjects?.map((p) => p.id) || [];
+  // Use the already-fetched accessible IDs for milestone lookup
+  const allProjectIds = accessibleIds;
 
   if (allProjectIds.length > 0) {
     const { data: milestones } = await adminClient
@@ -334,20 +305,15 @@ export async function toggleClientNotificationMute(projectId: string) {
   const { user } = await requireClient();
   const adminClient = createAdminClient();
 
-  // Verify client owns this project (admin client for JWT resilience)
-  const { data: project, error: projectError } = await adminClient
+  // Verify client can access this project
+  const hasAccess = await canAccessProject(user.id, projectId);
+  if (!hasAccess) throw new Error("Project not found");
+
+  const { data: project } = await adminClient
     .from("projects")
-    .select("*")
+    .select("client_notifications_muted")
     .eq("id", projectId)
     .single();
-
-  if (projectError) {
-    console.error("[ToggleMute] Project lookup error:", projectError.message, projectError.code, "| projectId:", projectId, "| user:", user.id);
-  }
-
-  if (!project || project.client_id !== user.id) {
-    throw new Error("Project not found");
-  }
 
   const { error: updateError } = await adminClient
     .from("projects")
@@ -359,6 +325,129 @@ export async function toggleClientNotificationMute(projectId: string) {
   }
 
   revalidatePath(`/portal/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Invite Team Member ──────────────────────────────────────── */
+
+export async function inviteTeamMember(projectId: string, email: string) {
+  const { user } = await requireClient();
+  const adminClient = createAdminClient();
+
+  email = email.trim().toLowerCase();
+  if (!email || !email.includes("@")) throw new Error("Invalid email");
+
+  // Verify the inviter is an owner of this project
+  const { data: membership } = await adminClient
+    .from("project_members")
+    .select("role")
+    .eq("project_id", projectId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const { data: project } = await adminClient
+    .from("projects")
+    .select("client_id")
+    .eq("id", projectId)
+    .single();
+
+  const isOwner = membership?.role === "owner" || project?.client_id === user.id;
+  if (!isOwner) throw new Error("Only project owners can invite team members");
+
+  // Find or create the invited user's profile
+  let inviteeId: string;
+
+  const { data: existingProfile } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    inviteeId = existingProfile.id;
+  } else {
+    // Create auth user + profile via admin API
+    const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      email_confirm: false,
+    });
+
+    if (createError) throw new Error(`Failed to create user: ${createError.message}`);
+    inviteeId = newUser.user.id;
+  }
+
+  // Check if already a member
+  const { data: existing } = await adminClient
+    .from("project_members")
+    .select("id")
+    .eq("project_id", projectId)
+    .eq("user_id", inviteeId)
+    .maybeSingle();
+
+  if (existing) throw new Error("This person is already a team member");
+
+  // Add as member
+  const { error: insertError } = await adminClient
+    .from("project_members")
+    .insert({
+      project_id: projectId,
+      user_id: inviteeId,
+      role: "member",
+    });
+
+  if (insertError) throw new Error(`Failed to add team member: ${insertError.message}`);
+
+  // Send magic link so the invitee can log in
+  await adminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email,
+    options: {
+      redirectTo: `https://www.alexander-ip.com/portal/projects/${projectId}`,
+    },
+  });
+
+  revalidatePath(`/portal/projects/${projectId}`);
+  revalidatePath(`/admin/projects/${projectId}`);
+
+  return { success: true };
+}
+
+/* ── Remove Team Member ──────────────────────────────────────── */
+
+export async function removeTeamMember(projectId: string, memberId: string) {
+  const { user } = await requireClient();
+  const adminClient = createAdminClient();
+
+  // Verify the caller is an owner
+  const { data: membership } = await adminClient
+    .from("project_members")
+    .select("role")
+    .eq("project_id", projectId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const { data: project } = await adminClient
+    .from("projects")
+    .select("client_id")
+    .eq("id", projectId)
+    .single();
+
+  const isOwner = membership?.role === "owner" || project?.client_id === user.id;
+  if (!isOwner) throw new Error("Only project owners can remove team members");
+
+  if (memberId === user.id) throw new Error("Cannot remove yourself");
+
+  const { error } = await adminClient
+    .from("project_members")
+    .delete()
+    .eq("project_id", projectId)
+    .eq("user_id", memberId);
+
+  if (error) throw new Error(`Failed to remove member: ${error.message}`);
+
+  revalidatePath(`/portal/projects/${projectId}`);
+  revalidatePath(`/admin/projects/${projectId}`);
 
   return { success: true };
 }

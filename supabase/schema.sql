@@ -153,6 +153,16 @@ CREATE TABLE oauth_tokens (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Project members (team access — multiple clients per project)
+CREATE TABLE project_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'member')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (project_id, user_id)
+);
+
 -- ============================================================
 -- INDEXES
 -- ============================================================
@@ -165,6 +175,8 @@ CREATE INDEX idx_project_documents_project_id ON project_documents(project_id);
 CREATE INDEX idx_project_milestones_project_id ON project_milestones(project_id);
 CREATE INDEX idx_project_messages_project_id ON project_messages(project_id);
 CREATE INDEX idx_project_messages_created_at ON project_messages(created_at);
+CREATE INDEX idx_project_members_user_id ON project_members(user_id);
+CREATE INDEX idx_project_members_project_id ON project_members(project_id);
 
 -- ============================================================
 -- ROW LEVEL SECURITY
@@ -178,6 +190,7 @@ ALTER TABLE project_milestones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE linked_projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE oauth_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_members ENABLE ROW LEVEL SECURITY;
 
 -- Helper: check admin role without triggering RLS recursion on profiles
 CREATE OR REPLACE FUNCTION is_admin()
@@ -213,23 +226,61 @@ CREATE POLICY "Admins can update all profiles"
   ON profiles FOR UPDATE
   USING (is_admin());
 
+-- ── Helper: check project membership ──────────────────────
+-- Used in RLS policies — checks project_members OR legacy client_id
+
+CREATE OR REPLACE FUNCTION is_project_member(p_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.project_members
+    WHERE project_id = p_id AND user_id = auth.uid()
+  ) OR EXISTS (
+    SELECT 1 FROM public.projects
+    WHERE id = p_id AND client_id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
 -- ── Projects ────────────────────────────────────────────────
 
 CREATE POLICY "Clients can view own projects"
   ON projects FOR SELECT
-  USING (client_id = auth.uid());
+  USING (
+    client_id = auth.uid() OR
+    EXISTS (SELECT 1 FROM project_members WHERE project_id = id AND user_id = auth.uid())
+  );
 
 CREATE POLICY "Admins can do everything on projects"
   ON projects FOR ALL
+  USING (is_admin());
+
+-- ── Project Members ──────────────────────────────────────────
+
+CREATE POLICY "Members can view their memberships"
+  ON project_members FOR SELECT
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Owners can invite members"
+  ON project_members FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM project_members
+      WHERE project_id = project_members.project_id
+        AND user_id = auth.uid()
+        AND role = 'owner'
+    )
+  );
+
+CREATE POLICY "Admins can do everything on project_members"
+  ON project_members FOR ALL
   USING (is_admin());
 
 -- ── Project Updates ─────────────────────────────────────────
 
 CREATE POLICY "Clients can view own project updates"
   ON project_updates FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
-  );
+  USING (is_project_member(project_id));
 
 CREATE POLICY "Admins can do everything on project_updates"
   ON project_updates FOR ALL
@@ -239,10 +290,7 @@ CREATE POLICY "Admins can do everything on project_updates"
 
 CREATE POLICY "Clients can view visible documents"
   ON project_documents FOR SELECT
-  USING (
-    client_visible = TRUE AND
-    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
-  );
+  USING (client_visible = TRUE AND is_project_member(project_id));
 
 CREATE POLICY "Admins can do everything on documents"
   ON project_documents FOR ALL
@@ -252,10 +300,7 @@ CREATE POLICY "Admins can do everything on documents"
 
 CREATE POLICY "Clients can view visible milestones"
   ON project_milestones FOR SELECT
-  USING (
-    is_client_visible = TRUE AND
-    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
-  );
+  USING (is_client_visible = TRUE AND is_project_member(project_id));
 
 CREATE POLICY "Admins can do everything on milestones"
   ON project_milestones FOR ALL
@@ -265,27 +310,18 @@ CREATE POLICY "Admins can do everything on milestones"
 
 CREATE POLICY "Clients can view own project messages"
   ON project_messages FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
-  );
+  USING (is_project_member(project_id));
 
 CREATE POLICY "Clients can send messages on own projects"
   ON project_messages FOR INSERT
   WITH CHECK (
-    sender_id = auth.uid() AND
-    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
+    sender_id = auth.uid() AND is_project_member(project_id)
   );
 
 CREATE POLICY "Clients can mark admin messages as read"
   ON project_messages FOR UPDATE
-  USING (
-    is_admin = TRUE AND
-    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
-  )
-  WITH CHECK (
-    is_admin = TRUE AND
-    EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
-  );
+  USING (is_admin = TRUE AND is_project_member(project_id))
+  WITH CHECK (is_admin = TRUE AND is_project_member(project_id));
 
 CREATE POLICY "Admins can do everything on messages"
   ON project_messages FOR ALL
@@ -296,11 +332,7 @@ CREATE POLICY "Admins can do everything on messages"
 CREATE POLICY "Clients can view linked projects"
   ON linked_projects FOR SELECT
   USING (
-    EXISTS (
-      SELECT 1 FROM projects
-      WHERE (id = project_a_id OR id = project_b_id)
-        AND client_id = auth.uid()
-    )
+    is_project_member(project_a_id) OR is_project_member(project_b_id)
   );
 
 CREATE POLICY "Admins can do everything on linked_projects"
