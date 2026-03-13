@@ -61,7 +61,7 @@ export interface Patent {
 }
 
 export interface PortfolioResponse {
-  source: "dkg-live" | "cache" | "fallback";
+  source: "dkg-live" | "cache" | "fallback" | "cached";
   ual?: string;
   patents: Patent[];
   error?: string;

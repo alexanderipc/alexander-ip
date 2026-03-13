@@ -3,22 +3,28 @@ import { dkgGet, nquadsToPatents } from "@/lib/explorer/dkg";
 import type { PortfolioResponse } from "@/lib/explorer/types";
 import fallbackData from "@/data/moye-portfolio.json";
 
-// Vercel has no persistent filesystem — use in-memory cache
-const cache = new Map<string, PortfolioResponse>();
-
-// Allow up to 30s for data fetching
+// Allow up to 30s for DKG refresh
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
-  // Parse body once upfront so it's available in the catch block
-  const body = await req.json().catch(() => ({ ual: "" }));
+  const body = await req.json().catch(() => ({ ual: "", refresh: false }));
   const ual = body.ual || "";
+  const refresh = body.refresh === true;
 
   if (!ual)
     return NextResponse.json({ error: "UAL required" }, { status: 400 });
 
+  // Default: serve cached portfolio data instantly (no DKG wait)
+  if (!refresh) {
+    return NextResponse.json({
+      ...(fallbackData as PortfolioResponse),
+      source: "cached" as const,
+    });
+  }
+
+  // Refresh mode: hit DKG for fresh data
   try {
-    console.log(`[Explorer] Fetching portfolio for: ${ual}`);
+    console.log(`[Explorer] Refreshing portfolio from DKG: ${ual}`);
     const nquads = await dkgGet(ual);
     const patents = nquadsToPatents(nquads);
 
@@ -32,29 +38,17 @@ export async function POST(req: NextRequest) {
       source: "dkg-live",
       ual,
       patents,
+      fetchedAt: new Date().toISOString(),
     };
-
-    // Cache in memory
-    cache.set(ual, { ...result, fetchedAt: new Date().toISOString() });
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[Explorer] Portfolio fetch error:", (err as Error).message);
+    console.error("[Explorer] DKG refresh failed:", (err as Error).message);
 
-    // Try in-memory cache
-    const cached = cache.get(ual);
-    if (cached) {
-      return NextResponse.json({
-        ...cached,
-        source: "cache" as const,
-        error: (err as Error).message,
-      });
-    }
-
-    // Fallback to bundled moye-portfolio.json
+    // Fall back to bundled data
     return NextResponse.json({
       ...(fallbackData as PortfolioResponse),
-      source: "fallback" as const,
+      source: "cached" as const,
       error: (err as Error).message,
     });
   }
