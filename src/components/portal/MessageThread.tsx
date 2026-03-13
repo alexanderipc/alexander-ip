@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from "react";
 import { sendClientMessage, markMessagesRead } from "@/app/portal/actions";
 import { Send } from "lucide-react";
+import Markdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -100,9 +101,15 @@ export default function MessageThread({
                       Alexander IP
                     </p>
                   )}
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {msg.body}
-                  </p>
+                  <div
+                    className={`text-sm leading-relaxed prose prose-sm max-w-none ${
+                      isMe
+                        ? "prose-invert prose-p:text-white prose-strong:text-white prose-li:text-white prose-a:text-blue-200"
+                        : "prose-slate prose-a:text-blue-600"
+                    } prose-p:my-1 prose-ul:my-1 prose-li:my-0`}
+                  >
+                    <Markdown>{msg.body}</Markdown>
+                  </div>
                   <time
                     className={`text-[10px] mt-1 block ${
                       isMe ? "text-blue-200" : "text-slate-400"
