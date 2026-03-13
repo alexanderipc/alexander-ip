@@ -146,7 +146,6 @@ const jurisdictions: Jurisdiction[] = [
       { number: "EP4655775A1", label: "EP 4,655,775 A1", title: "Modular Smart Frame", url: patentUrl("EP4655775A1") },
       { number: "EP4035264A1", label: "EP 4,035,264 A1", title: "Audio Data Processing", url: patentUrl("EP4035264A1") },
       { number: "EP4695742A1", label: "EP 4,695,742 A1", title: "QR Code Optimization", url: patentUrl("EP4695742A1") },
-      { number: "EP4651704A1", label: "EP 4,651,704 A1", title: "Self-Watering Planter", url: patentUrl("EP4651704A1") },
       { number: "EP4538953A1", label: "EP 4,538,953 A1", title: "Context-Aware Targeted Advertising", url: patentUrl("EP4538953A1") },
     ],
   },
