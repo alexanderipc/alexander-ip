@@ -43,6 +43,7 @@
       <span>Try:</span>
       <button onclick="document.getElementById('search-input').value='US12236923B2'; document.getElementById('search-btn').click()">US 12,236,923 B2</button>
       <button onclick="document.getElementById('search-input').value='moye'; document.getElementById('search-btn').click()">Moye Portfolio</button>
+      <button onclick="document.getElementById('search-input').value='fontaine farm'; document.getElementById('search-btn').click()">Fontaine Farm</button>
     </div>
 
     <div class="source-badge loading" id="source-badge" style="margin-top:16px">Ready</div>
@@ -133,6 +134,35 @@
   </div>
 
   </div><!-- end main-content -->
+
+  <!-- ═══ Mobile Patent List (hidden on desktop) ═══ -->
+  <div id="mobile-patent-list" class="mobile-only">
+    <button id="mobile-list-toggle" class="mobile-section-handle">
+      <span class="mobile-handle-icon">&#x1F4CB;</span>
+      <span class="mobile-handle-text">Portfolio</span>
+      <span id="mobile-list-count" class="mobile-handle-count"></span>
+      <span class="mobile-chevron">&#x25B2;</span>
+    </button>
+    <div class="mobile-section-body" id="mobile-list-body">
+      <ul id="mobile-patent-items"></ul>
+    </div>
+  </div>
+
+  <!-- ═══ Mobile Chat Bottom Sheet (hidden on desktop) ═══ -->
+  <div id="mobile-chat-sheet" class="mobile-only">
+    <button id="mobile-chat-toggle" class="mobile-section-handle mobile-chat-handle">
+      <span class="mobile-handle-icon">&#x1F4AC;</span>
+      <span class="mobile-handle-text">AI Patent Analyst</span>
+      <span class="mobile-chevron">&#x25B2;</span>
+    </button>
+    <div class="mobile-section-body" id="mobile-chat-body">
+      <div id="mobile-chat-messages" class="mobile-chat-messages"></div>
+      <div class="mobile-chat-input-area">
+        <textarea id="mobile-chat-input" class="mobile-chat-input" placeholder="Ask about this portfolio..." rows="1"></textarea>
+        <button id="mobile-chat-send" class="mobile-chat-send-btn">Send</button>
+      </div>
+    </div>
+  </div>
 
 </div>
 

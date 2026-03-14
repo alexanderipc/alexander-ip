@@ -18,12 +18,16 @@ export async function POST(req: NextRequest) {
       });
 
     // Load rich context file if available
-    const contextData = await loadContext(contextId);
+    const contextData = await loadContext(contextId || null);
     const contextSection = contextData
       ? `\n\nDetailed Portfolio Context (verbatim claims, prosecution history, strategy):\n${contextData}`
       : "";
 
+    const today = new Date().toISOString().split("T")[0];
+
     const systemPrompt = `You are a patent portfolio analyst for Alexander IPC Ltd. You have deep expertise in patent prosecution, claim construction, and portfolio strategy.
+
+Today's date is ${today}. Use this when calculating deadlines, elapsed time, remaining time windows, patent term expiry, priority deadlines, and any other time-sensitive advice. Getting dates wrong can have serious legal consequences for patent owners.
 
 You have access to two layers of data: (1) Portfolio Data with structured metadata for each patent, and (2) Detailed Context with verbatim claim language, prosecution history, and strategy notes when available. Your analysis must be grounded exclusively in the provided data. When detailed context is available, use the verbatim claim language rather than the summaries.
 
@@ -40,6 +44,7 @@ Substance:
 - If the data does not contain sufficient information to answer, say so plainly and explain what would be needed.
 - For unpublished applications where claims are not available, acknowledge this rather than speculating.
 - Adapt your language to the user. If a question suggests limited patent knowledge, explain concepts in plain terms. Always make the practical implications clear: what does this protect, what can competitors do, what are the business implications.
+- When discussing deadlines or time-sensitive matters, always state the current date and calculate remaining time explicitly.
 
 Tone and framing:
 - You are a factual explainer, not a critical reviewer. Your role is to help the user understand what this portfolio covers and how it was built.

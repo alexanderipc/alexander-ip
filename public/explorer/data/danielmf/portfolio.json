@@ -1,0 +1,406 @@
+{
+  "patents": [
+    {
+      "id": "urn:patent:US:published:US2024237597A1",
+      "type": "PendingPatent",
+      "family": "family0",
+      "title": "Porous Self-Watering Planter",
+      "patentNumber": "US 2024/0237597 A1",
+      "shortLabel": "US'597",
+      "status": "Allowed — Pending grant",
+      "statusColor": "#3b82f6",
+      "patentType": "Utility",
+      "jurisdiction": "United States",
+      "applicationNumber": "18/098,170",
+      "inventor": "Matthews-Ferrero, Daniel",
+      "assignee": "Matthews-Ferrero, Daniel",
+      "dates": {
+        "filed": "2023-01-18",
+        "published": "2024-07-25",
+        "priority": "2023-01-18"
+      },
+      "continuityChain": "Original US filing. Priority date for entire family.",
+      "technologyField": "Horticulture — self-watering planters using porous materials and osmotic/gravitational water distribution",
+      "ipc": "IPC: A01G27/00; A01G27/02; A01G9/02; A01M29/08",
+      "cpc": "CPC: A01G9/23; A01G27/00; A01G27/008; A01G27/02; A01G27/04; A01M29/08",
+      "problemSolved": "Conventional tiered planters require active pumping or manual watering. Existing self-watering designs either use submerged reservoir systems that risk root rot, or active pumping mechanisms that require electricity. No prior art combined a sealed porous vertical reservoir with tiered platforms using purely passive gravitational and osmotic forces to regulate soil moisture.",
+      "coreSolution": "A vertical support with a sealed interior chamber formed by an inner porous wall (terracotta, PLA, or PETG) and an outer non-porous wall with perforated sections. Water in the sealed reservoir extends above the planting platforms, and the combination of gravity and osmotic pressure passively releases water through the porous wall into soil on each platform until saturation equilibrium is reached. No pumps, electricity, or active control needed.",
+      "keyComponents": "Sealed interior chamber (reservoir); Inner porous wall (terracotta/PLA/PETG); Outer non-porous wall with perforated sections; Horizontal planting platforms coupled at base of each perforated section; Removable cap/plug; Optional modular threaded sections; Optional drainage openings",
+      "advantages": "Completely passive irrigation — no electricity or pumps required; Self-regulating via osmotic equilibrium (stops releasing water when soil is saturated); Modular stackable design; Can be made from sustainable/biodegradable materials (PLA); Water level extends above all platforms ensuring even distribution; Low cost and simple construction",
+      "totalClaims": "12 claims (1 independent, 11 dependent) — claims 2, 6, 7, 15-18, 20 canceled during prosecution",
+      "examinerReasons": "Allowed after RCE. Key distinguishing features over prior art: (1) sealed interior chamber forming a reservoir where water level extends above platform height, (2) platforms coupled at base of perforated sections for soil contact with porous wall, (3) passive gravitational and osmotic water distribution without pumps. Examiner agreed these features were not taught by Carlyon Jr. (US 4,006,559 A) which uses active pumping through a pipeline, nor by He (CN 108770663 A) which uses absorption sponge without sealed reservoir above platforms.",
+      "claims": [
+        {
+          "num": 1,
+          "type": "Independent",
+          "text": "A self-watering planter comprising: a vertical support having a top end and a bottom end, the support comprising an interior chamber running along its length between the top end and the bottom end, wherein the interior chamber is selectively sealed by a removable cap, plug, or enclosed volume attachment, and wherein the support is at least partially formed of a perforated or porous material; a plurality of horizontal planting platforms, each platform being formed of a platform floor and an outer wall, each platform floor being coupled to and encompassing the vertical support at a point along its length corresponding to a perforated or porous wall portion; wherein each horizontal planting platform is coupled to the vertical support at the base of the corresponding perforated or porous wall portion; wherein the vertical support has an inner porous wall extending the length of the chamber and an outer non-porous wall configured to expose and allow contact with the inner porous wall to form the perforated or porous wall portions; and wherein the interior chamber forms a reservoir that is configured to hold water such that the water level within the reservoir may extend above the height of the plurality of horizontal planting platforms, thereby facilitating a flow from the reservoir to each of the horizontal planting platforms via gravitational and osmotic forces."
+        },
+        {
+          "num": 3,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein the inner porous wall is formed of one or more of: terracotta, a Polylactic acid (PLA) compound polymer, or a Polyethylene terephthalate glycol (PETG) compound polymer."
+        },
+        {
+          "num": 4,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein the planter is modular, and the vertical support is divided into a plurality of sections each being detachably coupled to adjacent sections."
+        },
+        {
+          "num": 5,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 4, wherein the detachably coupled sections comprising inner and outer threaded portions for screwing together to form the interior chamber."
+        },
+        {
+          "num": 9,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein one or more of the planting platform floors have openings formed therein."
+        },
+        {
+          "num": 10,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein the vertical support and planting platforms have a rounded shape."
+        },
+        {
+          "num": 11,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein the vertical support and planting platforms have a squared shape."
+        },
+        {
+          "num": 12,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein the vertical support is centrally disposed on the floor of each of the planting platforms."
+        },
+        {
+          "num": 13,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein the top end of the vertical support has formed therein one or more openings configured to receive a hanging hook."
+        },
+        {
+          "num": 14,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein each of the planting platforms coupled to the vertical support increase sequentially in horizontal surface area from the top end to the bottom end."
+        },
+        {
+          "num": 19,
+          "type": "Dependent",
+          "text": "A self-watering planter according to claim 1, wherein the vertical support is divided into alternating sections of perforated or porous wall portions and non-perforated, non-porous wall portions, with the top end comprising a non-perforated, non-porous wall portion."
+        }
+      ],
+      "scopeComparison": "US claims are the narrowest in the family — after two rounds of prosecution and an RCE, claim 1 now requires: (1) sealed interior chamber with removable cap/plug, (2) inner porous wall + outer non-porous wall with perforated sections, (3) platforms coupled at base of perforated portions, and (4) reservoir water level extending above platform height for gravitational/osmotic flow. Original claims 6-7 (porous dividers, chamber openings), 15-18 (collection tray, pump, solar lights, mirrors), and 20 (bulging top section) were canceled.",
+      "citedPriorArt": "1st OA: Lee et al. (KR 101477087 B1) — aeroponic apparatus with spray supply pipe and mesh trays; Fitz-Gerald (US 0545952 A) — earthenware vessel with wire netting. 2nd OA (Final): Carlyon Jr. (US 4,006,559 A) — self-irrigating display rack with active pump; He (CN 108770663 A) — hollow cylinder with water absorption sponge; Kim et al. (KR 20100124603 A) — modular planter components; Johnson Sr. (US 4,419,843 A) — multi-tier planter with drainage apertures.",
+      "isrXCitation": "",
+      "isrACitations": "",
+      "designatedStates": "",
+      "nationalPhaseDeadline": "",
+      "familyRole": "Root patent — original filing, priority date for entire family. First-filed application from which PCT claims priority.",
+      "keyDifference": "Most heavily prosecuted application in the family. Three rounds of office actions overcame 102/103 rejections based on Lee (hydroponic spray system) and Carlyon (active pump irrigator). Key argument: the sealed porous reservoir with passive osmotic/gravitational distribution is fundamentally different from prior art's active pumping and spray systems.",
+      "espacenet": "https://worldwide.espacenet.com/patent/search/family/88863783/publication/US2024237597A1",
+      "links": [
+        {
+          "target": "urn:patent:WO:published:WO2024153697A1",
+          "rel": "internationalFiling",
+          "label": "PCT"
+        }
+      ]
+    },
+    {
+      "id": "urn:patent:WO:published:WO2024153697A1",
+      "type": "PCTApplication",
+      "family": "family0",
+      "title": "Porous Self-Watering Planter",
+      "patentNumber": "WO 2024/153697 A1",
+      "shortLabel": "WO'697",
+      "status": "Published — International phase",
+      "statusColor": "#a855f7",
+      "patentType": "PCT International Application",
+      "jurisdiction": "International (WIPO)",
+      "applicationNumber": "PCT/EP2024/051039",
+      "inventor": "Matthews-Ferrero, Daniel",
+      "assignee": "Fontaine Farm [BE]",
+      "dates": {
+        "filed": "2024-01-17",
+        "published": "2024-07-25",
+        "priority": "2023-01-18 (from US 18/098,170)"
+      },
+      "continuityChain": "Claims priority from US 18/098,170 filed 2023-01-18",
+      "technologyField": "Horticulture — self-watering planters using porous materials and osmotic/gravitational water distribution",
+      "ipc": "IPC: A01G9/02; A01G27/00; A01G27/02; A01G27/04",
+      "cpc": "CPC: A01G9/23; A01G27/00; A01G27/008; A01G27/02; A01G27/04; A01M29/08",
+      "problemSolved": "Conventional tiered planters require active pumping or manual watering. No prior art combined a sealed porous vertical reservoir with tiered platforms using purely passive gravitational and osmotic forces.",
+      "coreSolution": "International PCT filing route for the self-watering planter invention. Provides basis for national phase entry in EP, GB, and other jurisdictions.",
+      "keyComponents": "Same core invention as US: sealed porous vertical support, tiered planting platforms, passive osmotic/gravitational water distribution",
+      "advantages": "Enables global patent protection via national phase entries; Broadest claim scope in the family (20 claims, no prosecution narrowing yet)",
+      "totalClaims": "20 claims as filed — broadest claim set in the family, includes features canceled in US prosecution (porous dividers, pump mechanism, solar panels, mirrors, bulging top section)",
+      "examinerReasons": "",
+      "claims": [
+        {
+          "num": 1,
+          "type": "Independent",
+          "text": "A self-watering planter, comprising: a vertical support having a top end and a bottom end, the support comprising a sealable interior chamber running along its length between the top end and the bottom end, wherein the support is at least partially formed of a perforated or porous material; a plurality of horizontal planting platforms, each platform being formed of a platform floor and an outer wall, each platform floor being coupled to and encompassing the vertical support at a point along its length corresponding to a perforated or porous wall portion."
+        },
+        {
+          "num": 2,
+          "type": "Dependent",
+          "text": "Claim 2: inner porous wall extending the length of the chamber and outer non-porous wall with perforated sections allowing contact."
+        },
+        {
+          "num": 3,
+          "type": "Dependent",
+          "text": "Claim 3: porous wall formed of terracotta, PLA compound polymer, or PETG compound polymer."
+        },
+        {
+          "num": 6,
+          "type": "Dependent",
+          "text": "Claim 6: detachably coupled sections comprise porous divider walls dividing the sealed chamber into sections corresponding to each planting platform."
+        },
+        {
+          "num": 7,
+          "type": "Dependent",
+          "text": "Claim 7: each chamber section comprises at least one opening in the chamber walls for refilling."
+        },
+        {
+          "num": 15,
+          "type": "Dependent",
+          "text": "Claim 15: water collection tray disposed at the bottom end of the vertical support."
+        },
+        {
+          "num": 16,
+          "type": "Dependent",
+          "text": "Claim 16: pump mechanism and power source configured to pump water from the bottom towards the top."
+        },
+        {
+          "num": 17,
+          "type": "Dependent",
+          "text": "Claim 17: one or more solar panels powering a set of lights disposed at the top."
+        },
+        {
+          "num": 18,
+          "type": "Dependent",
+          "text": "Claim 18: one or more mirrors at the top with reflected surfaces oriented upwards to deter wildlife."
+        },
+        {
+          "num": 20,
+          "type": "Dependent",
+          "text": "Claim 20: non-porous wall portion at top bulges outwards to have greater horizontal cross-section, holding larger water volume per unit length."
+        }
+      ],
+      "scopeComparison": "PCT claim 1 is BROADER than allowed US claim 1: (1) does not require inner porous wall + outer non-porous wall structure, (2) does not require platforms coupled at BASE of perforated section, (3) does not require reservoir water level above platform height, (4) does not require removable cap/plug. PCT also retains all 20 original claims including features canceled during US prosecution (divider walls, pump, solar panels, mirrors, bulging top).",
+      "citedPriorArt": "",
+      "isrXCitation": "",
+      "isrACitations": "",
+      "designatedStates": "All PCT member states (150+)",
+      "nationalPhaseDeadline": "National phase deadline: approximately July 2025 (30 months from January 2023 priority)",
+      "familyRole": "PCT international filing — vehicle for global patent protection. National phase entries made in EP and GB.",
+      "keyDifference": "Broadest claims in the family. Claim 1 has not yet been narrowed by prosecution. Retains all optional features (pump, solar panels, mirrors) that were canceled in the US.",
+      "espacenet": "https://worldwide.espacenet.com/patent/search/family/88863783/publication/WO2024153697A1",
+      "links": [
+        {
+          "target": "urn:patent:US:published:US2024237597A1",
+          "rel": "priorityParent",
+          "label": "Priority"
+        },
+        {
+          "target": "urn:patent:EP:published:EP4651704A1",
+          "rel": "internationalFiling",
+          "label": "National Phase"
+        },
+        {
+          "target": "urn:patent:GB:published:GB2629665A",
+          "rel": "internationalFiling",
+          "label": "National Phase"
+        }
+      ]
+    },
+    {
+      "id": "urn:patent:EP:published:EP4651704A1",
+      "type": "PendingPatent",
+      "family": "family0",
+      "title": "Porous Self-Watering Planter",
+      "patentNumber": "EP 4651704 A1",
+      "shortLabel": "EP'704",
+      "status": "Published — Pending examination",
+      "statusColor": "#3b82f6",
+      "patentType": "European Patent (national phase from PCT)",
+      "jurisdiction": "European Patent Office",
+      "applicationNumber": "EP national phase of PCT/EP2024/051039",
+      "inventor": "Matthews-Ferrero, Daniel",
+      "assignee": "Fontaine Farm [BE]",
+      "dates": {
+        "filed": "2024-01-17",
+        "published": "2025-01-01",
+        "priority": "2023-01-18 (from US 18/098,170)"
+      },
+      "continuityChain": "EP national phase entry of PCT/EP2024/051039, claiming priority from US 18/098,170",
+      "technologyField": "Horticulture — self-watering planters using porous materials and osmotic/gravitational water distribution",
+      "ipc": "IPC: A01G9/02; A01G27/00; A01G27/02; A01G27/04",
+      "cpc": "CPC: A01G9/23; A01G27/00; A01G27/008; A01G27/02; A01G27/04; A01M29/08",
+      "problemSolved": "Same core problem as US filing — no passive self-regulating tiered planter existed in the prior art.",
+      "coreSolution": "EP claims restructured in two-part form (characterized in that) to comply with EPO practice. Claim 1 preamble covers basic planter structure, characterizing portion specifies: alternating non-perforated/perforated portions, sealed interior chamber, porous material exposure, water level maintained above perforations, and soil contact enabling gravitational/osmotic water release until saturation.",
+      "keyComponents": "Same core components. EP claim 1 additionally specifies: alternating non-perforated and perforated portions, water level maintained above perforations, soil contact with porous material through perforations.",
+      "advantages": "EP-style two-part claims clearly define contribution over prior art; Claims fees paid only for claims 1-5 (strategic cost management); Amended claims filed at EP phase entry on 19 June 2025",
+      "totalClaims": "15 claims (1 independent, 14 dependent) — claims fees paid for claims 1-5 only. Claims 6-15 present but unpaid (may be dropped or fees paid later).",
+      "examinerReasons": "",
+      "claims": [
+        {
+          "num": 1,
+          "type": "Independent",
+          "text": "A self-watering planter, comprising: a vertical support having a top end and a bottom end, a plurality of horizontal planting platforms, each platform being formed of a platform floor and an outer wall; characterized in that: the vertical support comprises alternating non-perforated portions and perforated portions and has a sealed interior chamber running along its length between the top end and the bottom end, wherein the perforated portions expose a porous material that forms the sealed chamber, and wherein the water level inside the vertical support is maintained above the level of the perforations; wherein each platform floor is coupled to and encompasses the vertical support at a point along its length corresponding to one of the perforated portions exposing the porous material, such that soil situated within the platforms can come into contact with the porous material through the perforations, thereby enabling water to be released from the chamber to the soil via gravitational and osmotic forces until the soil reaches a suitable point of saturation."
+        },
+        {
+          "num": 2,
+          "type": "Dependent",
+          "text": "Claim 2: inner porous wall extending the length of the chamber and outer non-porous wall with perforated sections allowing contact with the inner wall."
+        },
+        {
+          "num": 3,
+          "type": "Dependent",
+          "text": "Claim 3: porous wall formed of terracotta, PLA compound polymer, or PETG compound polymer."
+        },
+        {
+          "num": 4,
+          "type": "Dependent",
+          "text": "Claim 4: modular vertical support divided into detachably coupled sections."
+        },
+        {
+          "num": 5,
+          "type": "Dependent",
+          "text": "Claim 5: threaded portions for screwing sections together."
+        },
+        {
+          "num": 6,
+          "type": "Dependent",
+          "text": "Claim 6: porous divider walls dividing sealed chamber into sections with refilling openings."
+        },
+        {
+          "num": 14,
+          "type": "Dependent",
+          "text": "Claim 14: combined optional features — water collection tray, pump mechanism, solar-powered lights, and/or wildlife-deterrent mirrors."
+        },
+        {
+          "num": 15,
+          "type": "Dependent",
+          "text": "Claim 15: alternating perforated/non-perforated sections with bulging top section holding larger water volume."
+        }
+      ],
+      "scopeComparison": "EP claim 1 is NARROWER than PCT but structured differently from US. Uses two-part form. Characterizing portion explicitly requires: (1) alternating non-perforated and perforated portions, (2) sealed chamber with porous material exposed at perforations, (3) water level maintained above perforations, (4) soil contact with porous material enabling gravitational/osmotic release until saturation. EP consolidates several PCT dependent claims into single claims (e.g. claim 14 combines collection tray + pump + solar + mirrors; claim 15 combines alternating sections + bulging top).",
+      "citedPriorArt": "",
+      "isrXCitation": "",
+      "isrACitations": "",
+      "designatedStates": "All EPC contracting states",
+      "nationalPhaseDeadline": "",
+      "familyRole": "EP national phase entry — European route for patent protection. Amended claims filed at entry (19 June 2025) with two-part structure per EPO practice.",
+      "keyDifference": "Two-part claim format (preamble + characterized in that) required by EPO. Claims strategically consolidated to reduce fees. Only 5 claims paid for at entry — claims 6-15 may be dropped to save costs unless needed for examination fallback.",
+      "espacenet": "https://worldwide.espacenet.com/patent/search/family/88863783/publication/EP4651704A1",
+      "links": [
+        {
+          "target": "urn:patent:WO:published:WO2024153697A1",
+          "rel": "priorityParent",
+          "label": "PCT"
+        }
+      ]
+    },
+    {
+      "id": "urn:patent:GB:published:GB2629665A",
+      "type": "PendingPatent",
+      "family": "family0",
+      "title": "Porous Self-Watering Planter",
+      "patentNumber": "GB 2629665 A",
+      "shortLabel": "GB'665",
+      "status": "Published — Pending examination",
+      "statusColor": "#3b82f6",
+      "patentType": "National phase from PCT",
+      "jurisdiction": "United Kingdom",
+      "applicationNumber": "GB 2315867.8",
+      "inventor": "Matthews-Ferrero, Daniel",
+      "assignee": "Matthews-Ferrero, Daniel",
+      "dates": {
+        "filed": "2023-10-17",
+        "published": "2025-04-09",
+        "priority": "2023-01-18 (from US 18/098,170)"
+      },
+      "continuityChain": "GB national phase entry of PCT/EP2024/051039, claiming priority from US 18/098,170",
+      "technologyField": "Horticulture — self-watering planters using porous materials and osmotic/gravitational water distribution",
+      "ipc": "",
+      "cpc": "",
+      "problemSolved": "Same core problem as US filing.",
+      "coreSolution": "UK filing with broadest claim scope in the family (20 claims). Independent claim 1 covers the basic planter structure without the narrowing amendments required in US prosecution.",
+      "keyComponents": "Same core components as US. GB claims retain features canceled in US prosecution: porous divider walls (claim 6), chamber refilling openings (claim 7), removable cap/plug (claim 8), water collection tray (claim 15), pump mechanism (claim 16), solar-powered lights (claim 17), wildlife-deterrent mirrors (claim 18), bulging top section (claim 20).",
+      "advantages": "Broadest independent claim in the family (same as original PCT claim 1); All 20 claims retained; UK Combined Search and Examination Report raised only a minor claim dependency issue (claim 3 self-referencing), no novelty/obviousness objections; Response filed January 2025 correcting dependency",
+      "totalClaims": "20 claims (1 independent, 19 dependent) — all retained, only claim 3 dependency corrected",
+      "examinerReasons": "UK Combined Search and Examination Report (15 December 2023, examiner Katie Harbach) found NO novelty or inventive step objections. Only issue raised was a claim 3 dependency error (claim 3 referred to itself instead of claim 2). Response filed 20 January 2025 correcting the dependency.",
+      "claims": [
+        {
+          "num": 1,
+          "type": "Independent",
+          "text": "A self-watering planter, comprising: a vertical support having a top end and a bottom end, the support comprising a sealable interior chamber running along its length between the top end and the bottom end, wherein the support is at least partially formed of a perforated or porous material; a plurality of horizontal planting platforms, each platform being formed of a platform floor and an outer wall, each platform floor being coupled to and encompassing the vertical support at a point along its length corresponding to a perforated or porous wall portion."
+        },
+        {
+          "num": 2,
+          "type": "Dependent",
+          "text": "Claim 2: inner porous wall extending the length of the chamber and outer non-porous wall with perforated sections allowing contact with the inner wall."
+        },
+        {
+          "num": 3,
+          "type": "Dependent",
+          "text": "Claim 3 (amended): porous wall formed of terracotta, PLA, or PETG compound polymer. Dependency corrected from claim 3 to claim 2."
+        },
+        {
+          "num": 6,
+          "type": "Dependent",
+          "text": "Claim 6: porous divider walls dividing sealed chamber into sections corresponding to each planting platform."
+        },
+        {
+          "num": 7,
+          "type": "Dependent",
+          "text": "Claim 7: each chamber section has at least one opening for refilling."
+        },
+        {
+          "num": 8,
+          "type": "Dependent",
+          "text": "Claim 8: top end comprises a removable cap or plug."
+        },
+        {
+          "num": 15,
+          "type": "Dependent",
+          "text": "Claim 15: water collection tray at bottom end."
+        },
+        {
+          "num": 16,
+          "type": "Dependent",
+          "text": "Claim 16: pump mechanism and power source to pump water from bottom to top."
+        },
+        {
+          "num": 17,
+          "type": "Dependent",
+          "text": "Claim 17: solar panels powering lights at top."
+        },
+        {
+          "num": 18,
+          "type": "Dependent",
+          "text": "Claim 18: mirrors at top with reflected surfaces upwards to deter wildlife."
+        },
+        {
+          "num": 20,
+          "type": "Dependent",
+          "text": "Claim 20: top non-porous wall portion bulges outwards for greater cross-section and larger water volume per unit length."
+        }
+      ],
+      "scopeComparison": "GB claim 1 is the BROADEST independent claim in the family — identical to original PCT claim 1. Does not require: inner porous/outer non-porous wall structure (US requirement), platforms at BASE of perforated sections (US requirement), water level above platforms (US/EP requirement), or two-part form (EP requirement). UK examiner raised NO substantive objections to novelty or inventive step.",
+      "citedPriorArt": "UK search report: no prior art cited as X or Y category against the claims. Only procedural issue raised (claim 3 dependency).",
+      "isrXCitation": "",
+      "isrACitations": "",
+      "designatedStates": "",
+      "nationalPhaseDeadline": "",
+      "familyRole": "GB national phase entry — broadest claims in the family with cleanest prosecution history (no novelty/obviousness objections from UK examiner).",
+      "keyDifference": "Strongest application in the family from a prosecution perspective: UK examiner found no prior art issues. Independent claim 1 is broader than US allowed claim. All 20 dependent claims retained (vs. 9 canceled in US). Only amendment was a trivial claim dependency correction.",
+      "espacenet": "https://worldwide.espacenet.com/patent/search/family/88863783/publication/GB2629665A",
+      "links": [
+        {
+          "target": "urn:patent:WO:published:WO2024153697A1",
+          "rel": "priorityParent",
+          "label": "PCT"
+        }
+      ]
+    }
+  ]
+}

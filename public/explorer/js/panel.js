@@ -9,12 +9,14 @@ export class DetailPanel {
     this.numberEl = panelEl.querySelector('.panel-number');
     this.statusEl = panelEl.querySelector('.panel-status');
     this.bodyEl = panelEl.querySelector('.panel-body');
+    this._portfolioSlug = '';
     this.onFamilyClick = null;
 
     panelEl.querySelector('.panel-close').addEventListener('click', () => this.close());
   }
 
   open(patent) {
+    if (window.innerWidth <= 768) return;
     this.titleEl.textContent = patent.title;
     this.numberEl.textContent = patent.patentNumber +
       (patent.applicationNumber ? ` \u2022 App: ${patent.applicationNumber}` : '');
@@ -23,14 +25,6 @@ export class DetailPanel {
     this.statusEl.style.color = patent.statusColor;
 
     let html = '';
-
-    // Verified Data Badge
-    html += `<div class="dkg-badge">
-      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#22c55e" stroke-width="2">
-        <path d="M2 8l4 4 8-8"/>
-      </svg>
-      Verified patent data
-    </div>`;
 
     // Identity
     html += this._section('Identity', [
@@ -118,8 +112,9 @@ export class DetailPanel {
 
     // Patent Drawing (blueprint style)
     if (patent.drawing || patent.patentNumber) {
+      const slugPath = this._portfolioSlug ? `${this._portfolioSlug}/` : '';
       const drawingSrc = patent.drawing ||
-        `/explorer/data/drawings/${(patent.patentNumber || '').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}.png`;
+        `/explorer/data/${slugPath}drawings/${(patent.patentNumber || '').replace(/[^A-Za-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}.png`;
       html += `<div class="panel-section patent-drawing-section">
         <div class="panel-section-title">Patent Drawing</div>
         <div class="patent-drawing-container" data-lightbox-src="${drawingSrc}">

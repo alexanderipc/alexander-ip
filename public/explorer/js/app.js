@@ -2,7 +2,7 @@
 // App Controller — orchestrates search, viz, panel, chat
 // ═══════════════════════════════════════════════════
 
-import { DKGClient } from './dkg-client.js';
+import { PortfolioClient } from './dkg-client.js';
 import { PatentTree3D as PatentTree } from './patent-tree-3d.js';
 import { DetailPanel } from './panel.js';
 import { ChatPanel } from './chat.js';
@@ -17,7 +17,7 @@ updateMobileClass();
 window.addEventListener('resize', updateMobileClass);
 
 // ─── Init ───
-const dkg = new DKGClient();
+const portfolio = new PortfolioClient();
 const tree = new PatentTree(document.getElementById('viz'));
 const panel = new DetailPanel(document.getElementById('panel'));
 const chat = new ChatPanel(document.getElementById('chat'));
@@ -37,6 +37,60 @@ const loadingOverlay = document.getElementById('loading-overlay');
 
 let currentPortfolio = null;
 
+// ─── Mobile List + Toggle ───
+const mobileListToggle = document.getElementById('mobile-list-toggle');
+const mobileListBody = document.getElementById('mobile-list-body');
+const mobileListCount = document.getElementById('mobile-list-count');
+const mobilePatentItems = document.getElementById('mobile-patent-items');
+const mobileListSection = document.getElementById('mobile-patent-list');
+
+if (mobileListToggle && mobileListSection) {
+  mobileListToggle.addEventListener('click', () => {
+    mobileListSection.classList.toggle('collapsed');
+    const chevron = mobileListToggle.querySelector('.mobile-chevron');
+    if (chevron) chevron.textContent = mobileListSection.classList.contains('collapsed') ? '\u25B2' : '\u25BC';
+  });
+}
+
+function populateMobileList(patents) {
+  if (!mobilePatentItems) return;
+  mobilePatentItems.innerHTML = '';
+  if (mobileListCount) mobileListCount.textContent = `(${patents.length})`;
+
+  const colorOrder = { '#22c55e': 0, '#1a9baa': 0, '#3b82f6': 1, '#3672b8': 1, '#a855f7': 2, '#7b4fb0': 2 };
+  const sorted = [...patents].sort((a, b) => {
+    const aO = colorOrder[a.statusColor] ?? 3;
+    const bO = colorOrder[b.statusColor] ?? 3;
+    return aO - bO;
+  });
+
+  sorted.forEach(patent => {
+    const li = document.createElement('li');
+    li.className = 'mobile-patent-item';
+
+    const statusColor = patent.statusColor || '#6a7a8c';
+    const number = patent.patentNumber || patent.applicationNumber || 'Unknown';
+    const title = patent.title || '';
+    const espacenet = patent.espacenet || '';
+
+    li.innerHTML = `
+      <div class="mobile-patent-header">
+        <span class="mobile-patent-dot" style="background:${statusColor}"></span>
+        <span class="mobile-patent-number">${number}</span>
+      </div>
+      <div class="mobile-patent-detail">
+        <div class="mobile-patent-title">${title}</div>
+        ${espacenet ? `<a class="mobile-patent-link" href="${espacenet}" target="_blank" rel="noopener">View on Espacenet \u2192</a>` : ''}
+      </div>`;
+
+    li.querySelector('.mobile-patent-header').addEventListener('click', () => {
+      li.classList.toggle('expanded');
+    });
+
+    mobilePatentItems.appendChild(li);
+  });
+}
+
 // ─── Search ───
 async function search() {
   const query = searchInput.value.trim();
@@ -49,14 +103,13 @@ async function search() {
   // Show loading overlay (cinematic transition)
   const isFirstLoad = document.getElementById('landing').style.display !== 'none';
   if (isFirstLoad) {
-    // Dispose landing scene
     if (landingScene) { landingScene.dispose(); landingScene = null; }
     document.getElementById('landing').style.display = 'none';
     loadingOverlay.style.display = 'flex';
   }
 
   try {
-    const result = await dkg.load(query);
+    const result = await portfolio.load(query);
     currentPortfolio = result;
 
     const count = result.patents?.length || 0;
@@ -73,10 +126,16 @@ async function search() {
     document.getElementById('workspace').style.display = 'flex';
 
     // Render visualization (triggers camera fly-in animation)
+    const slug = result.slug || '';
+    tree.setPortfolioSlug(slug);
+    panel._portfolioSlug = slug;
     tree.render(result.patents);
 
     // Load into chat
-    chat.setPortfolio(result.patents, result.contextId || null);
+    chat.setPortfolio(result.patents);
+
+    // Populate mobile patent list
+    populateMobileList(result.patents);
 
     // Fade out loading overlay after a brief moment
     if (loadingOverlay.style.display !== 'none') {
@@ -91,7 +150,6 @@ async function search() {
 
   } catch (err) {
     setBadge('error', err.message);
-    // Hide loading overlay on error
     loadingOverlay.style.display = 'none';
     if (isFirstLoad) {
       document.getElementById('landing').style.display = 'flex';
@@ -112,8 +170,6 @@ tree.onNodeClick = (patent) => {
   panel.open(patent);
 };
 
-// Hover popout is now handled internally by PatentTree3D
-// (side-anchored card with leader line + drawing thumbnail)
 tree.onNodeHover = () => {};
 
 panel.onFamilyClick = (targetId) => {
@@ -198,17 +254,6 @@ if (waitlistBtn && waitlistOverlay) {
   });
 }
 
-// ─── Mobile: Chat bar toggle ───
-const chatMobileBar = document.getElementById('chat-mobile-bar');
-const chatPanel = document.getElementById('chat');
-if (chatMobileBar && chatPanel) {
-  chatMobileBar.addEventListener('click', () => {
-    chatPanel.classList.toggle('mobile-expanded');
-    const arrow = chatMobileBar.querySelector('.chat-mobile-bar-arrow');
-    if (arrow) arrow.textContent = chatPanel.classList.contains('mobile-expanded') ? '\u25BC' : '\u25B2';
-  });
-}
-
 // ─── Mobile: Legend toggle ───
 const legendToggle = document.getElementById('legend-toggle');
 const legend = document.getElementById('legend');
@@ -219,12 +264,11 @@ if (legendToggle && legend) {
 }
 
 // ─── Mobile: Auto-collapse chat when detail panel opens ───
+const chatPanel = document.getElementById('chat');
 const origPanelOpen = panel.open.bind(panel);
 panel.open = function(patent) {
   if (isMobile() && chatPanel) {
     chatPanel.classList.remove('mobile-expanded');
-    const arrow = chatMobileBar?.querySelector('.chat-mobile-bar-arrow');
-    if (arrow) arrow.textContent = '\u25B2';
   }
   origPanelOpen(patent);
 };

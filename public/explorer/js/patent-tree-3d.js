@@ -12,7 +12,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 // ── Constants ──
 
 const BG_COLOR = 0xf0f2f5;
-const GRID_Y = -120;
+const GRID_Y = -40;
 const BASE_RADIUS = 22;
 
 const STATUS_COLORS = {
@@ -130,18 +130,19 @@ export class PatentTree3D {
     this._cameraAnimating = false;
     this._flyingIn = false;
 
-    this._bubbleMesh = null;
-
     // DOM overlays for hover popout
     this._popoutEl = null;
     this._popoutVisible = false;
     this._hiddenLobeSpriteInfo = null;
 
+    this._portfolioSlug = '';
     this.onNodeClick = null;
     this.onNodeHover = null;
   }
 
   // ─── Public API ───
+
+  setPortfolioSlug(slug) { this._portfolioSlug = slug || ''; }
 
   render(patents) {
     this._patents = patents || [];
@@ -204,7 +205,6 @@ export class PatentTree3D {
     this._controls.dampingFactor = 0.06;
     this._controls.minDistance = 60;
     this._controls.maxDistance = 2500;
-    this._controls.maxPolarAngle = Math.PI * 0.47;  // prevent camera below grid
 
     this._scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const key = new THREE.DirectionalLight(0xffffff, 0.7);
@@ -284,14 +284,14 @@ export class PatentTree3D {
           // Axes
           float axisX = 1.0 - min(abs(coord.x) / fwidth(coord.x), 1.0);
           float axisZ = 1.0 - min(abs(coord.y) / fwidth(coord.y), 1.0);
-          float axes = max(axisX, axisZ) * 0.30;
+          float axes = max(axisX, axisZ) * 0.08;
           // Fade
           float dist = length(coord);
           float fade = exp(-dist * 0.0005);
-          float intensity = (fine * 0.25 + coarse * 0.55 + axes) * fade;
+          float intensity = (fine * 0.06 + coarse * 0.18 + axes) * fade;
           // Subtle wave
           float wave = sin(dist * 0.02 - uTime * 2.0) * 0.5 + 0.5;
-          intensity += coarse * wave * 0.18 * fade;
+          intensity += coarse * wave * 0.06 * fade;
           vec3 col = mix(uColor1, uColor2, smoothstep(0.0, 800.0, dist));
           gl_FragColor = vec4(col, intensity);
         }
@@ -338,6 +338,7 @@ export class PatentTree3D {
 
   _showHoverPopout(patent, invention, lobeIdx) {
     if (!this._popoutEl || !patent) return;
+    if (window.innerWidth <= 768) return;
 
     // Populate content
     const accent = this._popoutEl.querySelector('.popout-accent');
@@ -354,7 +355,8 @@ export class PatentTree3D {
     const filename = patentNumToFilename(patent.patentNumber || patent.shortLabel);
     drawingImg.onload = () => { drawingDiv.style.display = 'block'; };
     drawingImg.onerror = () => { drawingDiv.style.display = 'none'; };
-    drawingImg.src = `/explorer/data/drawings/${filename}.png`;
+    const slugPath = this._portfolioSlug ? `${this._portfolioSlug}/` : '';
+    drawingImg.src = `/explorer/data/${slugPath}drawings/${filename}.png`;
 
     // Position at lobe tip screen coords
     this._positionPopoutAtLobe(invention, lobeIdx);
@@ -498,7 +500,8 @@ export class PatentTree3D {
 
   // ─── Lobe Direction Computation ───
 
-  _computeLobeDirections(N) {
+  // Fibonacci sphere fallback (evenly distributed directions)
+  _computeLobeDirectionsFibonacci(N) {
     if (N === 1) return [new THREE.Vector3(0, 1, 0)];
     if (N === 2) return [
       new THREE.Vector3(0.12, 1, 0).normalize(),
@@ -518,34 +521,114 @@ export class PatentTree3D {
     return dirs;
   }
 
+  // Build the patent family tree from links. Returns { children[], root, valid }
+  _buildFamilyTree(patents) {
+    const N = patents.length;
+    const PARENT_RELS = new Set(['internationalFiling', 'continuationInPart', 'parentPatent', 'childCIP', 'childPCT']);
+    const CHILD_RELS = new Set(['priorityParent', 'originalPatent']);
+    const idToIdx = new Map();
+    patents.forEach((p, i) => idToIdx.set(p.id, i));
+
+    const children = Array.from({ length: N }, () => []);
+    const hasParent = new Uint8Array(N);
+
+    for (let i = 0; i < N; i++) {
+      for (const link of (patents[i].links || [])) {
+        const j = idToIdx.get(link.target);
+        if (j === undefined) continue;
+        if (PARENT_RELS.has(link.rel)) {
+          children[i].push(j);
+          hasParent[j] = 1;
+        } else if (CHILD_RELS.has(link.rel)) {
+          children[j].push(i);
+          hasParent[i] = 1;
+        }
+      }
+    }
+    for (let i = 0; i < N; i++) children[i] = [...new Set(children[i])];
+
+    let root = -1;
+    for (let i = 0; i < N; i++) { if (!hasParent[i]) { root = i; break; } }
+    if (root === -1) return { children, root: -1, valid: false };
+
+    const visited = new Set();
+    const queue = [root];
+    visited.add(root);
+    while (queue.length) {
+      const cur = queue.shift();
+      for (const ch of children[cur]) {
+        if (!visited.has(ch)) { visited.add(ch); queue.push(ch); }
+      }
+    }
+    return { children, root, valid: visited.size === N };
+  }
+
+  // Tree-aware directions: Fibonacci sphere gives optimal separation (~100°+
+  // between all pairs for N=3..5) and BFS order ensures the filing chain
+  // flows sequentially across the shape (root at one pole → children next).
+  _computeTreeDirections(patents) {
+    const tree = this._buildFamilyTree(patents);
+    const N = patents.length;
+    if (!tree.valid) return this._computeLobeDirectionsFibonacci(N);
+
+    // 1. Well-separated directions via Fibonacci sphere
+    const fibDirs = this._computeLobeDirectionsFibonacci(N);
+
+    // 2. BFS order of the tree
+    const bfsOrder = [];
+    const visited = new Set([tree.root]);
+    const queue = [tree.root];
+    while (queue.length) {
+      const cur = queue.shift();
+      bfsOrder.push(cur);
+      for (const ch of tree.children[cur]) {
+        if (!visited.has(ch)) {
+          visited.add(ch);
+          queue.push(ch);
+        }
+      }
+    }
+
+    // 3. Assign: k-th node in BFS gets k-th Fibonacci direction
+    const dirs = new Array(N);
+    for (let i = 0; i < N; i++) {
+      dirs[bfsOrder[i]] = fibDirs[i];
+    }
+    return dirs;
+  }
+
+  // Choose direction strategy: tree-aware for linked families, Fibonacci otherwise
+  _computeLobeDirections(N, patents) {
+    if (!patents || N <= 2) return this._computeLobeDirectionsFibonacci(N);
+    return this._computeTreeDirections(patents);
+  }
+
   // ─── Dot-Matrix Parametric Surface ───
 
   _generateDotMatrix(invention) {
     const N = invention.patents.length;
-    const dirs = this._computeLobeDirections(N);
+    const dirs = this._computeLobeDirections(N, invention.patents);
     invention.lobeDirections = dirs;
 
+    // ── Single-surface multi-lobe sphere ──
     const positions = [];
     const colors = [];
+    const allRings = [];
+    let totalPoints = 0;
     const numLat = 60;
     const maxLon = 90;
-
-    const lobeTips = dirs.map(() => ({ maxR: 0, pos: new THREE.Vector3() }));
-
-    // Track grid structure for wireframe connectivity
-    const rings = [];    // rings[i] = { start, count }
-    let totalPoints = 0;
+    const lobeTips = Array.from({ length: N }, () => ({ maxR: 0, pos: new THREE.Vector3() }));
+    const rings = [];
 
     for (let i = 0; i <= numLat; i++) {
       const theta = Math.PI * i / numLat;
       const sinTheta = Math.sin(theta);
       const cosTheta = Math.cos(theta);
-      const numLon = Math.max(6, Math.round(maxLon * sinTheta));
+      const numLon2 = Math.max(6, Math.round(maxLon * sinTheta));
+      rings.push({ start: totalPoints, count: numLon2 });
 
-      rings.push({ start: totalPoints, count: numLon });
-
-      for (let j = 0; j < numLon; j++) {
-        const phi = 2 * Math.PI * j / numLon;
+      for (let j = 0; j < numLon2; j++) {
+        const phi = 2 * Math.PI * j / numLon2;
         const nx = sinTheta * Math.cos(phi);
         const ny = cosTheta;
         const nz = sinTheta * Math.sin(phi);
@@ -555,11 +638,11 @@ export class PatentTree3D {
         let maxDot = -Infinity;
         let closestLobe = 0;
 
-        for (let k = 0; k < N; k++) {
-          const d = surfN.dot(dirs[k]);
-          const lp = LOBE_PARAMS[invention.patents[k].type] || LOBE_PARAMS.Unknown;
+        for (let kk = 0; kk < N; kk++) {
+          const d = surfN.dot(dirs[kk]);
+          const lp = LOBE_PARAMS[invention.patents[kk].type] || LOBE_PARAMS.Unknown;
           if (d > 0) r += lp.height * BASE_RADIUS * Math.pow(d, lp.power);
-          if (d > maxDot) { maxDot = d; closestLobe = k; }
+          if (d > maxDot) { maxDot = d; closestLobe = kk; }
         }
 
         if (r > lobeTips[closestLobe].maxR) {
@@ -573,31 +656,31 @@ export class PatentTree3D {
         totalPoints++;
       }
     }
+    allRings.push(rings);
 
     invention.lobeTips = lobeTips.map(lt => lt.pos.clone());
 
-    // ── Build wireframe edges: ~3 connections per dot (molecule lattice) ──
+    // ── Build wireframe edges per sphere ──
     const edgeIndices = [];
-    for (let i = 0; i < rings.length; i++) {
-      const { start, count } = rings[i];
-      // 1. Connect within ring (longitude neighbours)
-      for (let j = 0; j < count; j++) {
-        edgeIndices.push(start + j, start + (j + 1) % count);
-      }
-      // 2. Connect to next ring (latitude neighbour)
-      if (i < rings.length - 1) {
-        const next = rings[i + 1];
+    for (const rings of allRings) {
+      for (let i = 0; i < rings.length; i++) {
+        const { start, count } = rings[i];
         for (let j = 0; j < count; j++) {
-          const tgtJ = Math.round(j / count * next.count) % next.count;
-          edgeIndices.push(start + j, next.start + tgtJ);
+          edgeIndices.push(start + j, start + (j + 1) % count);
         }
-      }
-      // 3. Diagonal to next ring (+1 offset) — triangulates the mesh
-      if (i < rings.length - 1) {
-        const next = rings[i + 1];
-        for (let j = 0; j < count; j++) {
-          const tgtJ = (Math.round(j / count * next.count) + 1) % next.count;
-          edgeIndices.push(start + j, next.start + tgtJ);
+        if (i < rings.length - 1) {
+          const next = rings[i + 1];
+          for (let j = 0; j < count; j++) {
+            const tgtJ = Math.round(j / count * next.count) % next.count;
+            edgeIndices.push(start + j, next.start + tgtJ);
+          }
+        }
+        if (i < rings.length - 1) {
+          const next = rings[i + 1];
+          for (let j = 0; j < count; j++) {
+            const tgtJ = (Math.round(j / count * next.count) + 1) % next.count;
+            edgeIndices.push(start + j, next.start + tgtJ);
+          }
         }
       }
     }
@@ -876,19 +959,10 @@ export class PatentTree3D {
     }
   }
 
-  // --- Portfolio Bubble (convex envelope via support function) ---
+  // ─── Portfolio Bubble (translucent convex envelope) ───
 
   _createPortfolioBubble() {
     if (this._inventions.length < 1) return;
-    // Dispose previous
-    if (this._bubbleMeshes) {
-      for (const m of this._bubbleMeshes) {
-        this._scene.remove(m);
-        m.geometry.dispose();
-        m.material.dispose();
-      }
-      this._bubbleMeshes = null;
-    }
     if (this._bubbleMesh) {
       this._scene.remove(this._bubbleMesh);
       this._bubbleMesh.geometry.dispose();
@@ -913,7 +987,7 @@ export class PatentTree3D {
     for (let i = 0; i < pts.length; i += 3) { cx += pts[i]; cy += pts[i+1]; cz += pts[i+2]; }
     cx /= nPts; cy /= nPts; cz /= nPts;
 
-    // 3. Precompute centred points for speed
+    // 3. Centred points
     const cp = new Float32Array(pts.length);
     for (let i = 0; i < pts.length; i += 3) {
       cp[i] = pts[i] - cx;
@@ -921,9 +995,8 @@ export class PatentTree3D {
       cp[i + 2] = pts[i + 2] - cz;
     }
 
-    // 4. Compute support function: for each direction on a lat/lon grid,
-    //    find the maximum projection of any point onto that direction.
-    //    This yields a smooth convex envelope — no gap-filling needed.
+    // 4. Support function: for each direction on a lat/lon grid,
+    //    find max projection → smooth convex envelope
     const padding = 15;
     const nLat = 48, nLon = 64;
     const stride = nLon + 1;
@@ -936,7 +1009,6 @@ export class PatentTree3D {
       for (let j = 0; j <= nLon; j++) {
         const phi = 2 * Math.PI * j / nLon;
         const dx = st * Math.cos(phi), dy = ct, dz = st * Math.sin(phi);
-
         let maxProj = 0;
         for (let k = 0; k < cp.length; k += 3) {
           const proj = cp[k] * dx + cp[k + 1] * dy + cp[k + 2] * dz;
@@ -946,7 +1018,7 @@ export class PatentTree3D {
       }
     }
 
-    // 5. Smooth gently for organic feel (just 3 passes)
+    // 5. Smooth for organic feel (3 passes)
     for (let pass = 0; pass < 3; pass++) {
       const sm = new Float32Array(total);
       for (let i = 0; i <= nLat; i++) {
@@ -972,7 +1044,7 @@ export class PatentTree3D {
       radii[i * stride + nLon] = v;
     }
 
-    // 6. Generate mesh positions
+    // 6. Generate mesh
     const positions = [];
     for (let i = 0; i <= nLat; i++) {
       const theta = Math.PI * i / nLat;
@@ -983,7 +1055,6 @@ export class PatentTree3D {
         positions.push(cx + st * Math.cos(phi) * r, cy + ct * r, cz + st * Math.sin(phi) * r);
       }
     }
-
     const indices = [];
     for (let i = 0; i < nLat; i++) {
       for (let j = 0; j < nLon; j++) {
@@ -993,7 +1064,7 @@ export class PatentTree3D {
     }
 
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geo.setIndex(indices);
     geo.computeVertexNormals();
 
@@ -1042,7 +1113,7 @@ void main(){
     this._scene.add(this._bubbleMesh);
   }
 
-    // ─── Animation Loop ───
+  // ─── Animation Loop ───
 
   _animate() {
     this._animFrameId = requestAnimationFrame(() => this._animate());
@@ -1097,15 +1168,15 @@ void main(){
       });
     }
 
-    if (this._gridPlane) {
-      this._gridPlane.material.uniforms.uTime.value = elapsed;
-    }
-
     if (this._bubbleMesh) {
       const bubbleAge = now - this._bubbleMesh.userData._entryStart;
       const fadeT = Math.max(0, Math.min((bubbleAge - 1200) / 1500, 1));
       this._bubbleMesh.material.uniforms.uOpacity.value = 0.45 * fadeT * fadeT * (3 - 2 * fadeT);
       this._bubbleMesh.material.uniforms.uTime.value = elapsed;
+    }
+
+    if (this._gridPlane) {
+      this._gridPlane.material.uniforms.uTime.value = elapsed;
     }
 
     if (this._cameraAnimating && this._cameraLookAt) {
@@ -1472,17 +1543,17 @@ void main(){
         }
       });
     }
+    this._inventionGroups.clear();
+    this._hitMeshes = [];
+    this._connections = [];
+    this._textSprites = [];
+    this._inventions = [];
     if (this._bubbleMesh) {
       this._scene.remove(this._bubbleMesh);
       this._bubbleMesh.geometry.dispose();
       this._bubbleMesh.material.dispose();
       this._bubbleMesh = null;
     }
-    this._inventionGroups.clear();
-    this._hitMeshes = [];
-    this._connections = [];
-    this._textSprites = [];
-    this._inventions = [];
     this._selectedPatent = null;
     this._hoveredPatent = null;
     this._hoveredInvention = null;

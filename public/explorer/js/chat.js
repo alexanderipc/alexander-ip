@@ -11,22 +11,59 @@ export class ChatPanel {
     this.portfolio = null;
     this.messages = []; // conversation history
     this.isStreaming = false;
+    this.isMobile = window.innerWidth <= 768;
 
     this.sendBtn.addEventListener('click', () => this.send());
     this.inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); }
     });
 
-    // Toggle button
+    // Toggle button (desktop)
     const toggle = chatEl.querySelector('.chat-toggle');
     if (toggle) toggle.addEventListener('click', () => this.el.classList.toggle('collapsed'));
+
+    // Mobile chat wiring
+    this._initMobileChat();
   }
 
-  setPortfolio(portfolio, contextId = null) {
+  _initMobileChat() {
+    const sheet = document.getElementById('mobile-chat-sheet');
+    const toggleBtn = document.getElementById('mobile-chat-toggle');
+    const sendBtn = document.getElementById('mobile-chat-send');
+    const inputEl = document.getElementById('mobile-chat-input');
+    if (!sheet || !toggleBtn) return;
+
+    this.mobileSheet = sheet;
+    this.mobileMessagesEl = document.getElementById('mobile-chat-messages');
+    this.mobileInputEl = inputEl;
+    this.mobileSendBtn = sendBtn;
+
+    toggleBtn.addEventListener('click', () => {
+      sheet.classList.toggle('expanded');
+      const chevron = toggleBtn.querySelector('.mobile-chevron');
+      if (chevron) chevron.textContent = sheet.classList.contains('expanded') ? '\u25BC' : '\u25B2';
+    });
+
+    sendBtn?.addEventListener('click', () => this._mobileSend());
+    inputEl?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this._mobileSend(); }
+    });
+  }
+
+  _mobileSend() {
+    if (!this.mobileInputEl) return;
+    const text = this.mobileInputEl.value.trim();
+    if (!text || this.isStreaming) return;
+    this.inputEl.value = text;
+    this.mobileInputEl.value = '';
+    this.send();
+  }
+
+  setPortfolio(portfolio) {
     this.portfolio = portfolio;
-    this.contextId = contextId;
     this.messages = [];
     this.messagesEl.innerHTML = '';
+    if (this.mobileMessagesEl) this.mobileMessagesEl.innerHTML = '';
     this._showStarters();
   }
 
@@ -53,15 +90,30 @@ export class ChatPanel {
         this.send();
       });
     });
+
+    // Mirror starters to mobile
+    if (this.mobileMessagesEl) {
+      this.mobileMessagesEl.innerHTML = html;
+      this.mobileMessagesEl.querySelectorAll('.chat-starter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.inputEl.value = btn.dataset.q;
+          this.send();
+        });
+      });
+    }
   }
 
   async send() {
     const text = this.inputEl.value.trim();
     if (!text || this.isStreaming) return;
 
-    // Remove starters
+    // Remove starters (desktop + mobile)
     const starters = this.messagesEl.querySelector('.chat-starters');
     if (starters) starters.remove();
+    if (this.mobileMessagesEl) {
+      const mobileStarters = this.mobileMessagesEl.querySelector('.chat-starters');
+      if (mobileStarters) mobileStarters.remove();
+    }
 
     // Add user message
     this.messages.push({ role: 'user', content: text });
@@ -73,7 +125,9 @@ export class ChatPanel {
     // Create assistant message placeholder
     const assistantEl = this._appendMessage('assistant', '');
     const contentEl = assistantEl.querySelector('.chat-content');
+    const mobileContentEl = assistantEl._mobileClone?.querySelector('.chat-content');
     contentEl.innerHTML = '<span class="chat-typing-dots"><span></span><span></span><span></span></span>';
+    if (mobileContentEl) mobileContentEl.innerHTML = contentEl.innerHTML;
 
     try {
       const res = await fetch('/api/explorer/chat', {
@@ -81,8 +135,7 @@ export class ChatPanel {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: this.messages,
-          portfolio: this.portfolio,
-          contextId: this.contextId
+          portfolio: this.portfolio
         })
       });
 
@@ -112,11 +165,16 @@ export class ChatPanel {
             const parsed = JSON.parse(data);
             if (parsed.text) {
               fullText += parsed.text;
-              contentEl.innerHTML = this._renderMarkdown(fullText);
+              const rendered = this._renderMarkdown(fullText);
+              contentEl.innerHTML = rendered;
+              if (mobileContentEl) mobileContentEl.innerHTML = rendered;
               this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+              if (this.mobileMessagesEl) this.mobileMessagesEl.scrollTop = this.mobileMessagesEl.scrollHeight;
             }
             if (parsed.error) {
-              contentEl.innerHTML += `<div class="chat-error">${parsed.error}</div>`;
+              const errHtml = `<div class="chat-error">${parsed.error}</div>`;
+              contentEl.innerHTML += errHtml;
+              if (mobileContentEl) mobileContentEl.innerHTML += errHtml;
             }
           } catch {}
         }
@@ -125,11 +183,18 @@ export class ChatPanel {
       this.messages.push({ role: 'assistant', content: fullText });
 
     } catch (err) {
-      contentEl.innerHTML = `<div class="chat-error">Error: ${err.message}</div>`;
+      const errHtml = `<div class="chat-error">Error: ${err.message}</div>`;
+      contentEl.innerHTML = errHtml;
+      if (mobileContentEl) mobileContentEl.innerHTML = errHtml;
     } finally {
       this.isStreaming = false;
       this.sendBtn.disabled = false;
-      this.inputEl.focus();
+      if (this.mobileSendBtn) this.mobileSendBtn.disabled = false;
+      if (window.innerWidth <= 768 && this.mobileInputEl) {
+        this.mobileInputEl.focus();
+      } else {
+        this.inputEl.focus();
+      }
     }
   }
 
@@ -148,11 +213,19 @@ export class ChatPanel {
       </div>`;
     this.messagesEl.appendChild(div);
     this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+
+    // Mirror to mobile
+    if (this.mobileMessagesEl) {
+      const clone = div.cloneNode(true);
+      this.mobileMessagesEl.appendChild(clone);
+      this.mobileMessagesEl.scrollTop = this.mobileMessagesEl.scrollHeight;
+      div._mobileClone = clone;
+    }
+
     return div;
   }
 
   _renderMarkdown(text) {
-    // Lightweight markdown: bold, italic, code, bullets, headers
     let html = text
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -163,12 +236,10 @@ export class ChatPanel {
       .replace(/^# (.+)$/gm, '<h2>$1</h2>')
       .replace(/^- (.+)$/gm, '<li>$1</li>')
       .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
-    // Collapse 2+ newlines into a single paragraph break, single newlines into <br>
     html = html
       .replace(/\n{3,}/g, '\n\n')
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br>');
-    // Wrap in <p> and clean up empty tags after block elements
     html = '<p>' + html + '</p>';
     html = html
       .replace(/<p><\/p>/g, '')

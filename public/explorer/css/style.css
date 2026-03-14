@@ -197,16 +197,6 @@ body {
   width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
   border: 1px dashed #6b7a8a; background: rgba(26,155,170,0.08);
 }
-/* ═══ Verified Badge ═══ */
-.dkg-badge {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 11px; color: #22c55e; font-weight: 600;
-  padding: 6px 12px; margin-bottom: 16px;
-  background: rgba(34,197,94,0.08);
-  border: 1px solid rgba(34,197,94,0.2);
-  border-radius: 8px;
-}
-
 /* ═══ Tooltip ═══ */
 .tooltip {
   position: fixed; z-index: 500;
@@ -560,301 +550,200 @@ body {
 ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #334155; }
 
-/* ═══ Waitlist Button & Modal ═══ */
-.waitlist-btn {
-  padding: 0 20px;
-  height: 48px;
-  border-radius: 10px;
-  background: transparent;
-  border: 1.5px solid #3b82f6;
-  color: #3b82f6;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.waitlist-btn:hover {
-  background: #1e40af;
-  border-color: #1e40af;
-  color: #f0f4fa;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
-}
+/* ═══ Mobile-only elements (hidden on desktop) ═══ */
+.mobile-only { display: none; }
 
-.waitlist-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-.waitlist-overlay.open {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.waitlist-modal {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 36px 32px;
-  max-width: 420px;
-  width: 90%;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
-  position: relative;
-}
-
-.waitlist-close {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px 8px;
-  line-height: 1;
-  transition: color 0.15s;
-}
-.waitlist-close:hover { color: #334155; }
-
-.waitlist-title {
-  margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 700;
-  color: #0f1729;
-}
-.waitlist-sub {
-  margin: 0 0 24px;
-  font-size: 15px;
-  color: #64748b;
-  line-height: 1.5;
-}
-
-.waitlist-input {
-  display: block;
-  width: 100%;
-  height: 48px;
-  padding: 0 16px;
-  margin-bottom: 12px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 15px;
-  color: #0f1729;
-  background: #f8fafc;
-  transition: border-color 0.15s;
-  box-sizing: border-box;
-}
-.waitlist-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  background: #ffffff;
-}
-.waitlist-input::placeholder { color: #94a3b8; }
-
-.waitlist-submit {
-  display: block;
-  width: 100%;
-  height: 48px;
-  border: none;
-  border-radius: 10px;
-  background: #1e40af;
-  color: #f0f4fa;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
-  margin-top: 4px;
-}
-.waitlist-submit:hover {
-  background: #2563eb;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
-}
-.waitlist-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.waitlist-message {
-  font-size: 14px;
-  margin-top: 16px;
-  text-align: center;
-  min-height: 20px;
-}
-
-/* ═══ Topbar Waitlist Button ═══ */
-.topbar-waitlist-btn {
-  height: 32px;
-  padding: 0 14px;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid #3b82f6;
-  color: #60a5fa;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  margin-left: 4px;
-}
-.topbar-waitlist-btn:hover {
-  background: #1e40af;
-  border-color: #1e40af;
-  color: #e0e6f0;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-}
-
-/* ═══ Legend Toggle Button (mobile) ═══ */
-.legend-toggle {
-  display: none; /* shown only on mobile */
-  position: absolute; bottom: 16px; left: 16px;
-  width: 36px; height: 36px; border-radius: 8px;
-  background: rgba(255,255,255,0.92); border: 1px solid #d0d8e0;
-  backdrop-filter: blur(8px); z-index: 10; cursor: pointer;
-  align-items: center; justify-content: center;
-  font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-/* ═══ Mobile Chat Bar (collapsed state) ═══ */
-.chat-mobile-bar {
-  display: none; /* shown only on mobile when chat collapsed */
-  align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 44px;
-  background: rgba(15,20,32,0.97); border-top: 1px solid #1e293b;
-  cursor: pointer; flex-shrink: 0;
-}
-.chat-mobile-bar-title {
-  font-size: 13px; font-weight: 600; color: #e0e6f0;
-  display: flex; align-items: center; gap: 6px;
-}
-.chat-mobile-bar-arrow {
-  color: #64748b; font-size: 14px; transition: transform 0.2s;
-}
-
-/* ═══ Mobile Responsive ═══ */
+/* ═══════════════════════════════════════════════════
+   MOBILE LAYOUT — ≤768px
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* ── Landing ── */
-  .landing { padding: 16px; }
-  .landing-title { font-size: 22px; }
-  .landing-sub { font-size: 13px; margin-bottom: 20px; }
-  .landing-content { max-width: 100%; }
 
-  .search-box {
-    flex-wrap: wrap; max-width: 100%;
-  }
-  .search-box input {
-    width: 100%; flex: none; height: 44px; font-size: 14px;
-  }
-  .search-box button {
-    flex: 1; height: 44px; font-size: 14px; min-width: 0;
-  }
-  .waitlist-btn { flex: 1; font-size: 13px; padding: 0 14px; }
+  /* ── Hide desktop-only elements ── */
+  .chat-panel,
+  .detail-panel,
+  .legend,
+  #popout-el,
+  .tooltip,
+  .topbar-right,
+  .topbar-center,
+  .topbar-search-btn { display: none !important; }
 
-  .landing-examples {
-    flex-wrap: wrap; justify-content: center;
-    gap: 6px; margin-top: 12px;
-  }
-  .landing-examples span:first-child { width: 100%; text-align: center; }
+  /* ── Show mobile elements ── */
+  .mobile-only { display: flex; flex-direction: column; }
 
-  .landing-footer { flex-wrap: wrap; justify-content: center; }
+  /* ── Topbar: compact ── */
+  .topbar { padding: 0 8px; gap: 8px; }
+  .topbar-search { width: 100%; flex: 1; }
 
-  /* ── Topbar ── */
-  .topbar {
-    flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px;
-  }
-  .topbar-left {
-    flex: 1; min-width: 0; flex-wrap: nowrap;
-  }
-  .topbar-search {
-    width: 0; flex: 1; min-width: 80px; height: 32px; font-size: 12px;
-  }
-  .topbar-waitlist-btn { display: none; }
-  .topbar-center { display: none; }
-  .topbar-right {
-    width: 100%; justify-content: flex-start; gap: 10px;
-    padding-top: 4px; border-top: 1px solid #1e293b;
-  }
-  .filter-toggle-label { font-size: 11px; }
+  /* ── Workspace stacks vertically ── */
+  .workspace { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+  .main-content { flex-direction: column; flex: 1; min-height: 0; }
 
-  /* ── Main Layout ── */
-  .main-content {
-    flex-direction: column;
+  /* ── 3D Viz: top portion ── */
+  .viz-area { flex: none; height: 45vh; height: 45dvh; min-height: 200px; }
+
+  /* ── Mobile Section Handles (shared by list + chat) ── */
+  .mobile-section-handle {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; height: 44px; padding: 0 14px;
+    background: rgba(15,20,32,0.97); border: none;
+    border-top: 1px solid #1e293b;
+    color: #e0e6f0; font-size: 14px; font-weight: 600;
+    cursor: pointer; flex-shrink: 0;
+    text-align: left;
+  }
+  .mobile-handle-icon { font-size: 16px; }
+  .mobile-handle-text { flex: 1; }
+  .mobile-handle-count { font-size: 11px; color: #64748b; font-weight: 400; }
+  .mobile-chevron {
+    font-size: 10px; color: #64748b;
+    transition: transform 0.3s;
   }
 
-  /* ── Viz Area ── */
-  .viz-area {
-    flex: 1; min-height: 45vh;
+  /* ── Mobile Patent List ── */
+  #mobile-patent-list {
+    flex: 1; min-height: 0;
+    background: #0f1420;
+  }
+  #mobile-patent-list .mobile-section-body {
+    flex: 1; overflow-y: auto; min-height: 0;
+    padding: 0;
+  }
+  /* Collapsed state */
+  #mobile-patent-list.collapsed .mobile-section-body { display: none; }
+  #mobile-patent-list.collapsed .mobile-chevron { transform: rotate(180deg); }
+  #mobile-patent-list.collapsed { flex: none; }
+
+  #mobile-patent-items {
+    list-style: none; margin: 0; padding: 0;
+  }
+  .mobile-patent-item {
+    border-bottom: 1px solid #1e293b;
+    cursor: pointer;
+  }
+  .mobile-patent-item-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+  }
+  .mobile-patent-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .mobile-patent-number {
+    font-family: 'Consolas', 'Fira Code', monospace;
+    font-size: 13px; color: #c8d0e0; flex: 1;
+  }
+  .mobile-patent-arrow {
+    font-size: 10px; color: #475569;
+    transition: transform 0.2s;
+  }
+  .mobile-patent-item.expanded .mobile-patent-arrow {
+    transform: rotate(90deg);
+  }
+  .mobile-patent-detail {
+    display: none; padding: 0 14px 12px 32px;
+  }
+  .mobile-patent-item.expanded .mobile-patent-detail {
+    display: block;
+  }
+  .mobile-patent-title {
+    font-size: 13px; color: #94a3b8; line-height: 1.4; margin-bottom: 6px;
+  }
+  .mobile-patent-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: #60a5fa; text-decoration: none;
+  }
+  .mobile-patent-link:hover { text-decoration: underline; }
+  .mobile-patent-status {
+    font-size: 10px; font-weight: 600; margin-top: 4px;
   }
 
-  /* ── Legend ── */
-  .legend { display: none; }
-  .legend.mobile-visible {
-    display: block; bottom: 56px; left: 12px;
-    padding: 8px 12px; font-size: 10px;
-  }
-  .legend.mobile-visible .legend-title { font-size: 9px; }
-  .legend.mobile-visible .legend-item { font-size: 10px; gap: 6px; }
-  .legend-toggle { display: flex; }
-
-  /* ── Chat Panel ── */
-  .chat-panel {
-    width: 100% !important; flex-shrink: 0;
-    max-height: 44px; /* collapsed by default — just the bar */
-    overflow: hidden;
+  /* ── Mobile Chat Sheet ── */
+  #mobile-chat-sheet {
+    flex-shrink: 0;
+    background: rgba(15,20,32,0.97);
+    max-height: 70vh; max-height: 70dvh;
     transition: max-height 0.3s ease;
   }
-  .chat-panel .chat-header,
-  .chat-panel .chat-messages,
-  .chat-panel .chat-input-area {
-    display: none; /* hidden when collapsed */
+  /* Collapsed: just the handle */
+  #mobile-chat-sheet:not(.expanded) {
+    max-height: 44px; overflow: hidden;
   }
-  .chat-mobile-bar { display: flex; }
+  #mobile-chat-sheet:not(.expanded) .mobile-chevron { transform: rotate(180deg); }
 
-  .chat-panel.mobile-expanded {
-    max-height: 50vh;
+  #mobile-chat-sheet.expanded .mobile-section-body {
+    display: flex; flex-direction: column;
+    height: calc(70vh - 44px); height: calc(70dvh - 44px);
   }
-  .chat-panel.mobile-expanded .chat-header,
-  .chat-panel.mobile-expanded .chat-messages,
-  .chat-panel.mobile-expanded .chat-input-area {
-    display: flex;
+  #mobile-chat-sheet:not(.expanded) .mobile-section-body {
+    display: none;
   }
-  .chat-panel.mobile-expanded .chat-header { display: block; }
-  .chat-panel.mobile-expanded .chat-mobile-bar { display: none; }
 
-  .chat-panel.collapsed { width: 100% !important; }
-  .chat-toggle { display: none; } /* hide desktop toggle on mobile */
-
-  /* When detail panel is open, don't add spacer on mobile */
-  .chat-panel.detail-open::before { display: none; }
-
-  /* ── Detail Panel ── */
-  .detail-panel {
-    position: fixed; top: auto; right: 0;
-    bottom: -70vh; left: 0; width: 100%;
-    height: 70vh;
-    border-left: none; border-top: 2px solid rgba(59,130,246,0.3);
-    transition: bottom 0.3s cubic-bezier(0.4,0,0.2,1);
+  .mobile-chat-messages {
+    flex: 1; overflow-y: auto; padding: 12px 14px;
+    min-height: 0;
   }
-  .detail-panel.open { bottom: 0; right: 0; }
+  /* Reuse desktop chat styles inside mobile */
+  .mobile-chat-messages .chat-message { display: flex; gap: 10px; margin-bottom: 10px; }
+  .mobile-chat-messages .chat-avatar {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .mobile-chat-messages .chat-user .chat-avatar { background: #1e293b; color: #94a3b8; }
+  .mobile-chat-messages .chat-assistant .chat-avatar { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .mobile-chat-messages .chat-bubble { flex: 1; min-width: 0; }
+  .mobile-chat-messages .chat-content {
+    font-size: 13px; color: #c8d0e0; line-height: 1.6; word-wrap: break-word;
+  }
+  .mobile-chat-messages .chat-content strong { color: #e0e6f0; }
+  .mobile-chat-messages .chat-content p { margin: 0 0 6px; }
+  .mobile-chat-messages .chat-content ul { padding-left: 16px; margin: 4px 0; }
+  .mobile-chat-messages .chat-error { color: #ef4444; font-size: 12px; }
+  .mobile-chat-messages .chat-starters { padding: 4px 0; }
+  .mobile-chat-messages .chat-starters-title {
+    font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 600;
+  }
+  .mobile-chat-messages .chat-starter {
+    display: block; width: 100%; text-align: left; padding: 10px 14px;
+    background: #111827; border: 1px solid #1e293b; border-radius: 8px;
+    color: #94a3b8; font-size: 13px; cursor: pointer; margin-bottom: 6px;
+  }
+  .mobile-chat-messages .chat-typing-dots {
+    display: inline-flex; gap: 4px; align-items: center; padding: 4px 0;
+  }
+  .mobile-chat-messages .chat-typing-dots span {
+    width: 6px; height: 6px; border-radius: 50%; background: #3b82f6;
+    animation: typingBounce 1.4s ease-in-out infinite;
+  }
+  .mobile-chat-messages .chat-typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+  .mobile-chat-messages .chat-typing-dots span:nth-child(3) { animation-delay: 0.32s; }
 
-  /* Hide HUD brackets on mobile */
-  .detail-panel::before, .detail-panel::after { display: none; }
+  .mobile-chat-input-area {
+    padding: 10px 14px; border-top: 1px solid #1e293b;
+    display: flex; gap: 8px; flex-shrink: 0;
+  }
+  .mobile-chat-input {
+    flex: 1; resize: none; border-radius: 8px;
+    background: #111827; border: 1px solid #1e293b;
+    color: #c8d0e0; padding: 8px 12px; font-size: 13px;
+    font-family: inherit; outline: none;
+  }
+  .mobile-chat-input:focus { border-color: #3b82f6; }
+  .mobile-chat-input::placeholder { color: #475569; }
+  .mobile-chat-send-btn {
+    height: 38px; padding: 0 16px; border-radius: 8px;
+    background: #1e40af; border: none; color: #e0e6f0;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    align-self: flex-end;
+  }
+  .mobile-chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* ── Tooltip ── */
-  .tooltip { display: none !important; } /* hover not useful on touch */
-
-  /* ── Waitlist Modal ── */
-  .waitlist-modal { padding: 24px 20px; }
-}
-
-@media (max-width: 480px) {
-  .landing-title { font-size: 20px; }
-  .topbar-search { font-size: 11px; }
-  .filter-toggle-label { font-size: 10px; gap: 3px; }
+  /* ── Landing screen mobile adjustments ── */
+  .landing-title { font-size: 22px; }
+  .landing-sub { font-size: 13px; margin-bottom: 20px; }
+  .search-box { flex-direction: column; }
+  .search-box input { width: 100%; }
+  .search-box button { width: 100%; }
+  .landing-examples { flex-wrap: wrap; }
+  .landing-footer { flex-wrap: wrap; justify-content: center; }
 }
