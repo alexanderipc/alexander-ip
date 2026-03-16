@@ -69,8 +69,7 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US12381417B2", label: "US 12,381,417 B2", title: "Nano Inductance Cells", url: patentUrl("US12381417B2") },
       { number: "US12354583B2", label: "US 12,354,583 B2", title: "Voice Isolation Mask", url: patentUrl("US12354583B2") },
       { number: "US12349766B2", label: "US 12,349,766 B2", title: "Cleated Shoe Cover", url: patentUrl("US12349766B2") },
-      { number: "US12337915B2", label: "US 12,337,915 B2", title: "Universal Docking Bracket", url: patentUrl("US12337915B2") },
-      { number: "US12318654B2", label: "US 12,318,654 B2", title: "Exercise Handle", url: patentUrl("US12318654B2") },
+{ number: "US12318654B2", label: "US 12,318,654 B2", title: "Exercise Handle", url: patentUrl("US12318654B2") },
       { number: "US12277273B2", label: "US 12,277,273 B2", title: "Haptic Device", url: patentUrl("US12277273B2") },
       { number: "US12236923B2", label: "US 12,236,923 B2", title: "Music Production Device", url: patentUrl("US12236923B2") },
       { number: "US12213474B2", label: "US 12,213,474 B2", title: "Bait Station", url: patentUrl("US12213474B2") },
@@ -102,7 +101,6 @@ const jurisdictions: Jurisdiction[] = [
       { number: "US2025041653A1", label: "US 2025/041653 A1", title: "Exercise Platform", url: patentUrl("US2025041653A1") },
       { number: "US2025387034A1", label: "US 2025/387034 A1", title: "Heart Rate Sharing", url: patentUrl("US2025387034A1") },
       { number: "US2025221384A1", label: "US 2025/221384 A1", title: "Smart Dog Collar", url: patentUrl("US2025221384A1") },
-      { number: "US2025353392A1", label: "US 2025/353392 A1", title: "EV Docking System", url: patentUrl("US2025353392A1") },
       { number: "US2025251701A1", label: "US 2025/251701 A1", title: "3D Watch Winder", url: patentUrl("US2025251701A1") },
       { number: "US2025029518A1", label: "US 2025/029518 A1", title: "Magnetic Collectible Display", url: patentUrl("US2025029518A1") },
       { number: "US2025349225A1", label: "US 2025/349225 A1", title: "Musical Instrument Layouts", url: patentUrl("US2025349225A1") },
@@ -158,13 +156,11 @@ const jurisdictions: Jurisdiction[] = [
     countryCodes: ["036", "554"],
     patents: [
       // ── Granted ──
-      { number: "AU2022440230B2", label: "AU 2022440230 B2", title: "Vehicle Docking Module", url: patentUrl("AU2022440230B2") },
       { number: "AU2023361441B2", label: "AU 2023361441 B2", title: "Valve Control System", url: patentUrl("AU2023361441B2") },
       { number: "AU2020471661B2", label: "AU 2020471661 B2", title: "Bait Station", url: patentUrl("AU2020471661B2") },
       { number: "NZ799057A", label: "NZ 799,057 A", title: "Bait Station", url: patentUrl("NZ799057A") },
       // ── Published ──
       { number: "AU2025202303A1", label: "AU 2025202303 A1", title: "Cat Gate System", url: patentUrl("AU2025202303A1") },
-      { number: "AU2022440229A1", label: "AU 2022440229 A1", title: "EV Docking System", url: patentUrl("AU2022440229A1") },
       { number: "AU2024277082A1", label: "AU 2024277082 A1", title: "Exercise Handle", url: patentUrl("AU2024277082A1") },
       { number: "AU2023425963A1", label: "AU 2023425963 A1", title: "Modular Smart Frame", url: patentUrl("AU2023425963A1") },
       { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
@@ -185,7 +181,6 @@ const jurisdictions: Jurisdiction[] = [
       { number: "CA3246062A1", label: "CA 3,246,062 A1", title: "Animal Trap Monitor", url: patentUrl("CA3246062A1") },
       { number: "CA3267615A1", label: "CA 3,267,615 A1", title: "Valve Control System", url: patentUrl("CA3267615A1") },
       { number: "CA3192924A1", label: "CA 3,192,924 A1", title: "Bait Station", url: patentUrl("CA3192924A1") },
-      { number: "CA3250800A1", label: "CA 3,250,800 A1", title: "EV Docking Module", url: patentUrl("CA3250800A1") },
     ],
   },
   {
