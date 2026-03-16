@@ -299,6 +299,41 @@ export async function updateNotificationPreferences(
   return { success: true };
 }
 
+/* ── Update Billing Address ─────────────────────────────────── */
+
+export interface BillingAddress {
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  postal_code: string;
+  country: string;
+}
+
+export async function updateBillingAddress(address: BillingAddress) {
+  const { user } = await requireClient();
+  const adminClient = createAdminClient();
+
+  // Sanitise: trim strings, enforce max lengths
+  const clean = {
+    address_line1: (address.address_line1 || "").trim().slice(0, 200),
+    address_line2: (address.address_line2 || "").trim().slice(0, 200),
+    city: (address.city || "").trim().slice(0, 100),
+    postal_code: (address.postal_code || "").trim().slice(0, 20),
+    country: (address.country || "").trim().slice(0, 100),
+  };
+
+  const { error } = await adminClient
+    .from("profiles")
+    .update(clean)
+    .eq("id", user.id);
+
+  if (error) throw new Error(`Failed to update billing address: ${error.message}`);
+
+  revalidatePath("/portal/settings");
+
+  return { success: true };
+}
+
 /* ── Toggle Client Notification Mute ─────────────────────────── */
 
 export async function toggleClientNotificationMute(projectId: string) {

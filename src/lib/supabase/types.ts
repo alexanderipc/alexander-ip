@@ -60,6 +60,11 @@ export interface Profile {
   company: string | null;
   phone: string | null;
   notes: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
   notification_preferences: NotificationPreferences;
   created_at: string;
   updated_at: string;

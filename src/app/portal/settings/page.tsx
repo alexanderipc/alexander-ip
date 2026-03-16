@@ -5,6 +5,7 @@ import { Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import NotificationSettings from "@/components/portal/NotificationSettings";
 import PasswordSettings from "@/components/portal/PasswordSettings";
+import BillingAddressSettings from "@/components/portal/BillingAddressSettings";
 import type { NotificationPreferences } from "@/lib/supabase/types";
 import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/supabase/types";
 
@@ -25,13 +26,21 @@ export default async function SettingsPage() {
   const adminClient = createAdminClient();
   const { data: profile } = await adminClient
     .from("profiles")
-    .select("notification_preferences")
+    .select("notification_preferences, address_line1, address_line2, city, postal_code, country")
     .eq("id", user.id)
     .single();
 
   const prefs: NotificationPreferences =
     (profile?.notification_preferences as NotificationPreferences | null) ??
     DEFAULT_NOTIFICATION_PREFERENCES;
+
+  const billingAddress = {
+    address_line1: (profile?.address_line1 as string) || "",
+    address_line2: (profile?.address_line2 as string) || "",
+    city: (profile?.city as string) || "",
+    postal_code: (profile?.postal_code as string) || "",
+    country: (profile?.country as string) || "",
+  };
 
   return (
     <div className="max-w-2xl">
@@ -45,8 +54,13 @@ export default async function SettingsPage() {
 
       <h1 className="text-2xl font-bold text-navy mb-8">Settings</h1>
 
-      {/* Notification preferences */}
+      {/* Billing address */}
       <div className="mb-10">
+        <BillingAddressSettings initial={billingAddress} />
+      </div>
+
+      {/* Notification preferences */}
+      <div className="border-t border-slate-200 pt-8 mb-10">
         <NotificationSettings initial={prefs} />
       </div>
 

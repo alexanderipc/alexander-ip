@@ -32,6 +32,36 @@ function formatBillingAddress(session: Stripe.Checkout.Session): string | null {
   return parts.length > 0 ? parts.join("\n") : null;
 }
 
+/* ── Save billing address to profile ──────────────────────────── */
+
+async function saveBillingAddressToProfile(
+  adminClient: ReturnType<typeof createAdminClient>,
+  profileId: string,
+  session: Stripe.Checkout.Session
+) {
+  const addr = session.customer_details?.address;
+  if (!addr) return;
+
+  // Only update fields that Stripe provided (don't overwrite existing data with nulls)
+  const update: Record<string, string | null> = {};
+  if (addr.line1 !== undefined) update.address_line1 = addr.line1;
+  if (addr.line2 !== undefined) update.address_line2 = addr.line2;
+  if (addr.city !== undefined) update.city = addr.city;
+  if (addr.postal_code !== undefined) update.postal_code = addr.postal_code;
+  if (addr.country !== undefined) update.country = addr.country;
+
+  if (Object.keys(update).length === 0) return;
+
+  const { error } = await adminClient
+    .from("profiles")
+    .update(update)
+    .eq("id", profileId);
+
+  if (error) {
+    console.error("[webhook] Failed to save billing address:", error.message);
+  }
+}
+
 /* ── Service mapping ─────────────────────────────────────────── */
 
 interface ServiceMapping {
@@ -247,6 +277,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     clientId = newUser.user.id;
     console.log(`[webhook] Created user: ${clientId}`);
   }
+
+  // 4b. Save billing address from Stripe to profile
+  await saveBillingAddressToProfile(adminClient, clientId, session);
 
   // 5. Calculate delivery date
   // Use timeline from checkout metadata (rush/emergency), fall back to service default
@@ -502,6 +535,9 @@ async function handleOfferPayment(
     }
     clientId = newUser.user.id;
   }
+
+  // Save billing address from Stripe to profile
+  await saveBillingAddressToProfile(adminClient, clientId, session);
 
   // ═══════════════════════════════════════════════════════════════
   // SINGLE PAYMENT (installments <= 1) — original flow, unchanged

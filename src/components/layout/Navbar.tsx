@@ -148,13 +148,13 @@ export default function Navbar() {
               Portfolio Explorer
             </Link>
             <Link
-              href="/contact"
+              href={isLoggedIn ? "/portal" : "/auth/login"}
               className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-navy rounded-md hover:bg-slate-50 transition-colors"
             >
-              Get in Touch
-            </Link>
-            <Button href={isLoggedIn ? "/portal" : "/auth/login"} size="sm">
               {isLoggedIn ? "My Projects" : "Login / Register"}
+            </Link>
+            <Button href="/contact" size="sm">
+              Get in Touch
             </Button>
           </div>
 
@@ -231,15 +231,15 @@ export default function Navbar() {
               Portfolio Explorer
             </Link>
             <Link
-              href="/contact"
+              href={isLoggedIn ? "/portal" : "/auth/login"}
               className="block px-3 py-2 text-base font-medium text-slate-500 hover:text-navy hover:bg-slate-50 rounded-md"
               onClick={() => setMobileOpen(false)}
             >
-              Get in Touch
+              {isLoggedIn ? "My Projects" : "Login / Register"}
             </Link>
             <div className="pt-3">
-              <Button href={isLoggedIn ? "/portal" : "/auth/login"} size="md" className="w-full">
-                {isLoggedIn ? "My Projects" : "Login / Register"}
+              <Button href="/contact" size="md" className="w-full">
+                Get in Touch
               </Button>
             </div>
           </div>
