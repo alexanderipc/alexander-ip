@@ -42,6 +42,7 @@ export default function NewOfferPage() {
   const [timelineDays, setTimelineDays] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [currency, setCurrency] = useState("USD");
+  const [installments, setInstallments] = useState<string>("1");
 
   function handleServiceChange(value: ServiceType) {
     setServiceType(value);
@@ -210,13 +211,13 @@ export default function NewOfferPage() {
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
             Pricing & Timeline
           </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <label
                 htmlFor="amount"
                 className="block text-sm font-medium text-slate-700 mb-1"
               >
-                Price ({symbol}) *
+                Total Price ({symbol}) *
               </label>
               <input
                 id="amount"
@@ -256,6 +257,34 @@ export default function NewOfferPage() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label
+                htmlFor="installments"
+                className="block text-sm font-medium text-slate-700 mb-1"
+              >
+                Installments
+              </label>
+              <select
+                id="installments"
+                name="installments"
+                value={installments}
+                onChange={(e) => setInstallments(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="1">Single payment</option>
+                {[2, 3, 4, 5, 6, 8, 10, 12].map((n) => (
+                  <option key={n} value={String(n)}>
+                    {n} installments
+                  </option>
+                ))}
+              </select>
+              {parseInt(installments) > 1 && amount && parseFloat(amount) > 0 && (
+                <p className="text-xs text-blue-600 mt-1">
+                  {parseInt(installments)} payments of {symbol}
+                  {(parseFloat(amount) / parseInt(installments)).toFixed(2)} each
+                </p>
+              )}
             </div>
             <div>
               <label

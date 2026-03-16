@@ -829,6 +829,8 @@ export async function createOffer(formData: FormData) {
   const currency = (formData.get("currency") as string) || "USD";
   const timelineDaysRaw = formData.get("timeline_days") as string;
   const timelineDays = timelineDaysRaw ? parseInt(timelineDaysRaw, 10) : null;
+  const installmentsRaw = formData.get("installments") as string;
+  const installments = installmentsRaw ? Math.max(1, parseInt(installmentsRaw, 10)) : 1;
 
   // Convert from whole currency (e.g. 850.00) to smallest unit (e.g. 85000 pence)
   const amount = Math.round(amountRaw * 100);
@@ -849,6 +851,8 @@ export async function createOffer(formData: FormData) {
       amount,
       currency,
       timeline_days: timelineDays,
+      installments,
+      installments_paid: 0,
       created_by: user.id,
     })
     .select()
@@ -862,7 +866,9 @@ export async function createOffer(formData: FormData) {
 
   // Format amount for display
   const symbol = CURRENCY_SYMBOLS[currency] || "$";
-  const formattedAmount = `${symbol}${amountRaw.toFixed(2)}`;
+  const formattedAmount = installments > 1
+    ? `${symbol}${amountRaw.toFixed(2)} (${installments} installments of ${symbol}${(amountRaw / installments).toFixed(2)})`
+    : `${symbol}${amountRaw.toFixed(2)}`;
   const offerUrl = `${OFFER_BASE_URL}/${offer.token}`;
 
   // Send email
@@ -919,7 +925,15 @@ export async function resendOfferEmail(offerId: string) {
   if (offer.status !== "pending") throw new Error("Can only resend pending offers");
 
   const symbol = CURRENCY_SYMBOLS[offer.currency] || "$";
-  const formattedAmount = `${symbol}${(offer.amount / 100).toFixed(2)}`;
+  const totalInstallments = offer.installments || 1;
+  const paidInstallments = offer.installments_paid || 0;
+  const remaining = totalInstallments - paidInstallments;
+  const remainingAmount = (offer.amount / 100) * (remaining / totalInstallments);
+  const formattedAmount = totalInstallments > 1 && paidInstallments > 0
+    ? `${symbol}${remainingAmount.toFixed(2)} remaining (${remaining} of ${totalInstallments} installments)`
+    : totalInstallments > 1
+    ? `${symbol}${(offer.amount / 100).toFixed(2)} (${totalInstallments} installments of ${symbol}${(offer.amount / 100 / totalInstallments).toFixed(2)})`
+    : `${symbol}${(offer.amount / 100).toFixed(2)}`;
   const offerUrl = `${OFFER_BASE_URL}/${offer.token}`;
 
   await sendOfferEmail(offer.client_email, {

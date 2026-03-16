@@ -5,9 +5,11 @@ import { useState } from "react";
 export default function OfferPayButton({
   token,
   amount,
+  installmentLabel,
 }: {
   token: string;
   amount: string;
+  installmentLabel?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export default function OfferPayButton({
         disabled={loading}
         className="w-full py-4 rounded-xl bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {loading ? "Redirecting to payment..." : `Pay ${amount}`}
+        {loading ? "Redirecting to payment..." : installmentLabel || `Pay ${amount}`}
       </button>
       {error && (
         <p className="mt-3 text-sm text-red-600 text-center">{error}</p>

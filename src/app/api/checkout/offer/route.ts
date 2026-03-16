@@ -53,9 +53,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check expiry
-    if (offer.expires_at && new Date(offer.expires_at) < new Date()) {
-      // Lazy expiry — mark as expired
+    // Installment calculations
+    const totalInstallments = offer.installments || 1;
+    const paidInstallments = offer.installments_paid || 0;
+    const isInstallmentPlan = totalInstallments > 1;
+
+    // Safety: all installments already paid?
+    if (paidInstallments >= totalInstallments) {
+      return NextResponse.json(
+        { error: "All installments have already been paid." },
+        { status: 400 }
+      );
+    }
+
+    const nextInstallment = paidInstallments + 1;
+
+    // Check expiry — only before first payment
+    if (
+      paidInstallments === 0 &&
+      offer.expires_at &&
+      new Date(offer.expires_at) < new Date()
+    ) {
       await adminClient
         .from("offers")
         .update({ status: "expired", updated_at: new Date().toISOString() })
@@ -67,27 +85,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Stripe checkout session
-    const symbol = CURRENCY_SYMBOLS[offer.currency] || "$";
-    const displayAmount = (offer.amount / 100).toFixed(2);
+    // Compute amount to charge
+    let chargeAmount: number;
+    let productName: string;
+    let productDescription: string;
 
+    if (isInstallmentPlan) {
+      const perInstallment = Math.ceil(offer.amount / totalInstallments);
+      const lastInstallment = offer.amount - perInstallment * (totalInstallments - 1);
+      chargeAmount = nextInstallment === totalInstallments ? lastInstallment : perInstallment;
+      productName = `${offer.title} \u2014 Installment ${nextInstallment} of ${totalInstallments}`;
+      const symbol = CURRENCY_SYMBOLS[offer.currency] || "$";
+      productDescription = `Installment ${nextInstallment} of ${totalInstallments} \u2014 ${symbol}${(chargeAmount / 100).toFixed(2)}`;
+    } else {
+      chargeAmount = offer.amount;
+      productName = offer.title;
+      const symbol = CURRENCY_SYMBOLS[offer.currency] || "$";
+      productDescription = offer.description || `Custom project \u2014 ${symbol}${(offer.amount / 100).toFixed(2)}`;
+    }
+
+    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
           price_data: {
             currency: offer.currency.toLowerCase(),
             product_data: {
-              name: offer.title,
-              description: offer.description || `Custom project — ${symbol}${displayAmount}`,
+              name: productName,
+              description: productDescription,
             },
-            unit_amount: offer.amount,
+            unit_amount: chargeAmount,
             tax_behavior: "exclusive",
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${BASE_URL}/offer/${token}/success`,
+      success_url: isInstallmentPlan
+        ? `${BASE_URL}/offer/${token}/success?installment=${nextInstallment}&total=${totalInstallments}&token=${token}`
+        : `${BASE_URL}/offer/${token}/success`,
       cancel_url: `${BASE_URL}/offer/${token}`,
       customer_email: offer.client_email,
       customer_creation: "always",
@@ -99,6 +135,10 @@ export async function POST(request: NextRequest) {
         service: offer.service_type,
         source: "alexander-ip.com/offer",
         currency: offer.currency.toLowerCase(),
+        ...(isInstallmentPlan && {
+          installment_number: String(nextInstallment),
+          total_installments: String(totalInstallments),
+        }),
       },
     });
 

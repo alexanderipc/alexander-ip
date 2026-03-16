@@ -49,7 +49,7 @@ const SERVICE_MAP: Record<string, ServiceMapping> = {
   },
   "fto-landscape": {
     serviceType: "fto",
-    title: "FTO — Patent Landscape",
+    title: "FTO \u2014 Patent Landscape",
   },
   "fto-simple": {
     serviceType: "fto",
@@ -326,10 +326,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         "",
         "Here's how to get the most out of your portal:",
         "",
-        "- **Documents** — Your VAT invoice is already in the Documents section. Upload any relevant files (invention descriptions, sketches, prior art, etc.) here too — it's the easiest way to share materials with me.",
-        "- **Messages** — Use this chat to send me questions or additional information at any time. I'll respond as soon as I can.",
-        "- **Progress updates** — You'll see updates in the feed on this page, and receive email notifications at key milestones.",
-        "- **Notifications** — Toggle email alerts on or off using the bell icon on this page.",
+        "- **Documents** \u2014 Your VAT invoice is already in the Documents section. Upload any relevant files (invention descriptions, sketches, prior art, etc.) here too \u2014 it's the easiest way to share materials with me.",
+        "- **Messages** \u2014 Use this chat to send me questions or additional information at any time. I'll respond as soon as I can.",
+        "- **Progress updates** \u2014 You'll see updates in the feed on this page, and receive email notifications at key milestones.",
+        "- **Notifications** \u2014 Toggle email alerts on or off using the bell icon on this page.",
         "",
         "If you have any questions at all, just drop me a message here.",
         "",
@@ -423,6 +423,28 @@ async function handleOfferPayment(
     return;
   }
 
+  // ── Determine if this is an installment payment ──
+  const totalInstallments = offer.installments || 1;
+  const isInstallmentPlan = totalInstallments > 1;
+  const installmentNumber = session.metadata?.installment_number
+    ? parseInt(session.metadata.installment_number, 10)
+    : 1;
+
+  // ── Installment idempotency check ──
+  if (isInstallmentPlan) {
+    const { data: existingPayment } = await adminClient
+      .from("installment_payments")
+      .select("id")
+      .eq("offer_id", offerId)
+      .eq("installment_number", installmentNumber)
+      .maybeSingle();
+
+    if (existingPayment) {
+      console.log(`[webhook] Installment ${installmentNumber} already recorded for offer ${offerId}, skipping`);
+      return;
+    }
+  }
+
   // 3. Find or create client
   let clientId: string;
   const email = offer.client_email;
@@ -459,53 +481,250 @@ async function handleOfferPayment(
     clientId = newUser.user.id;
   }
 
-  // 4. Calculate delivery date
-  const serviceType = (offer.service_type || "custom") as ServiceType;
-  const timelineDays =
-    offer.timeline_days || DEFAULT_TIMELINES[serviceType] || null;
-  const startDate = new Date().toISOString().split("T")[0];
-  const estimatedDelivery = timelineDays
-    ? calculateDeliveryDate(startDate, timelineDays)
-    : null;
+  // ═══════════════════════════════════════════════════════════════
+  // SINGLE PAYMENT (installments <= 1) — original flow, unchanged
+  // ═══════════════════════════════════════════════════════════════
+  if (!isInstallmentPlan) {
+    // 4. Calculate delivery date
+    const serviceType = (offer.service_type || "custom") as ServiceType;
+    const timelineDays =
+      offer.timeline_days || DEFAULT_TIMELINES[serviceType] || null;
+    const startDate = new Date().toISOString().split("T")[0];
+    const estimatedDelivery = timelineDays
+      ? calculateDeliveryDate(startDate, timelineDays)
+      : null;
 
-  // 5. Create project
-  const { data: project, error: projectError } = await adminClient
-    .from("projects")
-    .insert({
-      client_id: clientId,
-      service_type: serviceType,
-      title: offer.title,
-      description: offer.description,
-      status: "payment_received",
-      jurisdictions: [],
-      start_date: startDate,
-      default_timeline_days: timelineDays,
-      estimated_delivery_date: estimatedDelivery,
-      price_paid: session.amount_total || offer.amount,
-      currency: offer.currency,
-      stripe_payment_id: paymentIntentId,
-    })
-    .select()
-    .single();
+    // 5. Create project
+    const { data: project, error: projectError } = await adminClient
+      .from("projects")
+      .insert({
+        client_id: clientId,
+        service_type: serviceType,
+        title: offer.title,
+        description: offer.description,
+        status: "payment_received",
+        jurisdictions: [],
+        start_date: startDate,
+        default_timeline_days: timelineDays,
+        estimated_delivery_date: estimatedDelivery,
+        price_paid: session.amount_total || offer.amount,
+        currency: offer.currency,
+        stripe_payment_id: paymentIntentId,
+      })
+      .select()
+      .single();
 
-  if (projectError || !project) {
-    throw new Error(
-      `Failed to create project from offer: ${projectError?.message || "Unknown error"}`
-    );
+    if (projectError || !project) {
+      throw new Error(
+        `Failed to create project from offer: ${projectError?.message || "Unknown error"}`
+      );
+    }
+
+    // 6. Update offer → accepted
+    await adminClient
+      .from("offers")
+      .update({
+        status: "accepted",
+        stripe_payment_id: paymentIntentId,
+        project_id: project.id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", offerId);
+
+    // 7. Create initial update + project member + invoice + welcome + emails
+    await postPaymentActions(adminClient, {
+      project,
+      offer,
+      clientId,
+      customerName,
+      email,
+      serviceType,
+      estimatedDelivery,
+      paymentIntentId,
+      session,
+      invoiceTitle: offer.title,
+    });
+
+    console.log(`[webhook] Offer ${offerId} accepted, project created: ${project.id}`);
+    return;
   }
 
-  // 6. Update offer → accepted
-  await adminClient
-    .from("offers")
-    .update({
-      status: "accepted",
-      stripe_payment_id: paymentIntentId,
-      project_id: project.id,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", offerId);
+  // ═══════════════════════════════════════════════════════════════
+  // INSTALLMENT PAYMENT — branched flow
+  // ═══════════════════════════════════════════════════════════════
 
-  // 7. Create initial update
+  const serviceType = (offer.service_type || "custom") as ServiceType;
+
+  // Record the installment payment
+  await adminClient.from("installment_payments").insert({
+    offer_id: offerId,
+    installment_number: installmentNumber,
+    amount: session.amount_total || 0,
+    stripe_payment_id: paymentIntentId,
+    stripe_session_id: session.id,
+  });
+
+  // Increment installments_paid
+  const newPaidCount = (offer.installments_paid || 0) + 1;
+  const isFirstInstallment = installmentNumber === 1;
+  const isFinalInstallment = newPaidCount >= totalInstallments;
+
+  // Update offer: increment paid count, optionally mark accepted
+  const offerUpdate: Record<string, unknown> = {
+    installments_paid: newPaidCount,
+    updated_at: new Date().toISOString(),
+  };
+  if (isFinalInstallment) {
+    offerUpdate.status = "accepted";
+    offerUpdate.stripe_payment_id = paymentIntentId; // last payment ID
+  }
+
+  // Invoice title includes installment info
+  const invoiceTitle = `${offer.title} \u2014 Installment ${installmentNumber} of ${totalInstallments}`;
+
+  if (isFirstInstallment) {
+    // ── FIRST INSTALLMENT: create project + full onboarding ──
+    const timelineDays =
+      offer.timeline_days || DEFAULT_TIMELINES[serviceType] || null;
+    const startDate = new Date().toISOString().split("T")[0];
+    const estimatedDelivery = timelineDays
+      ? calculateDeliveryDate(startDate, timelineDays)
+      : null;
+
+    const { data: project, error: projectError } = await adminClient
+      .from("projects")
+      .insert({
+        client_id: clientId,
+        service_type: serviceType,
+        title: offer.title,
+        description: offer.description,
+        status: "payment_received",
+        jurisdictions: [],
+        start_date: startDate,
+        default_timeline_days: timelineDays,
+        estimated_delivery_date: estimatedDelivery,
+        price_paid: offer.amount, // total price (not just this installment)
+        currency: offer.currency,
+        stripe_payment_id: paymentIntentId,
+      })
+      .select()
+      .single();
+
+    if (projectError || !project) {
+      throw new Error(
+        `Failed to create project from offer installment: ${projectError?.message || "Unknown error"}`
+      );
+    }
+
+    // Link project to offer
+    offerUpdate.project_id = project.id;
+    await adminClient
+      .from("offers")
+      .update(offerUpdate)
+      .eq("id", offerId);
+
+    // Full onboarding: update, member, invoice, welcome, emails
+    await postPaymentActions(adminClient, {
+      project,
+      offer,
+      clientId,
+      customerName,
+      email,
+      serviceType,
+      estimatedDelivery,
+      paymentIntentId,
+      session,
+      invoiceTitle,
+      installmentNote: `Installment 1 of ${totalInstallments} received. ${totalInstallments - 1} installments remaining.`,
+    });
+
+    console.log(`[webhook] Offer ${offerId} installment 1/${totalInstallments}, project created: ${project.id}`);
+
+  } else {
+    // ── MIDDLE or FINAL INSTALLMENT: invoice only, no new project ──
+    await adminClient
+      .from("offers")
+      .update(offerUpdate)
+      .eq("id", offerId);
+
+    const projectId = offer.project_id;
+    if (!projectId) {
+      console.error(`[webhook] Offer ${offerId} has no project_id for installment ${installmentNumber}`);
+      return;
+    }
+
+    // Generate installment invoice
+    try {
+      await generateAndStoreInvoice({
+        projectId,
+        clientName: customerName,
+        clientEmail: email,
+        title: invoiceTitle,
+        amountTotal: session.amount_total || 0,
+        amountTax: session.total_details?.amount_tax || 0,
+        currency: offer.currency,
+        stripePaymentIntentId: paymentIntentId,
+        stripeSessionId: session.id,
+      });
+    } catch (invoiceErr) {
+      console.error("[webhook] Installment invoice generation failed:", invoiceErr);
+    }
+
+    // Add project update
+    const updateNote = isFinalInstallment
+      ? `Final installment received (${installmentNumber} of ${totalInstallments}). Project fully paid.`
+      : `Installment ${installmentNumber} of ${totalInstallments} received. ${totalInstallments - newPaidCount} remaining.`;
+
+    await adminClient.from("project_updates").insert({
+      project_id: projectId,
+      status_to: "payment_received",
+      note: updateNote,
+      internal_note: `Installment payment ${installmentNumber}/${totalInstallments}. Payment: ${paymentIntentId}`,
+      notify_client: true,
+    });
+
+    // Notify admin
+    try {
+      await sendAdminNewOrderEmail({
+        clientName: customerName,
+        clientEmail: email,
+        title: invoiceTitle,
+        serviceType,
+        amount: session.amount_total || 0,
+        currency: offer.currency,
+        estimatedDelivery: null,
+        projectId,
+      });
+    } catch (adminEmailErr) {
+      console.error("Failed to send admin installment notification:", adminEmailErr);
+    }
+
+    console.log(`[webhook] Offer ${offerId} installment ${installmentNumber}/${totalInstallments}${isFinalInstallment ? " (FINAL)" : ""}`);
+  }
+}
+
+
+/* ── Shared post-payment actions (project update, member, invoice, welcome, emails) ── */
+
+async function postPaymentActions(
+  adminClient: ReturnType<typeof createAdminClient>,
+  params: {
+    project: { id: string };
+    offer: { id: string; title: string; currency: string };
+    clientId: string;
+    customerName: string;
+    email: string;
+    serviceType: ServiceType;
+    estimatedDelivery: string | null;
+    paymentIntentId: string | null;
+    session: Stripe.Checkout.Session;
+    invoiceTitle: string;
+    installmentNote?: string;
+  }
+) {
+  const { project, offer, clientId, customerName, email, serviceType, estimatedDelivery, paymentIntentId, session, invoiceTitle, installmentNote } = params;
+
+  // Create initial update
   const deliveryNote = estimatedDelivery
     ? `Estimated delivery: ${new Date(estimatedDelivery).toLocaleDateString(
         "en-GB",
@@ -513,31 +732,33 @@ async function handleOfferPayment(
       )}.`
     : "";
 
+  const noteText = installmentNote
+    ? `${installmentNote} ${deliveryNote}`
+    : `Payment received. ${deliveryNote}`;
+
   await adminClient.from("project_updates").insert({
     project_id: project.id,
     status_to: "payment_received",
-    note: `Payment received. ${deliveryNote}`,
-    internal_note: `Auto-created from custom offer ${offerId}. Payment: ${paymentIntentId}`,
+    note: noteText,
+    internal_note: `Auto-created from custom offer ${offer.id}. Payment: ${paymentIntentId}`,
     notify_client: true,
   });
 
-  // 7b. Add client as project owner in project_members
+  // Add client as project owner
   await adminClient.from("project_members").insert({
     project_id: project.id,
     user_id: clientId,
     role: "owner",
   });
 
-  console.log(`[webhook] Offer ${offerId} accepted, project created: ${project.id}`);
-
-  // 8. Generate invoice PDF (non-blocking)
+  // Generate invoice PDF
   try {
     await generateAndStoreInvoice({
       projectId: project.id,
       clientName: customerName,
       clientEmail: email,
-      title: offer.title,
-      amountTotal: session.amount_total || offer.amount,
+      title: invoiceTitle,
+      amountTotal: session.amount_total || 0,
       amountTax: session.total_details?.amount_tax || 0,
       currency: offer.currency,
       stripePaymentIntentId: paymentIntentId,
@@ -547,7 +768,7 @@ async function handleOfferPayment(
     console.error("[webhook] Invoice generation failed:", invoiceErr);
   }
 
-  // 8c. Auto-generate welcome message from admin (non-blocking)
+  // Auto-generate welcome message
   try {
     const { data: adminUser } = await adminClient
       .from("profiles")
@@ -564,10 +785,10 @@ async function handleOfferPayment(
         "",
         "Here's how to get the most out of your portal:",
         "",
-        "- **Documents** — Your VAT invoice is already in the Documents section. Upload any relevant files (invention descriptions, sketches, prior art, etc.) here too — it's the easiest way to share materials with me.",
-        "- **Messages** — Use this chat to send me questions or additional information at any time. I'll respond as soon as I can.",
-        "- **Progress updates** — You'll see updates in the feed on this page, and receive email notifications at key milestones.",
-        "- **Notifications** — Toggle email alerts on or off using the bell icon on this page.",
+        "- **Documents** \u2014 Your VAT invoice is already in the Documents section. Upload any relevant files (invention descriptions, sketches, prior art, etc.) here too \u2014 it's the easiest way to share materials with me.",
+        "- **Messages** \u2014 Use this chat to send me questions or additional information at any time. I'll respond as soon as I can.",
+        "- **Progress updates** \u2014 You'll see updates in the feed on this page, and receive email notifications at key milestones.",
+        "- **Notifications** \u2014 Toggle email alerts on or off using the bell icon on this page.",
         "",
         "If you have any questions at all, just drop me a message here.",
         "",
@@ -586,14 +807,14 @@ async function handleOfferPayment(
     console.error("[webhook] Welcome message failed:", welcomeMsgErr);
   }
 
-  // 9. Send admin notification
+  // Send admin notification
   try {
     await sendAdminNewOrderEmail({
       clientName: customerName,
       clientEmail: email,
-      title: offer.title,
+      title: invoiceTitle,
       serviceType,
-      amount: session.amount_total || offer.amount,
+      amount: session.amount_total || 0,
       currency: offer.currency,
       estimatedDelivery,
       projectId: project.id,
@@ -602,7 +823,7 @@ async function handleOfferPayment(
     console.error("Failed to send admin notification:", adminEmailErr);
   }
 
-  // 10. Send welcome email with portal link
+  // Send welcome email with portal link
   try {
     const { data: linkData } =
       await adminClient.auth.admin.generateLink({

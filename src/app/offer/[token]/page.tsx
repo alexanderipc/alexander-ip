@@ -26,9 +26,22 @@ export default async function OfferPage({
 
   if (!offer) notFound();
 
-  // Lazy expiry check
+  // Installment state
+  const totalInstallments = offer.installments || 1;
+  const paidInstallments = offer.installments_paid || 0;
+  const isInstallmentPlan = totalInstallments > 1;
+  const nextInstallment = paidInstallments + 1;
+  const allInstallmentsPaid = paidInstallments >= totalInstallments;
+
+  // Per-installment amount (ceiling for all but last; last absorbs remainder)
+  const perInstallmentAmount = Math.ceil(offer.amount / totalInstallments);
+  const lastInstallmentAmount = offer.amount - perInstallmentAmount * (totalInstallments - 1);
+  const thisInstallmentAmount = nextInstallment === totalInstallments ? lastInstallmentAmount : perInstallmentAmount;
+
+  // Lazy expiry check — only before first payment
   if (
     offer.status === "pending" &&
+    paidInstallments === 0 &&
     offer.expires_at &&
     new Date(offer.expires_at) < new Date()
   ) {
@@ -39,8 +52,14 @@ export default async function OfferPage({
     offer.status = "expired";
   }
 
+  // If all installments paid but status still pending, treat as accepted
+  if (allInstallmentsPaid && offer.status === "pending") {
+    offer.status = "accepted";
+  }
+
   const symbol = CURRENCY_SYMBOLS[offer.currency] || "$";
-  const displayAmount = `${symbol}${(offer.amount / 100).toFixed(2)}`;
+  const totalDisplayAmount = `${symbol}${(offer.amount / 100).toFixed(2)}`;
+  const installmentDisplayAmount = `${symbol}${(thisInstallmentAmount / 100).toFixed(2)}`;
   const serviceLabel = getServiceLabel(offer.service_type as ServiceType);
 
   const isExpired = offer.status === "expired";
@@ -62,7 +81,11 @@ export default async function OfferPage({
           {/* Status banner for non-pending */}
           {isAccepted && (
             <div className="bg-green-50 border-b border-green-200 px-6 py-3 text-center">
-              <p className="text-sm font-semibold text-green-700">This offer has been accepted and paid.</p>
+              <p className="text-sm font-semibold text-green-700">
+                {isInstallmentPlan
+                  ? "All installments have been paid. Thank you!"
+                  : "This offer has been accepted and paid."}
+              </p>
             </div>
           )}
           {isExpired && (
@@ -79,9 +102,38 @@ export default async function OfferPage({
           <div className="p-8">
             {/* Title & Price */}
             <h2 className="text-xl font-bold text-navy mb-2">{offer.title}</h2>
-            <p className="text-3xl font-extrabold text-navy mb-1">{displayAmount}</p>
+
+            {isInstallmentPlan && isPending ? (
+              <>
+                <p className="text-sm text-slate-400 mb-1">Total: {totalDisplayAmount}</p>
+                <p className="text-3xl font-extrabold text-navy mb-1">
+                  {installmentDisplayAmount}
+                </p>
+                <p className="text-sm font-medium text-blue-600 mb-1">
+                  Installment {nextInstallment} of {totalInstallments}
+                </p>
+              </>
+            ) : (
+              <p className="text-3xl font-extrabold text-navy mb-1">{totalDisplayAmount}</p>
+            )}
             <p className="text-xs text-slate-400 mb-1">Exclusive of VAT where applicable</p>
             <p className="text-sm text-slate-500 mb-6">{serviceLabel}</p>
+
+            {/* Installment progress bar */}
+            {isInstallmentPlan && (isPending || isAccepted) && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                  <span>{paidInstallments} of {totalInstallments} paid</span>
+                  <span>{Math.round((paidInstallments / totalInstallments) * 100)}%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full transition-all"
+                    style={{ width: `${(paidInstallments / totalInstallments) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             {offer.description && (
@@ -104,10 +156,26 @@ export default async function OfferPage({
                 <span className="text-slate-500">Service</span>
                 <span className="text-navy font-medium">{serviceLabel}</span>
               </div>
+              {isInstallmentPlan && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Payment plan</span>
+                  <span className="text-navy font-medium">{totalInstallments} installments</span>
+                </div>
+              )}
             </div>
 
             {/* Pay Button */}
-            {isPending && <OfferPayButton token={token} amount={displayAmount} />}
+            {isPending && !allInstallmentsPaid && (
+              <OfferPayButton
+                token={token}
+                amount={isInstallmentPlan ? installmentDisplayAmount : totalDisplayAmount}
+                installmentLabel={
+                  isInstallmentPlan
+                    ? `Pay Installment ${nextInstallment} of ${totalInstallments} \u2014 ${installmentDisplayAmount}`
+                    : undefined
+                }
+              />
+            )}
           </div>
 
           {/* Footer */}

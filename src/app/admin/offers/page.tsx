@@ -98,6 +98,11 @@ export default async function OffersPage() {
                       <span className="text-sm font-semibold text-navy">
                         {displayAmount}
                       </span>
+                      {offer.installments > 1 && (
+                        <span className="block text-xs text-blue-600 font-medium">
+                          {offer.installments_paid}/{offer.installments} installments paid
+                        </span>
+                      )}
                       {offer.timeline_days && (
                         <span className="block text-xs text-slate-400">{offer.timeline_days} days</span>
                       )}
@@ -118,17 +123,19 @@ export default async function OffersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
-                      {offer.status === "pending" && (
-                        <OfferActions offerId={offer.id} />
-                      )}
-                      {offer.status === "accepted" && offer.project_id && (
-                        <Link
-                          href={`/admin/projects/${offer.project_id}`}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          View Project
-                        </Link>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        {offer.status === "pending" && (
+                          <OfferActions offerId={offer.id} />
+                        )}
+                        {offer.project_id && (
+                          <Link
+                            href={`/admin/projects/${offer.project_id}`}
+                            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            View Project
+                          </Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
