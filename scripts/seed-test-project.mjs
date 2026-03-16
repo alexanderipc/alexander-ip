@@ -13,9 +13,13 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://syuzcmspaqiisuurpjix.supabase.co";
-const SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5dXpjbXNwYXFpaXN1dXJwaml4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjEzMzI5NiwiZXhwIjoyMDg3NzA5Mjk2fQ.HW0563Y0WUi8vzl3SN7afQHC_cX9bL90Xk35MGSkrRs";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://syuzcmspaqiisuurpjix.supabase.co";
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SERVICE_ROLE_KEY) {
+  console.error("Missing SUPABASE_SERVICE_ROLE_KEY env var. Set it before running this script.");
+  process.exit(1);
+}
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
