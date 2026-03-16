@@ -35,6 +35,7 @@ interface InvoiceData {
   invoiceDate: string; // ISO date
   clientName: string;
   clientEmail: string;
+  clientAddress?: string | null; // formatted billing address
   currency: string; // "GBP", "USD", etc.
   lineItems: InvoiceLineItem[];
   isPaid: boolean;
@@ -46,6 +47,7 @@ interface GenerateInvoiceParams {
   projectId: string;
   clientName: string;
   clientEmail: string;
+  clientAddress?: string | null; // formatted billing address from Stripe
   title: string;
   amountTotal: number; // cents/pence (Stripe smallest unit)
   amountTax: number; // from session.total_details.amount_tax
@@ -147,10 +149,18 @@ export async function generateInvoicePdf(
       .font("Helvetica")
       .fillColor("#334155")
       .text(data.clientName, margin, detailsY + 16);
+    let billToY = detailsY + 30;
+    if (data.clientAddress) {
+      doc
+        .fontSize(9)
+        .fillColor("#334155")
+        .text(data.clientAddress, margin, billToY, { width: 200 });
+      billToY += doc.heightOfString(data.clientAddress, { width: 200 }) + 4;
+    }
     doc
       .fontSize(9)
       .fillColor("#64748b")
-      .text(data.clientEmail, margin, detailsY + 30);
+      .text(data.clientEmail, margin, billToY);
 
     // Right: invoice details
     const labelX = rightColX;
@@ -407,6 +417,7 @@ export async function generateAndStoreInvoice(
       invoiceDate: new Date().toISOString(),
       clientName: params.clientName,
       clientEmail: params.clientEmail,
+      clientAddress: params.clientAddress || null,
       currency: params.currency.toUpperCase(),
       lineItems,
       isPaid: true,

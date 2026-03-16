@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, ChevronDown } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { createClient } from "@/lib/supabase/client";
 
 const navLinks = [
   {
@@ -30,7 +31,20 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check auth state
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Close desktop dropdown when clicking outside
   useEffect(() => {
@@ -134,13 +148,13 @@ export default function Navbar() {
               Portfolio Explorer
             </Link>
             <Link
-              href="/auth/login"
+              href="/contact"
               className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-navy rounded-md hover:bg-slate-50 transition-colors"
             >
-              My Projects
+              Get in Touch
             </Link>
-            <Button href="/contact" size="sm">
-              Get Started
+            <Button href={isLoggedIn ? "/portal" : "/auth/login"} size="sm">
+              {isLoggedIn ? "My Projects" : "Login / Register"}
             </Button>
           </div>
 
@@ -217,15 +231,15 @@ export default function Navbar() {
               Portfolio Explorer
             </Link>
             <Link
-              href="/auth/login"
+              href="/contact"
               className="block px-3 py-2 text-base font-medium text-slate-500 hover:text-navy hover:bg-slate-50 rounded-md"
               onClick={() => setMobileOpen(false)}
             >
-              My Projects
+              Get in Touch
             </Link>
             <div className="pt-3">
-              <Button href="/contact" size="md" className="w-full">
-                Get Started
+              <Button href={isLoggedIn ? "/portal" : "/auth/login"} size="md" className="w-full">
+                {isLoggedIn ? "My Projects" : "Login / Register"}
               </Button>
             </div>
           </div>

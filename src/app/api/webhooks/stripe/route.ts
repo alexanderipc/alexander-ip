@@ -11,6 +11,27 @@ import { generateAndStoreInvoice } from "@/lib/invoice";
 
 export const runtime = "nodejs";
 
+/* ── Billing address helper ──────────────────────────────────── */
+
+function formatBillingAddress(session: Stripe.Checkout.Session): string | null {
+  const addr = session.customer_details?.address;
+  if (!addr) return null;
+
+  const parts: string[] = [];
+  if (addr.line1) parts.push(addr.line1);
+  if (addr.line2) parts.push(addr.line2);
+
+  const cityPostal: string[] = [];
+  if (addr.city) cityPostal.push(addr.city);
+  if (addr.state) cityPostal.push(addr.state);
+  if (addr.postal_code) cityPostal.push(addr.postal_code);
+  if (cityPostal.length) parts.push(cityPostal.join(", "));
+
+  if (addr.country) parts.push(addr.country);
+
+  return parts.length > 0 ? parts.join("\n") : null;
+}
+
 /* ── Service mapping ─────────────────────────────────────────── */
 
 interface ServiceMapping {
@@ -297,6 +318,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       projectId: project.id,
       clientName: customerName,
       clientEmail: email,
+      clientAddress: formatBillingAddress(session),
       title,
       amountTotal: amountTotal || 0,
       amountTax: session.total_details?.amount_tax || 0,
@@ -659,6 +681,7 @@ async function handleOfferPayment(
         projectId,
         clientName: customerName,
         clientEmail: email,
+        clientAddress: formatBillingAddress(session),
         title: invoiceTitle,
         amountTotal: session.amount_total || 0,
         amountTax: session.total_details?.amount_tax || 0,
@@ -757,6 +780,7 @@ async function postPaymentActions(
       projectId: project.id,
       clientName: customerName,
       clientEmail: email,
+      clientAddress: formatBillingAddress(session),
       title: invoiceTitle,
       amountTotal: session.amount_total || 0,
       amountTax: session.total_details?.amount_tax || 0,
