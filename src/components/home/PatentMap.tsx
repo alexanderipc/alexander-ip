@@ -141,7 +141,6 @@ const jurisdictions: Jurisdiction[] = [
     ],
     patents: [
       // ── Published ──
-      { number: "EP4655775A1", label: "EP 4,655,775 A1", title: "Modular Smart Frame", url: patentUrl("EP4655775A1") },
       { number: "EP4035264A1", label: "EP 4,035,264 A1", title: "Audio Data Processing", url: patentUrl("EP4035264A1") },
       { number: "EP4695742A1", label: "EP 4,695,742 A1", title: "QR Code Optimization", url: patentUrl("EP4695742A1") },
       { number: "EP4651704A1", label: "EP 4,651,704 A1", title: "Self-Watering Planter", url: patentUrl("EP4651704A1") },
@@ -162,7 +161,6 @@ const jurisdictions: Jurisdiction[] = [
       // ── Published ──
       { number: "AU2025202303A1", label: "AU 2025202303 A1", title: "Cat Gate System", url: patentUrl("AU2025202303A1") },
       { number: "AU2024277082A1", label: "AU 2024277082 A1", title: "Exercise Handle", url: patentUrl("AU2024277082A1") },
-      { number: "AU2023425963A1", label: "AU 2023425963 A1", title: "Modular Smart Frame", url: patentUrl("AU2023425963A1") },
       { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
     ],
   },
@@ -191,7 +189,6 @@ const jurisdictions: Jurisdiction[] = [
     countryCodes: [],
     patents: [
       { number: "WO2024079441A1", label: "WO 2024/079441 A1", title: "Valve Control System", url: patentUrl("WO2024079441A1") },
-      { number: "WO2024156974A1", label: "WO 2024/156974 A1", title: "Modular Smart Frame", url: patentUrl("WO2024156974A1") },
       { number: "WO2024240368A1", label: "WO 2024/240368 A1", title: "Exercise Handle", url: patentUrl("WO2024240368A1") },
       { number: "WO2022073056A1", label: "WO 2022/073056 A1", title: "Bait Station", url: patentUrl("WO2022073056A1") },
       { number: "BR112022018356A2", label: "BR 112022018356 A2", title: "Electronic Vaping Device", url: patentUrl("BR112022018356A2") },
