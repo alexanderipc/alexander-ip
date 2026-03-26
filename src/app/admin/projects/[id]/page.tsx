@@ -24,7 +24,7 @@ import TimelineEditor from "@/components/admin/TimelineEditor";
 import AdminMessageThread from "@/components/admin/MessageThread";
 import NotificationMuteControls from "@/components/admin/NotificationMuteControls";
 import AdminTeamManager from "@/components/admin/TeamManager";
-import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff, Users, Eye } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -444,6 +444,35 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                 )}
                 {client.phone && (
                   <p className="text-slate-500">{client.phone}</p>
+                )}
+              </div>
+              {/* Last portal visit */}
+              <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-slate-400" />
+                {project.last_client_visit ? (
+                  <span className="text-xs text-slate-500">
+                    Last visited portal{" "}
+                    {(() => {
+                      const visit = new Date(project.last_client_visit);
+                      const now = new Date();
+                      const diffMs = now.getTime() - visit.getTime();
+                      const diffMins = Math.floor(diffMs / 60000);
+                      const diffHours = Math.floor(diffMs / 3600000);
+                      const diffDays = Math.floor(diffMs / 86400000);
+                      if (diffMins < 1) return "just now";
+                      if (diffMins < 60) return `${diffMins}m ago`;
+                      if (diffHours < 24) return `${diffHours}h ago`;
+                      if (diffDays < 7) return `${diffDays}d ago`;
+                      return visit.toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                      });
+                    })()}
+                  </span>
+                ) : (
+                  <span className="text-xs text-amber-500 font-medium">
+                    Has not visited portal yet
+                  </span>
                 )}
               </div>
             </div>

@@ -19,6 +19,8 @@ import MilestonesList from "@/components/portal/MilestonesList";
 import MessageThread from "@/components/portal/MessageThread";
 import ClientNotificationMute from "@/components/portal/ClientNotificationMute";
 import TeamMembers from "@/components/portal/TeamMembers";
+import PortalVisitTracker from "@/components/portal/PortalVisitTracker";
+import UploadNudgeModal from "@/components/portal/UploadNudgeModal";
 import { ArrowLeft, Calendar, Globe, Clock, MessageCircle, Users, Star, ExternalLink, UploadCloud } from "lucide-react";
 
 interface Props {
@@ -194,6 +196,10 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   return (
     <div>
+      {/* Invisible trackers */}
+      <PortalVisitTracker projectId={project.id} />
+      {!complete && <UploadNudgeModal projectId={project.id} />}
+
       {/* Back link */}
       <Link
         href="/portal"
