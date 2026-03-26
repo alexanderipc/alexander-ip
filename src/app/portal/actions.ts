@@ -105,6 +105,43 @@ export async function clientUploadDocument(
   return { success: true };
 }
 
+/* ── Register Document (after direct-to-storage upload) ───── */
+
+export async function registerUploadedDocument(
+  projectId: string,
+  filename: string,
+  filePath: string
+) {
+  const { user } = await requireClient();
+  const adminClient = createAdminClient();
+
+  const hasAccess = await canAccessProject(user.id, projectId);
+  if (!hasAccess) throw new Error("Project not found");
+
+  const { error: insertError } = await adminClient
+    .from("project_documents")
+    .insert({
+      project_id: projectId,
+      filename,
+      file_url: filePath,
+      document_type: "correspondence",
+      client_visible: true,
+      uploaded_by: user.id,
+    });
+
+  if (insertError) {
+    console.error("[Upload] DB insert error:", insertError.message);
+    throw new Error(`Failed to save document record: ${insertError.message}`);
+  }
+
+  console.log("[Upload] Registered:", filename, "→", filePath, "| user:", user.id);
+
+  revalidatePath(`/portal/projects/${projectId}`);
+  revalidatePath(`/admin/projects/${projectId}`);
+
+  return { success: true };
+}
+
 /* ── Send Message (Client) ─────────────────────────────────── */
 
 export async function sendClientMessage(projectId: string, body: string) {

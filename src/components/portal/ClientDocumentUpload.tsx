@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { clientUploadDocument } from "@/app/portal/actions";
+import { clientUploadDocument, registerUploadedDocument } from "@/app/portal/actions";
 import { Upload, X, CheckCircle2, FileIcon, Loader2 } from "lucide-react";
 
 interface ClientDocumentUploadProps {
@@ -9,6 +9,7 @@ interface ClientDocumentUploadProps {
 }
 
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+const DIRECT_UPLOAD_THRESHOLD = 4 * 1024 * 1024; // 4 MB — use signed URL for larger files
 const ALLOWED_EXTENSIONS = [
   ".pdf",
   ".png",
@@ -97,9 +98,43 @@ export default function ClientDocumentUpload({
         );
 
         try {
-          const formData = new FormData();
-          formData.append("file", files[i].file);
-          await clientUploadDocument(projectId, formData);
+          const currentFile = files[i].file;
+
+          if (currentFile.size > DIRECT_UPLOAD_THRESHOLD) {
+            // Large file: get signed URL, upload directly to storage, then register
+            const urlRes = await fetch("/api/upload/signed-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                projectId,
+                filename: currentFile.name,
+                contentType: currentFile.type,
+              }),
+            });
+            if (!urlRes.ok) {
+              const err = await urlRes.json();
+              throw new Error(err.error || "Failed to get upload URL");
+            }
+            const { signedUrl, filePath } = await urlRes.json();
+
+            // Upload directly to Supabase Storage
+            const uploadRes = await fetch(signedUrl, {
+              method: "PUT",
+              headers: { "Content-Type": currentFile.type || "application/octet-stream" },
+              body: currentFile,
+            });
+            if (!uploadRes.ok) {
+              throw new Error(`Storage upload failed (${uploadRes.status})`);
+            }
+
+            // Register the document record
+            await registerUploadedDocument(projectId, currentFile.name, filePath);
+          } else {
+            // Small file: use server action (simpler, faster for small files)
+            const formData = new FormData();
+            formData.append("file", currentFile);
+            await clientUploadDocument(projectId, formData);
+          }
 
           setFiles((prev) =>
             prev.map((f, idx) =>

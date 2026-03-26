@@ -109,6 +109,7 @@ export interface ProjectDocument {
   client_visible: boolean;
   uploaded_at: string;
   uploaded_by: string | null;
+  last_client_access: string | null;
 }
 
 export interface ProjectMilestone {

@@ -375,13 +375,13 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                   {adminDocs.length > 0 && (
                     <div>
                       <p className="text-xs font-medium text-slate-500 mb-2">Uploaded by you</p>
-                      <DocumentThumbnailGrid documents={adminDocs} showVisibility />
+                      <DocumentThumbnailGrid documents={adminDocs} showVisibility showAccessStatus />
                     </div>
                   )}
                   {clientDocs.length > 0 && (
                     <div className={adminDocs.length > 0 ? "pt-4 border-t border-slate-100" : ""}>
                       <p className="text-xs font-medium text-slate-500 mb-2">Uploaded by client</p>
-                      <DocumentThumbnailGrid documents={clientDocs} showVisibility />
+                      <DocumentThumbnailGrid documents={clientDocs} showVisibility showAccessStatus />
                     </div>
                   )}
                   {documents.length === 0 && (

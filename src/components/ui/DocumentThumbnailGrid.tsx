@@ -1,5 +1,5 @@
 import type { ProjectDocument } from "@/lib/supabase/types";
-import { FileText, FileType2, Download, Eye, EyeOff } from "lucide-react";
+import { FileText, FileType2, Download, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"];
 
@@ -31,11 +31,15 @@ const typeLabels: Record<string, string> = {
 interface DocumentThumbnailGridProps {
   documents: (ProjectDocument & { signed_url?: string })[];
   showVisibility?: boolean;
+  trackAccess?: boolean; // Use /api/documents/[id] for download links (tracks client access)
+  showAccessStatus?: boolean; // Show last_client_access indicator (admin view)
 }
 
 export default function DocumentThumbnailGrid({
   documents,
   showVisibility = false,
+  trackAccess = false,
+  showAccessStatus = false,
 }: DocumentThumbnailGridProps) {
   if (documents.length === 0) {
     return (
@@ -48,9 +52,12 @@ export default function DocumentThumbnailGrid({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {documents.map((doc) => {
-        const url = doc.signed_url || doc.file_url;
+        const directUrl = doc.signed_url || doc.file_url;
+        const url = trackAccess ? `/api/documents/${doc.id}` : directUrl;
+        const thumbnailUrl = directUrl; // Always use direct URL for thumbnails
         const image = isImage(doc.filename);
         const pdf = isPdf(doc.filename);
+        const lastAccess = doc.last_client_access;
 
         return (
           <a
@@ -65,7 +72,7 @@ export default function DocumentThumbnailGrid({
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={url}
+                  src={thumbnailUrl}
                   alt={doc.filename}
                   className="w-full h-full object-cover"
                 />
@@ -111,6 +118,20 @@ export default function DocumentThumbnailGrid({
                       <EyeOff className="w-3 h-3 text-amber-500" />
                       <span className="text-[10px] text-amber-600">Admin only</span>
                     </>
+                  )}
+                </div>
+              )}
+              {showAccessStatus && doc.client_visible && (
+                <div className="flex items-center gap-1 mt-1">
+                  {lastAccess ? (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                      <span className="text-[10px] text-emerald-600">
+                        Viewed {new Date(lastAccess).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">Not yet viewed</span>
                   )}
                 </div>
               )}

@@ -104,9 +104,9 @@ export default function MessageThread({
                   <div
                     className={`text-sm leading-relaxed prose prose-sm max-w-none ${
                       isMe
-                        ? "prose-invert prose-p:text-white prose-strong:text-white prose-li:text-white prose-a:text-blue-200"
+                        ? "prose-invert prose-p:text-white prose-strong:text-white prose-li:text-white prose-a:text-blue-200 prose-headings:text-white"
                         : "prose-slate prose-a:text-blue-600"
-                    } prose-p:my-1 prose-ul:my-1 prose-li:my-0`}
+                    } prose-p:my-1 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-ul:pl-4 prose-ol:pl-4 prose-headings:my-1.5 prose-pre:my-2 prose-blockquote:my-2`}
                   >
                     <Markdown>{msg.body}</Markdown>
                   </div>
@@ -137,9 +137,9 @@ export default function MessageThread({
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          rows={2}
+          rows={5}
           maxLength={10000}
-          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[80px]"
         />
         <button
           type="button"

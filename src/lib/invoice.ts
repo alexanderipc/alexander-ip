@@ -138,34 +138,23 @@ export async function generateInvoicePdf(
     const detailsY = afterHeader + 40;
     const rightColX = pageWidth - margin - 200;
 
-    // Left: client
-    doc
-      .fontSize(10)
-      .font("Helvetica-Bold")
-      .fillColor(NAVY)
-      .text("Bill To:", margin, detailsY);
-    doc
-      .fontSize(11)
-      .font("Helvetica")
-      .fillColor("#334155")
-      .text(data.clientName, margin, detailsY + 16);
-    let billToY = detailsY + 30;
-    if (data.clientAddress) {
-      doc
-        .fontSize(9)
-        .fillColor("#334155")
-        .text(data.clientAddress, margin, billToY, { width: 200 });
-      billToY += doc.heightOfString(data.clientAddress, { width: 200 }) + 4;
-    }
+    // Right: Company address (top-right, above invoice details)
     doc
       .fontSize(9)
+      .font("Helvetica-Bold")
+      .fillColor(NAVY)
+      .text(COMPANY.name, rightColX, detailsY);
+    doc
+      .fontSize(9)
+      .font("Helvetica")
       .fillColor("#64748b")
-      .text(data.clientEmail, margin, billToY);
+      .text(COMPANY.address, rightColX, detailsY + 14);
+    doc.text(`VAT: ${COMPANY.vatNumber}`, rightColX, detailsY + 26);
 
-    // Right: invoice details
+    // Right: invoice details (below company address)
     const labelX = rightColX;
     const valueX = rightColX + 85;
-    let rY = detailsY;
+    let rY = detailsY + 50;
 
     const detailRow = (label: string, value: string, color = NAVY) => {
       doc
@@ -186,7 +175,6 @@ export async function generateInvoicePdf(
         year: "numeric",
       })
     );
-    detailRow("VAT No:", COMPANY.vatNumber);
 
     if (data.isPaid) {
       doc
@@ -201,17 +189,34 @@ export async function generateInvoicePdf(
       rY += 16;
     }
 
-    // ── Company line ──
-    const companyY = detailsY + 70;
+    // Left: client billing address (starts at same Y as company)
+    const billToStartY = detailsY;
     doc
-      .fontSize(8)
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .fillColor(NAVY)
+      .text("Bill To:", margin, billToStartY);
+    doc
+      .fontSize(11)
       .font("Helvetica")
-      .fillColor("#94a3b8")
-      .text(COMPANY.name, margin, companyY);
-    doc.text(COMPANY.address, margin, companyY + 11);
+      .fillColor("#334155")
+      .text(data.clientName, margin, billToStartY + 16);
+    let billToY = billToStartY + 30;
+    if (data.clientAddress) {
+      doc
+        .fontSize(9)
+        .fillColor("#334155")
+        .text(data.clientAddress, margin, billToY, { width: 200 });
+      billToY += doc.heightOfString(data.clientAddress, { width: 200 }) + 4;
+    }
+    doc
+      .fontSize(9)
+      .fillColor("#64748b")
+      .text(data.clientEmail, margin, billToY);
 
     // ── Line items table ──
-    const tableY = companyY + 40;
+    // Start below whichever column is taller
+    const tableY = Math.max(rY, billToY) + 30;
     const colDesc = margin;
     const colQty = margin + contentWidth * 0.5;
     const colUnit = margin + contentWidth * 0.6;

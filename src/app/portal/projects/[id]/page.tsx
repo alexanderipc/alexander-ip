@@ -19,7 +19,7 @@ import MilestonesList from "@/components/portal/MilestonesList";
 import MessageThread from "@/components/portal/MessageThread";
 import ClientNotificationMute from "@/components/portal/ClientNotificationMute";
 import TeamMembers from "@/components/portal/TeamMembers";
-import { ArrowLeft, Calendar, Globe, Clock, MessageCircle, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Globe, Clock, MessageCircle, Users, Star, ExternalLink, UploadCloud } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -203,6 +203,97 @@ export default async function ProjectDetailPage({ params }: Props) {
         Back to Dashboard
       </Link>
 
+      {/* Deadline banner — prominent, above everything */}
+      {!complete && project.estimated_delivery_date && (
+        <div
+          className={`rounded-xl border p-4 mb-4 flex items-center gap-3 ${
+            daysLeft !== null && daysLeft < 0
+              ? "bg-red-50 border-red-200"
+              : daysLeft !== null && daysLeft <= 7
+              ? "bg-amber-50 border-amber-200"
+              : "bg-blue-50 border-blue-200"
+          }`}
+        >
+          <Clock
+            className={`w-5 h-5 flex-shrink-0 ${
+              daysLeft !== null && daysLeft < 0
+                ? "text-red-500"
+                : daysLeft !== null && daysLeft <= 7
+                ? "text-amber-500"
+                : "text-blue-500"
+            }`}
+          />
+          <div>
+            <p
+              className={`text-sm font-semibold ${
+                daysLeft !== null && daysLeft < 0
+                  ? "text-red-700"
+                  : daysLeft !== null && daysLeft <= 7
+                  ? "text-amber-700"
+                  : "text-blue-700"
+              }`}
+            >
+              {daysLeft !== null && daysLeft < 0
+                ? `Overdue by ${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? "s" : ""}`
+                : daysLeft !== null && daysLeft === 0
+                ? "Due today"
+                : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} remaining`}
+            </p>
+            <p
+              className={`text-xs ${
+                daysLeft !== null && daysLeft < 0
+                  ? "text-red-600"
+                  : daysLeft !== null && daysLeft <= 7
+                  ? "text-amber-600"
+                  : "text-blue-600"
+              }`}
+            >
+              Estimated delivery:{" "}
+              {new Date(project.estimated_delivery_date).toLocaleDateString("en-GB", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+        </div>
+      )}
+      {complete && project.actual_delivery_date && (
+        <div className="rounded-xl border bg-emerald-50 border-emerald-200 p-4 mb-4 flex items-center gap-3">
+          <Clock className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+          <p className="text-sm font-semibold text-emerald-700">
+            Completed on{" "}
+            {new Date(project.actual_delivery_date).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        </div>
+      )}
+
+      {/* Trustpilot review prompt — shown when project is complete */}
+      {complete && (
+        <a
+          href="https://uk.trustpilot.com/review/alexander-ip.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 mb-4 hover:bg-green-100 transition-colors group"
+        >
+          <Star className="w-5 h-5 text-green-600 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-green-800">
+              How was your experience?
+            </p>
+            <p className="text-xs text-green-600">
+              We'd really appreciate a review on Trustpilot — it helps us grow and helps others find us.
+            </p>
+          </div>
+          <ExternalLink className="w-4 h-4 text-green-500 group-hover:text-green-700 flex-shrink-0" />
+        </a>
+      )}
+
       {/* Header */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
@@ -239,29 +330,6 @@ export default async function ProjectDetailPage({ params }: Props) {
                   month: "short",
                   year: "numeric",
                 })}
-              </span>
-            </div>
-          )}
-          {!complete && project.estimated_delivery_date && (
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-slate-400" />
-              <span>
-                Est. delivery{" "}
-                {new Date(project.estimated_delivery_date).toLocaleDateString(
-                  "en-GB",
-                  { day: "numeric", month: "short", year: "numeric" }
-                )}
-                {daysLeft !== null && daysLeft > 0 && (
-                  <span className="text-slate-400 ml-1">
-                    ({daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining)
-                  </span>
-                )}
-                {daysLeft !== null && daysLeft < 0 && (
-                  <span className="text-red-500 font-medium ml-1">
-                    ({Math.abs(daysLeft)} day
-                    {Math.abs(daysLeft) !== 1 ? "s" : ""} overdue)
-                  </span>
-                )}
               </span>
             </div>
           )}
@@ -320,8 +388,26 @@ export default async function ProjectDetailPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Sidebar: Documents + Milestones */}
+        {/* Sidebar: Upload + Documents + Milestones */}
         <div className="space-y-6">
+          {/* Upload prompt — prominent, at the top of sidebar */}
+          {!complete && (
+            <div className="bg-blue-50 rounded-xl border-2 border-blue-200 border-dashed p-5">
+              <div className="flex items-start gap-3 mb-3">
+                <UploadCloud className="w-6 h-6 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-semibold text-blue-800">
+                    Upload your files here
+                  </h3>
+                  <p className="text-xs text-blue-600 mt-0.5">
+                    Please upload any documents, drawings, or reference materials related to this project. We&apos;ll receive them instantly.
+                  </p>
+                </div>
+              </div>
+              <ClientDocumentUpload projectId={project.id} />
+            </div>
+          )}
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
               Documents
@@ -340,13 +426,13 @@ export default async function ProjectDetailPage({ params }: Props) {
                   {adminDocs.length > 0 && (
                     <div className="mb-4">
                       <p className="text-xs font-medium text-slate-500 mb-2">From Alexander IP</p>
-                      <DocumentThumbnailGrid documents={adminDocs} />
+                      <DocumentThumbnailGrid documents={adminDocs} trackAccess />
                     </div>
                   )}
                   {clientDocs.length > 0 && (
                     <div className={adminDocs.length > 0 ? "pt-4 border-t border-slate-100" : ""}>
                       <p className="text-xs font-medium text-slate-500 mb-2">Your uploads</p>
-                      <DocumentThumbnailGrid documents={clientDocs} />
+                      <DocumentThumbnailGrid documents={clientDocs} trackAccess />
                     </div>
                   )}
                   {documents.length === 0 && (
@@ -357,12 +443,6 @@ export default async function ProjectDetailPage({ params }: Props) {
                 </>
               );
             })()}
-
-            {!complete && (
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <ClientDocumentUpload projectId={project.id} />
-              </div>
-            )}
           </div>
 
           {milestones.length > 0 && (
