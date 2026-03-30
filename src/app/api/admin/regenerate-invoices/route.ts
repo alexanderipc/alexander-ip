@@ -76,69 +76,54 @@ export async function POST() {
           continue;
         }
 
-        // Fetch client profile — try client_id first, then project_members owner
-        let clientProfile: {
-          name: string | null;
-          email: string | null;
-          address_line1: string | null;
-          address_line2: string | null;
-          city: string | null;
-          postal_code: string | null;
-          country: string | null;
-        } | null = null;
+        // Fetch client data from every available source
+        let clientName: string = "Client";
+        let clientEmail: string = "";
+        let clientAddress: string | null = null;
 
-        if (project.client_id) {
-          const { data } = await adminClient
+        // Try user ID sources: client_id on project, then project_members owner
+        const userIdCandidates: string[] = [];
+        if (project.client_id) userIdCandidates.push(project.client_id);
+
+        const { data: owner } = await adminClient
+          .from("project_members")
+          .select("user_id")
+          .eq("project_id", doc.project_id)
+          .eq("role", "owner")
+          .limit(1)
+          .maybeSingle();
+        if (owner?.user_id && !userIdCandidates.includes(owner.user_id)) {
+          userIdCandidates.push(owner.user_id);
+        }
+
+        for (const uid of userIdCandidates) {
+          // 1. Try profiles table
+          const { data: profile } = await adminClient
             .from("profiles")
             .select("name, email, address_line1, address_line2, city, postal_code, country")
-            .eq("id", project.client_id)
+            .eq("id", uid)
             .single();
-          clientProfile = data;
-        }
 
-        // Fallback: look up owner from project_members
-        if (!clientProfile) {
-          const { data: owner } = await adminClient
-            .from("project_members")
-            .select("user_id")
-            .eq("project_id", doc.project_id)
-            .eq("role", "owner")
-            .limit(1)
-            .maybeSingle();
+          if (profile) {
+            clientName = profile.name || profile.email || clientName;
+            clientEmail = profile.email || clientEmail;
+            const addrParts = [
+              profile.address_line1, profile.address_line2,
+              profile.city, profile.postal_code, profile.country,
+            ].filter(Boolean);
+            if (addrParts.length > 0) clientAddress = addrParts.join("\n");
+            break;
+          }
 
-          if (owner?.user_id) {
-            const { data } = await adminClient
-              .from("profiles")
-              .select("name, email, address_line1, address_line2, city, postal_code, country")
-              .eq("id", owner.user_id)
-              .single();
-            clientProfile = data;
+          // 2. Try auth.users directly (always has email + user_metadata)
+          const { data: authData } = await adminClient.auth.admin.getUserById(uid);
+          if (authData?.user) {
+            const meta = authData.user.user_metadata || {};
+            clientName = meta.full_name || meta.name || authData.user.email?.split("@")[0] || clientName;
+            clientEmail = authData.user.email || clientEmail;
+            break;
           }
         }
-
-        // Last fallback: use placeholder so we still regenerate the PDF
-        if (!clientProfile) {
-          clientProfile = {
-            name: "Client",
-            email: "",
-            address_line1: null,
-            address_line2: null,
-            city: null,
-            postal_code: null,
-            country: null,
-          };
-        }
-
-        // Build client address from profile
-        const addressParts = [
-          clientProfile.address_line1,
-          clientProfile.address_line2,
-          clientProfile.city,
-          clientProfile.postal_code,
-          clientProfile.country,
-        ].filter(Boolean);
-        const clientAddress =
-          addressParts.length > 0 ? addressParts.join("\n") : null;
 
         // Calculate amounts
         const amountTotal = project.price_paid || 0;
@@ -153,8 +138,8 @@ export async function POST() {
         const pdfBuffer = await generateInvoicePdf({
           invoiceNumber,
           invoiceDate: doc.uploaded_at || new Date().toISOString(),
-          clientName: clientProfile.name || clientProfile.email || "Client",
-          clientEmail: clientProfile.email || "",
+          clientName,
+          clientEmail,
           clientAddress,
           currency: (project.currency || "GBP").toUpperCase(),
           lineItems: [
