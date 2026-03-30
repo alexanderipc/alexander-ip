@@ -69,6 +69,9 @@ export default async function AdminClientsPage() {
                   Company
                 </th>
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
+                  Location
+                </th>
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
                   Projects
                 </th>
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
@@ -97,6 +100,16 @@ export default async function AdminClientsPage() {
                     <span className="text-sm text-slate-500">
                       {client.company || "—"}
                     </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span className="text-sm text-slate-500">
+                      {[client.city, client.country].filter(Boolean).join(", ") || "—"}
+                    </span>
+                    {client.address_line1 && (
+                      <span className="block text-[11px] text-slate-400 truncate max-w-[180px]" title={[client.address_line1, client.address_line2].filter(Boolean).join(", ")}>
+                        {client.address_line1}
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-3">
                     <span className="text-sm text-slate-600">

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import ProjectCard from "@/components/portal/ProjectCard";
-import { ArrowLeft, Mail, Building, Phone } from "lucide-react";
+import { ArrowLeft, Mail, Building, Phone, MapPin } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -78,6 +78,21 @@ export default async function AdminClientDetailPage({ params }: Props) {
             </div>
           )}
         </div>
+        {/* Billing address */}
+        {(client.address_line1 || client.city || client.country) && (
+          <div className="flex items-start gap-1.5 mt-3 text-sm text-slate-600">
+            <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+            <div>
+              {client.address_line1 && <p>{client.address_line1}</p>}
+              {client.address_line2 && <p>{client.address_line2}</p>}
+              <p>
+                {[client.city, client.postal_code, client.country]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+            </div>
+          </div>
+        )}
         {client.notes && (
           <div className="mt-4 p-3 bg-amber-50 rounded-lg text-sm text-amber-800">
             <span className="font-medium">Notes: </span>
