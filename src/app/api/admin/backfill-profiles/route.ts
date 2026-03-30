@@ -28,14 +28,17 @@ export async function GET() {
       return NextResponse.json({ error: "Admin only" }, { status: 403 });
     }
 
-    // Get all profiles that are missing name or address
-    const { data: profiles } = await adminClient
+    // Get all non-admin profiles
+    const { data: profiles, error: profError } = await adminClient
       .from("profiles")
-      .select("id, name, email, address_line1, country")
-      .eq("role", "client");
+      .select("id, name, email, address_line1, country, role")
+      .neq("role", "admin");
 
-    if (!profiles) {
-      return NextResponse.json({ error: "Failed to fetch profiles" }, { status: 500 });
+    if (profError || !profiles) {
+      return NextResponse.json(
+        { error: `Failed to fetch profiles: ${profError?.message || "null"}` },
+        { status: 500 }
+      );
     }
 
     const results: { email: string; name: string | null; updates: string[] }[] = [];
