@@ -39,16 +39,23 @@ async function saveBillingAddressToProfile(
   profileId: string,
   session: Stripe.Checkout.Session
 ) {
-  const addr = session.customer_details?.address;
-  if (!addr) return;
+  const cd = session.customer_details;
+  if (!cd) return;
 
   // Only update fields that Stripe provided (don't overwrite existing data with nulls)
   const update: Record<string, string | null> = {};
-  if (addr.line1 !== undefined) update.address_line1 = addr.line1;
-  if (addr.line2 !== undefined) update.address_line2 = addr.line2;
-  if (addr.city !== undefined) update.city = addr.city;
-  if (addr.postal_code !== undefined) update.postal_code = addr.postal_code;
-  if (addr.country !== undefined) update.country = addr.country;
+
+  // Always update name from Stripe if available (most accurate source)
+  if (cd.name) update.name = cd.name;
+
+  const addr = cd.address;
+  if (addr) {
+    if (addr.line1 !== undefined) update.address_line1 = addr.line1;
+    if (addr.line2 !== undefined) update.address_line2 = addr.line2;
+    if (addr.city !== undefined) update.city = addr.city;
+    if (addr.postal_code !== undefined) update.postal_code = addr.postal_code;
+    if (addr.country !== undefined) update.country = addr.country;
+  }
 
   if (Object.keys(update).length === 0) return;
 
@@ -58,7 +65,7 @@ async function saveBillingAddressToProfile(
     .eq("id", profileId);
 
   if (error) {
-    console.error("[webhook] Failed to save billing address:", error.message);
+    console.error("[webhook] Failed to save billing details:", error.message);
   }
 }
 
