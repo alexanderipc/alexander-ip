@@ -11,6 +11,48 @@ import { generateAndStoreInvoice } from "@/lib/invoice";
 
 export const runtime = "nodejs";
 
+/* ── Welcome message template ──────────────────────────────────── */
+
+function buildWelcomeMessage(
+  firstName: string,
+  projectTitle: string,
+  estimatedDelivery: string | null,
+  serviceType: string
+): string {
+  const deliveryLine = estimatedDelivery
+    ? `Your estimated delivery date is **${new Date(estimatedDelivery).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}**. I'll keep you updated on progress throughout, and you can track everything from this portal.`
+    : "I'll keep you updated on progress throughout, and you can track everything from this portal.";
+
+  return [
+    `Hi ${firstName},`,
+    "",
+    `Welcome to your project portal for **${projectTitle}**! Thank you for choosing Alexander IP \u2014 I'm looking forward to working with you on this.`,
+    "",
+    `## What happens next`,
+    "",
+    deliveryLine,
+    "",
+    `## Your portal at a glance`,
+    "",
+    "- **\u{1F4C4} Documents** \u2014 Your VAT invoice is already in the Documents section on the right. This is also where you'll find all deliverables once they're ready.",
+    "- **\u{1F4E4} Upload files** \u2014 Please upload any relevant materials (invention descriptions, sketches, diagrams, prior art, technical specifications) using the upload area in the sidebar. The more detail you provide, the stronger the end result.",
+    "- **\u{1F4AC} Messages** \u2014 This chat is the best way to reach me. Send questions, additional information, or feedback at any time. I aim to respond within a few hours during UK business hours.",
+    "- **\u{1F4CA} Progress** \u2014 The timeline at the top of this page shows exactly where your project stands. You'll also see detailed updates in the feed below.",
+    "- **\u{1F514} Notifications** \u2014 You'll receive email alerts at key milestones. Toggle these on or off using the bell icon above.",
+    "- **\u{1F465} Team access** \u2014 Need a colleague or co-inventor to see this project? Use the Team section in the sidebar to invite them.",
+    "",
+    `## Getting the best results`,
+    "",
+    "The single most important thing you can do is **upload a thorough invention disclosure** \u2014 describe what your invention is, how it works, what makes it different from existing solutions, and any technical details you can share. Sketches and diagrams are extremely helpful, even rough ones.",
+    "",
+    "If you have any questions at all, just drop me a message here. There's no such thing as a silly question!",
+    "",
+    "Best regards,",
+    "**Alex Rowley**",
+    "*Patent Consultant \u2014 Alexander IP*",
+  ].join("\n");
+}
+
 /* ── Billing address helper ──────────────────────────────────── */
 
 function formatBillingAddress(session: Stripe.Checkout.Session): string | null {
@@ -381,23 +423,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .single();
 
     if (adminUser) {
-      const welcomeBody = [
-        `Hi ${customerName.split(" ")[0]},`,
-        "",
-        `Welcome to your project portal for **${title}**. I'm looking forward to working with you on this.`,
-        "",
-        "Here's how to get the most out of your portal:",
-        "",
-        "- **Documents** \u2014 Your VAT invoice is already in the Documents section. Upload any relevant files (invention descriptions, sketches, prior art, etc.) here too \u2014 it's the easiest way to share materials with me.",
-        "- **Messages** \u2014 Use this chat to send me questions or additional information at any time. I'll respond as soon as I can.",
-        "- **Progress updates** \u2014 You'll see updates in the feed on this page, and receive email notifications at key milestones.",
-        "- **Notifications** \u2014 Toggle email alerts on or off using the bell icon on this page.",
-        "",
-        "If you have any questions at all, just drop me a message here.",
-        "",
-        "Best regards,",
-        "Alex",
-      ].join("\n");
+      const welcomeBody = buildWelcomeMessage(
+        customerName.split(" ")[0],
+        title,
+        estimatedDelivery,
+        serviceType
+      );
 
       await adminClient.from("project_messages").insert({
         project_id: project.id,
@@ -845,23 +876,12 @@ async function postPaymentActions(
       .single();
 
     if (adminUser) {
-      const welcomeBody = [
-        `Hi ${customerName.split(" ")[0]},`,
-        "",
-        `Welcome to your project portal for **${offer.title}**. I'm looking forward to working with you on this.`,
-        "",
-        "Here's how to get the most out of your portal:",
-        "",
-        "- **Documents** \u2014 Your VAT invoice is already in the Documents section. Upload any relevant files (invention descriptions, sketches, prior art, etc.) here too \u2014 it's the easiest way to share materials with me.",
-        "- **Messages** \u2014 Use this chat to send me questions or additional information at any time. I'll respond as soon as I can.",
-        "- **Progress updates** \u2014 You'll see updates in the feed on this page, and receive email notifications at key milestones.",
-        "- **Notifications** \u2014 Toggle email alerts on or off using the bell icon on this page.",
-        "",
-        "If you have any questions at all, just drop me a message here.",
-        "",
-        "Best regards,",
-        "Alex",
-      ].join("\n");
+      const welcomeBody = buildWelcomeMessage(
+        customerName.split(" ")[0],
+        offer.title,
+        estimatedDelivery,
+        serviceType
+      );
 
       await adminClient.from("project_messages").insert({
         project_id: project.id,

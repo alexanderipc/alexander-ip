@@ -88,7 +88,7 @@ export default function AdminMessageThread({
   return (
     <div>
       {/* Message list */}
-      <div className="space-y-3 max-h-96 overflow-y-auto mb-4 pr-1">
+      <div className="space-y-3 max-h-[600px] overflow-y-auto mb-4 pr-1">
         {sorted.length === 0 ? (
           <p className="text-sm text-slate-400 italic py-4 text-center">
             No messages yet. Send a message to the client.
