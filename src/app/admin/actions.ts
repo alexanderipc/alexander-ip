@@ -706,7 +706,7 @@ export async function getCalendarData(year: number, month: number) {
     .select("id, title, estimated_delivery_date, status, client_id, profiles(name, email)")
     .gte("estimated_delivery_date", startDate)
     .lte("estimated_delivery_date", endDate)
-    .not("status", "in", '("complete","complete_granted")');
+    .not("status", "in", '("complete","complete_granted","report_delivered","draft_delivered")');
 
   console.log(`[calendar] range: ${startDate} → ${endDate}, projects: ${projects?.length ?? 'null'}, error: ${projectsError?.message ?? 'none'}`);
   if (projectsError) {

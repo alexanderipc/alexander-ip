@@ -5,15 +5,31 @@ interface DeadlineIndicatorProps {
   status: string;
 }
 
+const DELIVERED_STATUSES = ["report_delivered", "draft_delivered", "complete", "complete_granted"];
+
+function isDelivered(status: string): boolean {
+  return DELIVERED_STATUSES.includes(status) || status.includes("delivered");
+}
+
 export default function DeadlineIndicator({
   deliveryDate,
   status,
 }: DeadlineIndicatorProps) {
-  if (isComplete(status)) {
+  // Completed or delivered — show green with checkmark
+  if (isComplete(status) || isDelivered(status)) {
+    const label = isComplete(status) ? "Done" : "Delivered";
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-medium text-teal-600">
-        <span className="w-2 h-2 rounded-full bg-teal-500" />
-        Done
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+        <span className="w-2 h-2 rounded-full bg-green-500" />
+        {label}
+        {deliveryDate && (
+          <span className="text-green-500 ml-0.5">
+            {new Date(deliveryDate).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+            })}
+          </span>
+        )}
       </span>
     );
   }
@@ -36,14 +52,14 @@ export default function DeadlineIndicator({
     overdue: "text-red-600",
     urgent: "text-amber-600",
     normal: "text-slate-600",
-    complete: "text-teal-600",
+    complete: "text-green-600",
   };
 
   const dotMap = {
     overdue: "bg-red-500",
     urgent: "bg-amber-500",
     normal: "bg-slate-400",
-    complete: "bg-teal-500",
+    complete: "bg-green-500",
   };
 
   return (

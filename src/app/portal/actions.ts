@@ -258,7 +258,7 @@ export async function getClientCalendarData(year: number, month: number) {
         .in("id", accessibleIds)
         .gte("estimated_delivery_date", startDate)
         .lte("estimated_delivery_date", endDate)
-        .not("status", "in", '("complete","complete_granted")')
+        .not("status", "in", '("complete","complete_granted","report_delivered","draft_delivered")')
     : { data: [] };
 
   if (projects) {
