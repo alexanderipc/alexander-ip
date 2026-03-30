@@ -155,31 +155,24 @@ export async function POST() {
           stripeSessionId: null,
         });
 
-        // Overwrite the existing file in storage
+        // Delete old file first, then upload fresh (update/upsert doesn't reliably overwrite)
+        await adminClient.storage
+          .from("project-documents")
+          .remove([doc.file_url]);
+
         const { error: uploadError } = await adminClient.storage
           .from("project-documents")
-          .update(doc.file_url, pdfBuffer, {
+          .upload(doc.file_url, pdfBuffer, {
             contentType: "application/pdf",
-            upsert: true,
           });
 
         if (uploadError) {
-          // If update fails (file might not exist at path), try upload
-          const { error: uploadError2 } = await adminClient.storage
-            .from("project-documents")
-            .upload(doc.file_url, pdfBuffer, {
-              contentType: "application/pdf",
-              upsert: true,
-            });
-
-          if (uploadError2) {
-            results.push({
-              id: doc.id,
-              filename: doc.filename,
-              status: `error - ${uploadError2.message}`,
-            });
-            continue;
-          }
+          results.push({
+            id: doc.id,
+            filename: doc.filename,
+            status: `error - ${uploadError.message}`,
+          });
+          continue;
         }
 
         results.push({
