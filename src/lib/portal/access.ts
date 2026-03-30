@@ -9,6 +9,14 @@ export async function canAccessProject(
 ): Promise<boolean> {
   const adminClient = createAdminClient();
 
+  // Admin users can access all projects
+  const { data: profile } = await adminClient
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+  if (profile?.role === "admin") return true;
+
   // Check project_members first
   const { data: membership } = await adminClient
     .from("project_members")

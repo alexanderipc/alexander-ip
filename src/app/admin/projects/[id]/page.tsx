@@ -283,15 +283,36 @@ export default async function AdminProjectDetailPage({ params }: Props) {
         <div className="lg:col-span-2 space-y-6">
           {/* Messages */}
           <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Messages
-              {unreadMessages > 0 && (
-                <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                  {unreadMessages} new
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" />
+                Messages
+                {unreadMessages > 0 && (
+                  <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    {unreadMessages} new
+                  </span>
+                )}
+              </h2>
+              {project.last_client_visit && (
+                <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <Eye className="w-3 h-3" />
+                  Client last seen{" "}
+                  {(() => {
+                    const visit = new Date(project.last_client_visit);
+                    const now = new Date();
+                    const diffMs = now.getTime() - visit.getTime();
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHours = Math.floor(diffMs / 3600000);
+                    const diffDays = Math.floor(diffMs / 86400000);
+                    if (diffMins < 1) return "just now";
+                    if (diffMins < 60) return `${diffMins}m ago`;
+                    if (diffHours < 24) return `${diffHours}h ago`;
+                    if (diffDays < 7) return `${diffDays}d ago`;
+                    return visit.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                  })()}
                 </span>
               )}
-            </h2>
+            </div>
             <AdminMessageThread
               projectId={project.id}
               messages={messages}
