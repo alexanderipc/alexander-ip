@@ -76,20 +76,57 @@ export async function POST() {
           continue;
         }
 
-        // Fetch client profile
-        const { data: clientProfile } = await adminClient
-          .from("profiles")
-          .select("name, email, address_line1, address_line2, city, postal_code, country")
-          .eq("id", project.client_id)
-          .single();
+        // Fetch client profile — try client_id first, then project_members owner
+        let clientProfile: {
+          name: string | null;
+          email: string | null;
+          address_line1: string | null;
+          address_line2: string | null;
+          city: string | null;
+          postal_code: string | null;
+          country: string | null;
+        } | null = null;
 
+        if (project.client_id) {
+          const { data } = await adminClient
+            .from("profiles")
+            .select("name, email, address_line1, address_line2, city, postal_code, country")
+            .eq("id", project.client_id)
+            .single();
+          clientProfile = data;
+        }
+
+        // Fallback: look up owner from project_members
         if (!clientProfile) {
-          results.push({
-            id: doc.id,
-            filename: doc.filename,
-            status: "skipped - client profile not found",
-          });
-          continue;
+          const { data: owner } = await adminClient
+            .from("project_members")
+            .select("user_id")
+            .eq("project_id", doc.project_id)
+            .eq("role", "owner")
+            .limit(1)
+            .maybeSingle();
+
+          if (owner?.user_id) {
+            const { data } = await adminClient
+              .from("profiles")
+              .select("name, email, address_line1, address_line2, city, postal_code, country")
+              .eq("id", owner.user_id)
+              .single();
+            clientProfile = data;
+          }
+        }
+
+        // Last fallback: use placeholder so we still regenerate the PDF
+        if (!clientProfile) {
+          clientProfile = {
+            name: "Client",
+            email: "",
+            address_line1: null,
+            address_line2: null,
+            city: null,
+            postal_code: null,
+            country: null,
+          };
         }
 
         // Build client address from profile
