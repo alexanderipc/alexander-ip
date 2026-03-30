@@ -28,11 +28,10 @@ export async function GET() {
       return NextResponse.json({ error: "Admin only" }, { status: 403 });
     }
 
-    // Get all non-admin profiles
+    // Get all profiles (we'll skip the admin user by checking email match)
     const { data: profiles, error: profError } = await adminClient
       .from("profiles")
-      .select("id, name, email, address_line1, country, role")
-      .neq("role", "admin");
+      .select("id, name, email, address_line1, country");
 
     if (profError || !profiles) {
       return NextResponse.json(
