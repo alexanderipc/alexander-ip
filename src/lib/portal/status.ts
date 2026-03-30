@@ -28,7 +28,6 @@ export const PROSECUTION_STATUSES = [
 export const SEARCH_STATUSES = [
   "payment_received",
   "search_in_progress",
-  "report_writing",
   "report_delivered",
   "complete",
 ] as const;
@@ -217,6 +216,10 @@ export function getPreviousStatus(serviceType: ServiceType, currentStatus: strin
 
 export function isComplete(status: string): boolean {
   return status === "complete";
+}
+
+export function isDelivered(status: string): boolean {
+  return status.includes("delivered") || status === "complete" || status === "complete_granted";
 }
 
 /* ── Status colors for badges ────────────────────────────────── */

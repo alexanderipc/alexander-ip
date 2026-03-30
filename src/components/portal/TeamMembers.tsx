@@ -20,6 +20,7 @@ interface TeamMembersProps {
 
 export default function TeamMembers({ projectId, members, isOwner }: TeamMembersProps) {
   const [email, setEmail] = useState("");
+  const [showInvite, setShowInvite] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -33,8 +34,9 @@ export default function TeamMembers({ projectId, members, isOwner }: TeamMembers
       try {
         await inviteTeamMember(projectId, email);
         setEmail("");
-        setSuccess("Team member invited successfully");
-        setTimeout(() => setSuccess(""), 3000);
+        setShowInvite(false);
+        setSuccess("Invitation sent! They'll receive an email with a link to access this project.");
+        setTimeout(() => setSuccess(""), 5000);
       } catch (err) {
         setError((err as Error).message);
       }
@@ -93,26 +95,50 @@ export default function TeamMembers({ projectId, members, isOwner }: TeamMembers
         ))}
       </div>
 
-      {/* Invite form (owner only) */}
-      {isOwner && (
-        <form onSubmit={handleInvite} className="flex gap-2">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="team@example.com"
-            className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
-          />
-          <button
-            type="submit"
-            disabled={isPending || !email}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            Invite
-          </button>
-        </form>
+      {/* Invite section (owner only) */}
+      {isOwner && !showInvite && (
+        <button
+          type="button"
+          onClick={() => setShowInvite(true)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-blue-200 rounded-xl text-sm font-medium text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+        >
+          <UserPlus className="w-4 h-4" />
+          Give someone else access to this project
+        </button>
+      )}
+      {isOwner && showInvite && (
+        <div className="border border-blue-200 rounded-xl p-4 bg-blue-50/50">
+          <p className="text-xs font-medium text-blue-700 mb-3">
+            Invite a collaborator — they&apos;ll receive a magic link to access this project.
+          </p>
+          <form onSubmit={handleInvite} className="space-y-2">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={isPending || !email}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                {isPending ? "Sending..." : "Send Invite"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowInvite(false); setError(""); }}
+                className="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {error && (

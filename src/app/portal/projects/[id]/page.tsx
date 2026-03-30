@@ -8,6 +8,7 @@ import {
   getProgressPercent,
   getDaysRemaining,
   isComplete,
+  isDelivered,
 } from "@/lib/portal/status";
 import StatusBadge from "@/components/portal/StatusBadge";
 import ProgressBar from "@/components/portal/ProgressBar";
@@ -190,9 +191,22 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   const percent = getProgressPercent(project.service_type, project.status);
   const complete = isComplete(project.status) || project.status === "complete_granted";
+  const delivered = isDelivered(project.status); // includes complete + all delivered statuses
   const daysLeft = project.estimated_delivery_date
     ? getDaysRemaining(project.estimated_delivery_date)
     : null;
+
+  // Determine admin user IDs for document ownership (admin docs vs client uploads)
+  const adminUserIds = new Set<string>();
+  try {
+    const { data: admins } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin");
+    (admins || []).forEach((a) => adminUserIds.add(a.id));
+  } catch {
+    // fallback: empty set means all docs show under "From Alexander IP"
+  }
 
   return (
     <div>
@@ -209,8 +223,21 @@ export default async function ProjectDetailPage({ params }: Props) {
         Back to Dashboard
       </Link>
 
-      {/* Deadline banner — prominent, above everything */}
-      {!complete && project.estimated_delivery_date && (
+      {/* Deadline / delivery banner */}
+      {delivered && !complete && (
+        <div className="rounded-xl border bg-green-50 border-green-200 p-4 mb-4 flex items-center gap-3">
+          <Clock className="w-5 h-5 text-green-500 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-green-700">
+              Your deliverables are ready!
+            </p>
+            <p className="text-xs text-green-600">
+              Please review the documents in the sidebar and let us know if you have any questions or feedback via the message thread below.
+            </p>
+          </div>
+        </div>
+      )}
+      {!delivered && project.estimated_delivery_date && (
         <div
           className={`rounded-xl border p-4 mb-4 flex items-center gap-3 ${
             daysLeft !== null && daysLeft < 0
@@ -265,17 +292,17 @@ export default async function ProjectDetailPage({ params }: Props) {
           </div>
         </div>
       )}
-      {complete && project.actual_delivery_date && (
+      {complete && (
         <div className="rounded-xl border bg-emerald-50 border-emerald-200 p-4 mb-4 flex items-center gap-3">
           <Clock className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-          <p className="text-sm font-semibold text-emerald-700">
-            Completed on{" "}
-            {new Date(project.actual_delivery_date).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
+          <div>
+            <p className="text-sm font-semibold text-emerald-700">
+              Project complete{project.actual_delivery_date ? ` — delivered ${new Date(project.actual_delivery_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}` : ""}
+            </p>
+            <p className="text-xs text-emerald-600">
+              Thank you for working with Alexander IP. All deliverables and documents remain accessible here. If you need anything further, just send a message below.
+            </p>
+          </div>
         </div>
       )}
 
@@ -419,13 +446,13 @@ export default async function ProjectDetailPage({ params }: Props) {
               Documents
             </h2>
 
-            {/* Documents from Alexander IP */}
+            {/* Documents split by who uploaded them */}
             {(() => {
               const adminDocs = documents.filter(
-                (d) => d.uploaded_by !== user.id
+                (d) => !d.uploaded_by || adminUserIds.has(d.uploaded_by)
               );
               const clientDocs = documents.filter(
-                (d) => d.uploaded_by === user.id
+                (d) => d.uploaded_by && !adminUserIds.has(d.uploaded_by)
               );
               return (
                 <>
