@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect, useRef } from "react";
 import { sendAdminMessage, markAdminMessagesRead } from "@/app/admin/actions";
 import { Send } from "lucide-react";
 import Markdown from "react-markdown";
+import { getMarkdownFromClipboard } from "@/lib/html-to-markdown";
 
 interface Message {
   id: string;
@@ -61,6 +62,19 @@ export default function AdminMessageThread({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const md = getMarkdownFromClipboard(e);
+    if (md !== null) {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const before = body.slice(0, start);
+      const after = body.slice(end);
+      setBody(before + md + after);
     }
   }
 
@@ -137,10 +151,11 @@ export default function AdminMessageThread({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Message client..."
-          rows={5}
+          onPaste={handlePaste}
+          placeholder="Message client... (paste rich text from Word/email — formatting is preserved)"
+          rows={8}
           maxLength={10000}
-          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[80px]"
+          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[160px]"
         />
         <button
           type="button"

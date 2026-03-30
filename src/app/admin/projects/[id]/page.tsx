@@ -24,7 +24,7 @@ import TimelineEditor from "@/components/admin/TimelineEditor";
 import AdminMessageThread from "@/components/admin/MessageThread";
 import NotificationMuteControls from "@/components/admin/NotificationMuteControls";
 import AdminTeamManager from "@/components/admin/TeamManager";
-import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff, Users, Eye } from "lucide-react";
+import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff, Users, Eye, ExternalLink } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -175,13 +175,24 @@ export default async function AdminProjectDetailPage({ params }: Props) {
 
   return (
     <div>
-      <Link
-        href="/admin"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Dashboard
-      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Link>
+        <Link
+          href={`/portal/projects/${id}`}
+          target="_blank"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          View as client
+          <ExternalLink className="w-3 h-3" />
+        </Link>
+      </div>
 
       {/* Header */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">

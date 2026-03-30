@@ -32,6 +32,26 @@ export async function POST(req: NextRequest) {
     const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
     const filePath = `${projectId}/${Date.now()}-${safeName}`;
 
+    // Determine proper content type based on file extension
+    const ext = filename.split(".").pop()?.toLowerCase() || "";
+    const mimeMap: Record<string, string> = {
+      pdf: "application/pdf",
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      webp: "image/webp",
+      doc: "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      txt: "text/plain",
+      zip: "application/zip",
+      rar: "application/x-rar-compressed",
+      "7z": "application/x-7z-compressed",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      csv: "text/csv",
+      pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    };
+    const resolvedContentType = mimeMap[ext] || contentType || "application/octet-stream";
+
     // Create signed upload URL (valid for 2 minutes)
     const { data, error } = await adminClient.storage
       .from("project-documents")
@@ -46,6 +66,7 @@ export async function POST(req: NextRequest) {
       signedUrl: data.signedUrl,
       token: data.token,
       filePath,
+      contentType: resolvedContentType,
     });
   } catch (err) {
     console.error("[SignedURL] Unexpected error:", err);

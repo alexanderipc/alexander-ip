@@ -115,16 +115,19 @@ export default function ClientDocumentUpload({
               const err = await urlRes.json();
               throw new Error(err.error || "Failed to get upload URL");
             }
-            const { signedUrl, filePath } = await urlRes.json();
+            const { signedUrl, filePath, contentType: resolvedType } = await urlRes.json();
 
             // Upload directly to Supabase Storage
+            // Use the server-resolved content type (handles zip/rar correctly)
             const uploadRes = await fetch(signedUrl, {
               method: "PUT",
-              headers: { "Content-Type": currentFile.type || "application/octet-stream" },
+              headers: { "Content-Type": resolvedType || currentFile.type || "application/octet-stream" },
               body: currentFile,
             });
             if (!uploadRes.ok) {
-              throw new Error(`Storage upload failed (${uploadRes.status})`);
+              const errorText = await uploadRes.text().catch(() => "");
+              console.error("[Upload] Storage PUT failed:", uploadRes.status, errorText);
+              throw new Error(`Storage upload failed (${uploadRes.status}): ${errorText.slice(0, 100)}`);
             }
 
             // Register the document record
