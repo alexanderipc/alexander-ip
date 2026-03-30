@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
+import { Star, ExternalLink, Globe } from "lucide-react";
 
 export default function Hero() {
   return (
@@ -15,9 +16,40 @@ export default function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left: Text content */}
           <div className="animate-fade-in-up">
+            {/* Trust links — social proof above the fold */}
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <a
+                href="https://uk.trustpilot.com/review/alexander-ip.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-green-300 hover:bg-green-50 transition-colors shadow-sm"
+              >
+                <Star className="w-3.5 h-3.5 text-green-500 fill-green-500" />
+                Trustpilot Reviews
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+              <a
+                href="https://www.fiverr.com/alexander_ip?public_mode=true"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-green-300 hover:bg-green-50 transition-colors shadow-sm"
+              >
+                <Star className="w-3.5 h-3.5 text-green-500 fill-green-500" />
+                800+ Fiverr Reviews
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+              <a
+                href="#patent-portfolio"
+                className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-colors shadow-sm"
+              >
+                <Globe className="w-3.5 h-3.5 text-blue-500" />
+                View Published Patents
+              </a>
+            </div>
+
             <div className="inline-flex items-center gap-2 bg-blue/10 text-blue-dark rounded-full px-4 py-1.5 text-sm font-medium mb-6">
               <span className="w-2 h-2 bg-blue rounded-full" />
-              MSc Physics &middot; Legal 500 Trained &middot; 800+ five-star reviews &middot; 50+ patents granted
+              MSc Physics &middot; Legal 500 Trained &middot; 800+ five-star reviews &middot; 100+ patents granted
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-navy leading-[1.1] mb-4">

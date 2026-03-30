@@ -255,7 +255,7 @@ function PatentMap() {
   }
 
   return (
-    <section className="py-20 bg-white">
+    <section id="patent-portfolio" className="py-20 bg-white">
       <Container>
         <div className="text-center mb-12">
           <Badge className="mb-4">Global Coverage</Badge>
