@@ -54,6 +54,10 @@ interface GenerateInvoiceParams {
   currency: string; // "GBP", "USD", etc.
   stripePaymentIntentId?: string | null; // pi_xxx — links invoice to Stripe payment
   stripeSessionId?: string | null; // cs_xxx — checkout session reference
+  // Official patent office fees (optional)
+  officialFeeDescription?: string | null; // e.g. "Official Patent Office Fees — EPO (Handling As Agent)"
+  officialFeeAmount?: number | null; // in smallest unit of invoice currency (converted)
+  coverFeeAmount?: number | null; // in smallest unit of invoice currency
 }
 
 /* ── Currency helpers ─────────────────────────────────────────── */
@@ -401,20 +405,52 @@ export async function generateAndStoreInvoice(
     const invoiceNumber = await getNextInvoiceNumber();
     console.log(`[Invoice] Generating ${invoiceNumber}`);
 
-    // 2. Build line item from Stripe amounts
-    // amountTotal includes tax; amountTax is the tax portion
+    // 2. Build line items from Stripe amounts
     const hasTax = params.amountTax > 0;
-    const subtotalPence = params.amountTotal - params.amountTax;
-    const subtotal = subtotalPence / 100;
+    const hasOfficialFees = params.officialFeeAmount && params.officialFeeAmount > 0;
+
+    // Calculate professional fees subtotal
+    // amountTotal includes tax; amountTax is the tax portion
+    // If official fees are present, subtract them from the total to get professional + cover
+    let professionalAndCoverPence = params.amountTotal - params.amountTax;
+    if (hasOfficialFees) {
+      // Official fees are "inclusive" (no tax added), so their full amount is in the total
+      professionalAndCoverPence -= params.officialFeeAmount!;
+    }
+    if (params.coverFeeAmount && params.coverFeeAmount > 0) {
+      professionalAndCoverPence -= params.coverFeeAmount;
+    }
+
+    const professionalSubtotal = professionalAndCoverPence / 100;
 
     const lineItems: InvoiceLineItem[] = [
       {
         description: params.title,
         quantity: 1,
-        unitPrice: subtotal,
+        unitPrice: professionalSubtotal,
         vatRate: hasTax ? 0.2 : null,
       },
     ];
+
+    // Official patent office fees line (never VAT)
+    if (hasOfficialFees && params.officialFeeDescription) {
+      lineItems.push({
+        description: params.officialFeeDescription,
+        quantity: 1,
+        unitPrice: params.officialFeeAmount! / 100,
+        vatRate: null, // never subject to VAT
+      });
+    }
+
+    // Currency conversion cover fee line (VAT applies like professional fees)
+    if (params.coverFeeAmount && params.coverFeeAmount > 0) {
+      lineItems.push({
+        description: "Currency Conversion Cover Fee",
+        quantity: 1,
+        unitPrice: params.coverFeeAmount / 100,
+        vatRate: hasTax ? 0.2 : null,
+      });
+    }
 
     // 3. Generate PDF in memory
     const pdfBuffer = await generateInvoicePdf({

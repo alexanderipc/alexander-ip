@@ -3,6 +3,12 @@ import { notFound } from "next/navigation";
 import OfferPayButton from "@/components/offer/OfferPayButton";
 import { getServiceLabel } from "@/lib/portal/status";
 import type { ServiceType } from "@/lib/supabase/types";
+import {
+  getOfficeLabel,
+  getOfficeCurrency,
+  convertCurrency,
+  getCurrencySymbol,
+} from "@/lib/pricing";
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: "$",
@@ -67,6 +73,32 @@ export default async function OfferPage({
   const isAccepted = offer.status === "accepted";
   const isPending = offer.status === "pending";
 
+  // Official fees info
+  const hasOfficialFees = offer.include_official_fees && offer.official_fee_amount && offer.official_fee_currency;
+  let officialFeesDisplay: string | null = null;
+  let officialFeesConvertedDisplay: string | null = null;
+  let officeLabel: string | null = null;
+  let coverFeeDisplay: string | null = null;
+
+  if (hasOfficialFees) {
+    const feeSymbol = getCurrencySymbol(offer.official_fee_currency);
+    officialFeesDisplay = `${feeSymbol}${(offer.official_fee_amount / 100).toFixed(2)} ${offer.official_fee_currency}`;
+    officeLabel = getOfficeLabel(offer.official_fee_office, offer.official_fee_sub_office);
+
+    if (offer.official_fee_currency !== offer.currency) {
+      const converted = convertCurrency(
+        offer.official_fee_amount / 100,
+        offer.official_fee_currency,
+        offer.currency
+      );
+      officialFeesConvertedDisplay = `${symbol}${converted.toFixed(2)}`;
+    }
+
+    if (offer.cover_fee_amount && offer.cover_fee_amount > 0) {
+      coverFeeDisplay = `${symbol}${(offer.cover_fee_amount / 100).toFixed(2)}`;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-lg">
@@ -100,24 +132,72 @@ export default async function OfferPage({
           )}
 
           <div className="p-8">
-            {/* Title & Price */}
-            <h2 className="text-xl font-bold text-navy mb-2">{offer.title}</h2>
+            {/* Title */}
+            <h2 className="text-xl font-bold text-navy mb-4">{offer.title}</h2>
 
-            {isInstallmentPlan && isPending ? (
-              <>
-                <p className="text-sm text-slate-400 mb-1">Total: {totalDisplayAmount}</p>
-                <p className="text-3xl font-extrabold text-navy mb-1">
-                  {installmentDisplayAmount}
-                </p>
-                <p className="text-sm font-medium text-blue-600 mb-1">
-                  Installment {nextInstallment} of {totalInstallments}
-                </p>
-              </>
+            {/* Fee Breakdown (when official fees included) */}
+            {hasOfficialFees ? (
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 mb-6">
+                <div className="space-y-3 text-sm">
+                  {/* Professional fees */}
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Professional Fees</span>
+                    <span className="text-navy font-semibold">{totalDisplayAmount}</span>
+                  </div>
+
+                  {/* Official fees */}
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">
+                      Official Patent Office Fees{officeLabel ? ` — ${officeLabel}` : ""}
+                      <br />
+                      <span className="text-xs text-slate-400">(Handling As Agent)</span>
+                    </span>
+                    <span className="text-navy font-semibold text-right">
+                      {officialFeesDisplay}
+                      {officialFeesConvertedDisplay && (
+                        <span className="block text-xs text-slate-400">
+                          ≈ {officialFeesConvertedDisplay}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Cover fee */}
+                  {coverFeeDisplay && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Currency Conversion Cover Fee</span>
+                      <span className="text-navy font-semibold">{coverFeeDisplay}</span>
+                    </div>
+                  )}
+
+                  {/* Divider + VAT note */}
+                  <div className="border-t border-slate-200 pt-2">
+                    <p className="text-xs text-slate-400">
+                      Professional fees{coverFeeDisplay ? " and cover fee" : ""} are exclusive of VAT where applicable. Official patent office fees are not subject to VAT.
+                    </p>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <p className="text-3xl font-extrabold text-navy mb-1">{totalDisplayAmount}</p>
+              <>
+                {/* Original single-amount display */}
+                {isInstallmentPlan && isPending ? (
+                  <>
+                    <p className="text-sm text-slate-400 mb-1">Total: {totalDisplayAmount}</p>
+                    <p className="text-3xl font-extrabold text-navy mb-1">
+                      {installmentDisplayAmount}
+                    </p>
+                    <p className="text-sm font-medium text-blue-600 mb-1">
+                      Installment {nextInstallment} of {totalInstallments}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-3xl font-extrabold text-navy mb-1">{totalDisplayAmount}</p>
+                )}
+                <p className="text-xs text-slate-400 mb-1">Exclusive of VAT where applicable</p>
+                <p className="text-sm text-slate-500 mb-6">{serviceLabel}</p>
+              </>
             )}
-            <p className="text-xs text-slate-400 mb-1">Exclusive of VAT where applicable</p>
-            <p className="text-sm text-slate-500 mb-6">{serviceLabel}</p>
 
             {/* Installment progress bar */}
             {isInstallmentPlan && (isPending || isAccepted) && (

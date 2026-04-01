@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { createOffer } from "@/app/admin/actions";
 import { getServiceLabel, DEFAULT_TIMELINES } from "@/lib/portal/status";
 import type { ServiceType } from "@/lib/supabase/types";
+import {
+  PATENT_OFFICES,
+  WIPO_RECEIVING_OFFICES,
+  getOfficeCurrency,
+  convertCurrency,
+} from "@/lib/pricing";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, Send } from "lucide-react";
 
@@ -31,7 +37,12 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: "$",
   GBP: "\u00a3",
   EUR: "\u20ac",
+  CAD: "CA$",
+  AUD: "A$",
+  CHF: "CHF ",
 };
+
+const OFFICE_KEYS = Object.keys(PATENT_OFFICES);
 
 export default function NewOfferPage() {
   const router = useRouter();
@@ -44,14 +55,38 @@ export default function NewOfferPage() {
   const [currency, setCurrency] = useState("USD");
   const [installments, setInstallments] = useState<string>("1");
 
+  // Official fees state
+  const [includeOfficialFees, setIncludeOfficialFees] = useState(false);
+  const [feeOffice, setFeeOffice] = useState("EPO");
+  const [feeSubOffice, setFeeSubOffice] = useState("EPO");
+  const [officialFeeAmount, setOfficialFeeAmount] = useState<string>("");
+  const [coverFeeAmount, setCoverFeeAmount] = useState<string>("");
+
   function handleServiceChange(value: ServiceType) {
     setServiceType(value);
     const defaultDays = DEFAULT_TIMELINES[value];
     setTimelineDays(defaultDays ? String(defaultDays) : "");
   }
 
+  // Derive office currency
+  const effectiveOffice = feeOffice === "WIPO" ? feeSubOffice : feeOffice;
+  const { currency: feeCurrency, symbol: feeCurrencySymbol } = getOfficeCurrency(
+    feeOffice,
+    feeOffice === "WIPO" ? feeSubOffice : null
+  );
+  const needsCoverFee = feeCurrency !== currency;
+
   const displayAmount = amount ? parseFloat(amount).toFixed(2) : "0.00";
   const symbol = CURRENCY_SYMBOLS[currency] || "$";
+
+  // Summary calculations
+  const professionalFees = amount ? parseFloat(amount) : 0;
+  const officialFeesNative = officialFeeAmount ? parseFloat(officialFeeAmount) : 0;
+  const officialFeesConverted = includeOfficialFees && officialFeesNative > 0
+    ? convertCurrency(officialFeesNative, feeCurrency, currency)
+    : 0;
+  const coverFees = includeOfficialFees && coverFeeAmount ? parseFloat(coverFeeAmount) : 0;
+  const totalEstimate = professionalFees + officialFeesConverted + coverFees;
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -217,7 +252,7 @@ export default function NewOfferPage() {
                 htmlFor="amount"
                 className="block text-sm font-medium text-slate-700 mb-1"
               >
-                Total Price ({symbol}) *
+                Professional Fees ({symbol}) *
               </label>
               <input
                 id="amount"
@@ -306,6 +341,173 @@ export default function NewOfferPage() {
             </div>
           </div>
         </div>
+
+        {/* Official Patent Office Fees */}
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+              Official Patent Office Fees
+            </h2>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="include_official_fees"
+                value="true"
+                checked={includeOfficialFees}
+                onChange={(e) => setIncludeOfficialFees(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+              <span className="ml-2 text-sm text-slate-600">Include</span>
+            </label>
+          </div>
+
+          {includeOfficialFees && (
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="official_fee_office"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Patent Office *
+                  </label>
+                  <select
+                    id="official_fee_office"
+                    name="official_fee_office"
+                    value={feeOffice}
+                    onChange={(e) => setFeeOffice(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {OFFICE_KEYS.map((key) => (
+                      <option key={key} value={key}>
+                        {PATENT_OFFICES[key].label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {feeOffice === "WIPO" && (
+                  <div>
+                    <label
+                      htmlFor="official_fee_sub_office"
+                      className="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                      Receiving Office *
+                    </label>
+                    <select
+                      id="official_fee_sub_office"
+                      name="official_fee_sub_office"
+                      value={feeSubOffice}
+                      onChange={(e) => setFeeSubOffice(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {WIPO_RECEIVING_OFFICES.map((key) => (
+                        <option key={key} value={key}>
+                          {PATENT_OFFICES[key].label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="official_fee_amount"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Official Fee Amount ({feeCurrencySymbol}{feeCurrency}) *
+                  </label>
+                  <input
+                    id="official_fee_amount"
+                    name="official_fee_amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={officialFeeAmount}
+                    onChange={(e) => setOfficialFeeAmount(e.target.value)}
+                    placeholder={`e.g., 1000.00`}
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  {officialFeesNative > 0 && feeCurrency !== currency && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      ≈ {symbol}{officialFeesConverted.toFixed(2)} {currency} (approximate)
+                    </p>
+                  )}
+                </div>
+
+                {needsCoverFee && (
+                  <div>
+                    <label
+                      htmlFor="cover_fee_amount"
+                      className="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                      Currency Conversion Cover Fee ({symbol}) *
+                    </label>
+                    <input
+                      id="cover_fee_amount"
+                      name="cover_fee_amount"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={coverFeeAmount}
+                      onChange={(e) => setCoverFeeAmount(e.target.value)}
+                      placeholder="e.g., 25.00"
+                      className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      + VAT where applicable
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Hidden fields for form data */}
+              <input type="hidden" name="official_fee_currency" value={feeCurrency} />
+            </div>
+          )}
+        </div>
+
+        {/* Summary */}
+        {includeOfficialFees && professionalFees > 0 && officialFeesNative > 0 && (
+          <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
+            <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-3">
+              Offer Summary
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-600">Professional Fees</span>
+                <span className="text-navy font-medium">{symbol}{professionalFees.toFixed(2)} + VAT</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">
+                  Official Patent Office Fees — {feeOffice === "WIPO" ? `WIPO via ${PATENT_OFFICES[feeSubOffice]?.label?.split(" (")[0] || feeSubOffice}` : PATENT_OFFICES[feeOffice]?.label?.split(" (")[0] || feeOffice}
+                </span>
+                <span className="text-navy font-medium">
+                  {feeCurrencySymbol}{officialFeesNative.toFixed(2)} {feeCurrency}
+                  {feeCurrency !== currency && (
+                    <span className="text-slate-400 ml-1">(≈ {symbol}{officialFeesConverted.toFixed(2)})</span>
+                  )}
+                </span>
+              </div>
+              {needsCoverFee && coverFees > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Currency Conversion Cover Fee</span>
+                  <span className="text-navy font-medium">{symbol}{coverFees.toFixed(2)} + VAT</span>
+                </div>
+              )}
+              <div className="border-t border-blue-200 pt-2 mt-2 flex justify-between">
+                <span className="text-navy font-semibold">Estimated Total (excl. VAT)</span>
+                <span className="text-navy font-bold text-lg">{symbol}{totalEstimate.toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-blue-500 mt-1">
+                Official fees are not subject to VAT. Professional fees and cover fee may attract VAT for UK clients.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Error */}
         {error && (

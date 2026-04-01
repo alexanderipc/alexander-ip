@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  getOfficeLabel,
+  convertCurrencySmallest,
+} from "@/lib/pricing";
 
 const BASE_URL = "https://www.alexander-ip.com";
 
@@ -85,41 +89,91 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Compute amount to charge
-    let chargeAmount: number;
+    // ── Build line items ──
+    const hasOfficialFees = offer.include_official_fees &&
+      offer.official_fee_amount &&
+      offer.official_fee_currency;
+
+    // Compute professional fee amount to charge
+    let professionalChargeAmount: number;
     let productName: string;
     let productDescription: string;
 
     if (isInstallmentPlan) {
       const perInstallment = Math.ceil(offer.amount / totalInstallments);
       const lastInstallment = offer.amount - perInstallment * (totalInstallments - 1);
-      chargeAmount = nextInstallment === totalInstallments ? lastInstallment : perInstallment;
+      professionalChargeAmount = nextInstallment === totalInstallments ? lastInstallment : perInstallment;
       productName = `${offer.title} \u2014 Installment ${nextInstallment} of ${totalInstallments}`;
       const symbol = CURRENCY_SYMBOLS[offer.currency] || "$";
-      productDescription = `Installment ${nextInstallment} of ${totalInstallments} \u2014 ${symbol}${(chargeAmount / 100).toFixed(2)}`;
+      productDescription = `Installment ${nextInstallment} of ${totalInstallments} \u2014 ${symbol}${(professionalChargeAmount / 100).toFixed(2)}`;
     } else {
-      chargeAmount = offer.amount;
+      professionalChargeAmount = offer.amount;
       productName = offer.title;
       const symbol = CURRENCY_SYMBOLS[offer.currency] || "$";
       productDescription = offer.description || `Custom project \u2014 ${symbol}${(offer.amount / 100).toFixed(2)}`;
     }
 
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
+    // Line item 1: Professional fees (VAT applies)
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        price_data: {
+          currency: offer.currency.toLowerCase(),
+          product_data: {
+            name: productName,
+            description: productDescription,
+          },
+          unit_amount: professionalChargeAmount,
+          tax_behavior: "exclusive",
+        },
+        quantity: 1,
+      },
+    ];
+
+    // Line item 2: Official Patent Office Fees (no VAT)
+    if (hasOfficialFees) {
+      const officeLabel = getOfficeLabel(
+        offer.official_fee_office,
+        offer.official_fee_sub_office
+      );
+
+      // Convert fee from native currency to offer currency for Stripe
+      const officialFeeInOfferCurrency = convertCurrencySmallest(
+        offer.official_fee_amount,
+        offer.official_fee_currency,
+        offer.currency
+      );
+
+      lineItems.push({
+        price_data: {
+          currency: offer.currency.toLowerCase(),
+          product_data: {
+            name: `Official Patent Office Fees \u2014 ${officeLabel} (Handling As Agent)`,
+          },
+          unit_amount: officialFeeInOfferCurrency,
+          tax_behavior: "inclusive",
+        },
+        quantity: 1,
+      });
+
+      // Line item 3: Currency Conversion Cover Fee (VAT applies)
+      if (offer.cover_fee_amount && offer.cover_fee_amount > 0) {
+        lineItems.push({
           price_data: {
             currency: offer.currency.toLowerCase(),
             product_data: {
-              name: productName,
-              description: productDescription,
+              name: "Currency Conversion Cover Fee",
             },
-            unit_amount: chargeAmount,
+            unit_amount: offer.cover_fee_amount,
             tax_behavior: "exclusive",
           },
           quantity: 1,
-        },
-      ],
+        });
+      }
+    }
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+      line_items: lineItems,
       mode: "payment",
       success_url: isInstallmentPlan
         ? `${BASE_URL}/offer/${token}/success?installment=${nextInstallment}&total=${totalInstallments}&token=${token}`
@@ -135,6 +189,14 @@ export async function POST(request: NextRequest) {
         service: offer.service_type,
         source: "alexander-ip.com/offer",
         currency: offer.currency.toLowerCase(),
+        ...(hasOfficialFees && {
+          has_official_fees: "true",
+          official_fee_office: offer.official_fee_office,
+          official_fee_sub_office: offer.official_fee_sub_office || "",
+          official_fee_currency: offer.official_fee_currency,
+          official_fee_amount: String(offer.official_fee_amount),
+          cover_fee_amount: String(offer.cover_fee_amount || 0),
+        }),
         ...(isInstallmentPlan && {
           installment_number: String(nextInstallment),
           total_installments: String(totalInstallments),

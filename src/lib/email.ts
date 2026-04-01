@@ -851,6 +851,8 @@ interface OfferEmailData {
   formattedAmount: string;
   timelineDays: number | null;
   offerUrl: string;
+  officialFeesLine?: string | null;
+  coverFeeLine?: string | null;
 }
 
 export async function sendOfferEmail(
@@ -930,9 +932,15 @@ function offerHtml(data: OfferEmailData): string {
                       <td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${serviceLabel}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;color:#64748b;font-size:14px;">Price</td>
+                      <td style="padding:6px 0;color:#64748b;font-size:14px;">Professional Fees</td>
                       <td style="padding:6px 0;color:#0f1729;font-size:20px;font-weight:800;">${data.formattedAmount}</td>
                     </tr>
+                    ${data.officialFeesLine ? `<tr>
+                      <td colspan="2" style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.officialFeesLine)}</td>
+                    </tr>` : ""}
+                    ${data.coverFeeLine ? `<tr>
+                      <td colspan="2" style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.coverFeeLine)}</td>
+                    </tr>` : ""}
                     ${timelineLine}
                   </table>
                 </td>

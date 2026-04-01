@@ -20,6 +20,12 @@ import {
   sendMagicLinkEmail,
 } from "@/lib/email";
 import { buildUnsubscribeUrl } from "@/lib/unsubscribe";
+import {
+  getOfficeCurrency,
+  getOfficeLabel,
+  convertCurrency,
+  getCurrencySymbol,
+} from "@/lib/pricing";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
@@ -832,6 +838,20 @@ export async function createOffer(formData: FormData) {
   const installmentsRaw = formData.get("installments") as string;
   const installments = installmentsRaw ? Math.max(1, parseInt(installmentsRaw, 10)) : 1;
 
+  // Official fees
+  const includeOfficialFees = formData.get("include_official_fees") === "true";
+  const officialFeeOffice = (formData.get("official_fee_office") as string) || null;
+  const officialFeeSubOffice = (formData.get("official_fee_sub_office") as string) || null;
+  const officialFeeCurrency = (formData.get("official_fee_currency") as string) || null;
+  const officialFeeAmountRaw = formData.get("official_fee_amount") as string;
+  const officialFeeAmount = includeOfficialFees && officialFeeAmountRaw
+    ? Math.round(parseFloat(officialFeeAmountRaw) * 100)
+    : null;
+  const coverFeeAmountRaw = formData.get("cover_fee_amount") as string;
+  const coverFeeAmount = includeOfficialFees && coverFeeAmountRaw
+    ? Math.round(parseFloat(coverFeeAmountRaw) * 100)
+    : null;
+
   // Convert from whole currency (e.g. 850.00) to smallest unit (e.g. 85000 pence)
   const amount = Math.round(amountRaw * 100);
 
@@ -854,6 +874,12 @@ export async function createOffer(formData: FormData) {
       installments,
       installments_paid: 0,
       created_by: user.id,
+      include_official_fees: includeOfficialFees,
+      official_fee_office: includeOfficialFees ? officialFeeOffice : null,
+      official_fee_sub_office: includeOfficialFees && officialFeeOffice === "WIPO" ? officialFeeSubOffice : null,
+      official_fee_currency: includeOfficialFees ? officialFeeCurrency : null,
+      official_fee_amount: officialFeeAmount,
+      cover_fee_amount: coverFeeAmount,
     })
     .select()
     .single();
@@ -871,6 +897,19 @@ export async function createOffer(formData: FormData) {
     : `${symbol}${amountRaw.toFixed(2)}`;
   const offerUrl = `${OFFER_BASE_URL}/${offer.token}`;
 
+  // Build official fees display info for email
+  let officialFeesLine: string | null = null;
+  let coverFeeLine: string | null = null;
+  if (includeOfficialFees && officialFeeAmount && officialFeeCurrency && officialFeeOffice) {
+    const officeLabel = getOfficeLabel(officialFeeOffice, officialFeeSubOffice);
+    const feeSymbol = getCurrencySymbol(officialFeeCurrency);
+    officialFeesLine = `Official Patent Office Fees — ${officeLabel}: ${feeSymbol}${(officialFeeAmount / 100).toFixed(2)} ${officialFeeCurrency}`;
+
+    if (coverFeeAmount && coverFeeAmount > 0) {
+      coverFeeLine = `Currency Conversion Cover Fee: ${symbol}${(coverFeeAmount / 100).toFixed(2)}`;
+    }
+  }
+
   // Send email
   try {
     await sendOfferEmail(clientEmail, {
@@ -881,6 +920,8 @@ export async function createOffer(formData: FormData) {
       formattedAmount,
       timelineDays,
       offerUrl,
+      officialFeesLine,
+      coverFeeLine,
     });
   } catch (emailErr) {
     console.error("Failed to send offer email:", emailErr);
@@ -936,6 +977,19 @@ export async function resendOfferEmail(offerId: string) {
     : `${symbol}${(offer.amount / 100).toFixed(2)}`;
   const offerUrl = `${OFFER_BASE_URL}/${offer.token}`;
 
+  // Build official fees display info for resend
+  let officialFeesLine: string | null = null;
+  let coverFeeLine: string | null = null;
+  if (offer.include_official_fees && offer.official_fee_amount && offer.official_fee_currency && offer.official_fee_office) {
+    const officeLabel = getOfficeLabel(offer.official_fee_office, offer.official_fee_sub_office);
+    const feeSymbol = getCurrencySymbol(offer.official_fee_currency);
+    officialFeesLine = `Official Patent Office Fees — ${officeLabel}: ${feeSymbol}${(offer.official_fee_amount / 100).toFixed(2)} ${offer.official_fee_currency}`;
+
+    if (offer.cover_fee_amount && offer.cover_fee_amount > 0) {
+      coverFeeLine = `Currency Conversion Cover Fee: ${symbol}${(offer.cover_fee_amount / 100).toFixed(2)}`;
+    }
+  }
+
   await sendOfferEmail(offer.client_email, {
     clientName: offer.client_name,
     title: offer.title,
@@ -944,6 +998,8 @@ export async function resendOfferEmail(offerId: string) {
     formattedAmount,
     timelineDays: offer.timeline_days,
     offerUrl,
+    officialFeesLine,
+    coverFeeLine,
   });
 
   revalidatePath("/admin/offers");

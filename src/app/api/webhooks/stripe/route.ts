@@ -8,6 +8,7 @@ import {
 import { sendProjectCreatedEmail, sendAdminNewOrderEmail } from "@/lib/email";
 import type { ServiceType } from "@/lib/supabase/types";
 import { generateAndStoreInvoice } from "@/lib/invoice";
+import { getOfficeLabel, convertCurrencySmallest } from "@/lib/pricing";
 
 export const runtime = "nodejs";
 
@@ -627,6 +628,24 @@ async function handleOfferPayment(
       })
       .eq("id", offerId);
 
+    // Extract official fee info from metadata
+    const hasOfficialFees = session.metadata?.has_official_fees === "true";
+    let officialFeeDescription: string | null = null;
+    let officialFeeAmountConverted: number | null = null;
+    let coverFeeAmount: number | null = null;
+
+    if (hasOfficialFees) {
+      const feeOffice = session.metadata?.official_fee_office || "";
+      const feeSubOffice = session.metadata?.official_fee_sub_office || null;
+      const feeCurrency = session.metadata?.official_fee_currency || "";
+      const feeAmountNative = parseInt(session.metadata?.official_fee_amount || "0", 10);
+      coverFeeAmount = parseInt(session.metadata?.cover_fee_amount || "0", 10) || null;
+
+      const officeLabel = getOfficeLabel(feeOffice, feeSubOffice);
+      officialFeeDescription = `Official Patent Office Fees \u2014 ${officeLabel} (Handling As Agent)`;
+      officialFeeAmountConverted = convertCurrencySmallest(feeAmountNative, feeCurrency, offer.currency);
+    }
+
     // 7. Create initial update + project member + invoice + welcome + emails
     await postPaymentActions(adminClient, {
       project,
@@ -639,6 +658,9 @@ async function handleOfferPayment(
       paymentIntentId,
       session,
       invoiceTitle: offer.title,
+      officialFeeDescription,
+      officialFeeAmount: officialFeeAmountConverted,
+      coverFeeAmount,
     });
 
     console.log(`[webhook] Offer ${offerId} accepted, project created: ${project.id}`);
@@ -719,6 +741,24 @@ async function handleOfferPayment(
       .update(offerUpdate)
       .eq("id", offerId);
 
+    // Extract official fee info from metadata (for installment 1)
+    const hasOfficialFeesInst = session.metadata?.has_official_fees === "true";
+    let officialFeeDescInst: string | null = null;
+    let officialFeeAmountInst: number | null = null;
+    let coverFeeAmountInst: number | null = null;
+
+    if (hasOfficialFeesInst) {
+      const feeOffice = session.metadata?.official_fee_office || "";
+      const feeSubOffice = session.metadata?.official_fee_sub_office || null;
+      const feeCurrency = session.metadata?.official_fee_currency || "";
+      const feeAmountNative = parseInt(session.metadata?.official_fee_amount || "0", 10);
+      coverFeeAmountInst = parseInt(session.metadata?.cover_fee_amount || "0", 10) || null;
+
+      const officeLabel = getOfficeLabel(feeOffice, feeSubOffice);
+      officialFeeDescInst = `Official Patent Office Fees \u2014 ${officeLabel} (Handling As Agent)`;
+      officialFeeAmountInst = convertCurrencySmallest(feeAmountNative, feeCurrency, offer.currency);
+    }
+
     // Full onboarding: update, member, invoice, welcome, emails
     await postPaymentActions(adminClient, {
       project,
@@ -732,6 +772,9 @@ async function handleOfferPayment(
       session,
       invoiceTitle,
       installmentNote: `Installment 1 of ${totalInstallments} received. ${totalInstallments - 1} installments remaining.`,
+      officialFeeDescription: officialFeeDescInst,
+      officialFeeAmount: officialFeeAmountInst,
+      coverFeeAmount: coverFeeAmountInst,
     });
 
     console.log(`[webhook] Offer ${offerId} installment 1/${totalInstallments}, project created: ${project.id}`);
@@ -749,6 +792,24 @@ async function handleOfferPayment(
       return;
     }
 
+    // Extract official fee info from metadata (for later installments)
+    const hasOfficialFeesLater = session.metadata?.has_official_fees === "true";
+    let officialFeeDescLater: string | null = null;
+    let officialFeeAmountLater: number | null = null;
+    let coverFeeAmountLater: number | null = null;
+
+    if (hasOfficialFeesLater) {
+      const feeOffice = session.metadata?.official_fee_office || "";
+      const feeSubOffice = session.metadata?.official_fee_sub_office || null;
+      const feeCurrency = session.metadata?.official_fee_currency || "";
+      const feeAmountNative = parseInt(session.metadata?.official_fee_amount || "0", 10);
+      coverFeeAmountLater = parseInt(session.metadata?.cover_fee_amount || "0", 10) || null;
+
+      const officeLabel = getOfficeLabel(feeOffice, feeSubOffice);
+      officialFeeDescLater = `Official Patent Office Fees \u2014 ${officeLabel} (Handling As Agent)`;
+      officialFeeAmountLater = convertCurrencySmallest(feeAmountNative, feeCurrency, offer.currency);
+    }
+
     // Generate installment invoice
     try {
       await generateAndStoreInvoice({
@@ -762,6 +823,9 @@ async function handleOfferPayment(
         currency: offer.currency,
         stripePaymentIntentId: paymentIntentId,
         stripeSessionId: session.id,
+        officialFeeDescription: officialFeeDescLater,
+        officialFeeAmount: officialFeeAmountLater,
+        coverFeeAmount: coverFeeAmountLater,
       });
     } catch (invoiceErr) {
       console.error("[webhook] Installment invoice generation failed:", invoiceErr);
@@ -817,9 +881,12 @@ async function postPaymentActions(
     session: Stripe.Checkout.Session;
     invoiceTitle: string;
     installmentNote?: string;
+    officialFeeDescription?: string | null;
+    officialFeeAmount?: number | null;
+    coverFeeAmount?: number | null;
   }
 ) {
-  const { project, offer, clientId, customerName, email, serviceType, estimatedDelivery, paymentIntentId, session, invoiceTitle, installmentNote } = params;
+  const { project, offer, clientId, customerName, email, serviceType, estimatedDelivery, paymentIntentId, session, invoiceTitle, installmentNote, officialFeeDescription, officialFeeAmount, coverFeeAmount } = params;
 
   // Create initial update
   const deliveryNote = estimatedDelivery
@@ -861,6 +928,9 @@ async function postPaymentActions(
       currency: offer.currency,
       stripePaymentIntentId: paymentIntentId,
       stripeSessionId: session.id,
+      officialFeeDescription: officialFeeDescription || null,
+      officialFeeAmount: officialFeeAmount || null,
+      coverFeeAmount: coverFeeAmount || null,
     });
   } catch (invoiceErr) {
     console.error("[webhook] Invoice generation failed:", invoiceErr);

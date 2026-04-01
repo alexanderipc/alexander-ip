@@ -68,18 +68,105 @@ export const currencyPrices: Record<string, Record<string, CurrencyPrice>> = {
 
 export const DEFAULT_CURRENCY = "USD";
 
+/* ── Patent office fee config ─────────────────────────────── */
+
+export interface PatentOffice {
+  label: string;
+  currency: string | null; // null for WIPO (depends on receiving office)
+  symbol: string | null;
+}
+
+export const PATENT_OFFICES: Record<string, PatentOffice> = {
+  EPO: { label: "EPO (European Patent Office)", currency: "EUR", symbol: "€" },
+  UKIPO: { label: "UKIPO (UK IPO)", currency: "GBP", symbol: "£" },
+  USPTO: { label: "USPTO (US Patent Office)", currency: "USD", symbol: "$" },
+  CIPO: { label: "CIPO (Canadian IP Office)", currency: "CAD", symbol: "CA$" },
+  AU_IPO: { label: "AU IPO (IP Australia)", currency: "AUD", symbol: "A$" },
+  WIPO: { label: "WIPO (World IP Organization)", currency: null, symbol: null },
+};
+
+/** Offices that can serve as WIPO receiving offices */
+export const WIPO_RECEIVING_OFFICES = ["EPO", "UKIPO", "USPTO", "CIPO", "AU_IPO"] as const;
+
+/** Get the effective currency for an office (resolving WIPO via sub-office) */
+export function getOfficeCurrency(
+  office: string,
+  subOffice?: string | null
+): { currency: string; symbol: string } {
+  if (office === "WIPO" && subOffice) {
+    const sub = PATENT_OFFICES[subOffice];
+    if (sub?.currency && sub?.symbol) return { currency: sub.currency, symbol: sub.symbol };
+  }
+  const o = PATENT_OFFICES[office];
+  if (o?.currency && o?.symbol) return { currency: o.currency, symbol: o.symbol };
+  return { currency: "GBP", symbol: "£" }; // fallback
+}
+
+/** Get the office label including sub-office for WIPO */
+export function getOfficeLabel(office: string, subOffice?: string | null): string {
+  if (office === "WIPO" && subOffice) {
+    const sub = PATENT_OFFICES[subOffice];
+    return `WIPO via ${sub?.label || subOffice}`;
+  }
+  return PATENT_OFFICES[office]?.label || office;
+}
+
 /* ── Exchange rates (update periodically) ───────────────── */
+/** Rates relative to USD (1 USD = X of target currency) */
 const rates: Record<string, number> = {
   GBP: 0.74,
   EUR: 0.96,
   USD: 1,
+  CAD: 1.36,
+  AUD: 1.53,
+  CHF: 0.88,
 };
 
 const symbols: Record<string, string> = {
   GBP: "£",
   EUR: "€",
   USD: "$",
+  CAD: "CA$",
+  AUD: "A$",
+  CHF: "CHF ",
 };
+
+/**
+ * Convert an amount from one currency to another using stored rates.
+ * Both amounts in major units (e.g. 100.00 EUR → ~78.00 GBP).
+ * Returns amount in major units.
+ */
+export function convertCurrency(
+  amount: number,
+  fromCurrency: string,
+  toCurrency: string
+): number {
+  if (fromCurrency === toCurrency) return amount;
+  const fromRate = rates[fromCurrency] || 1;
+  const toRate = rates[toCurrency] || 1;
+  // Convert to USD first, then to target
+  const usdAmount = amount / fromRate;
+  return usdAmount * toRate;
+}
+
+/**
+ * Convert an amount in smallest units from one currency to another.
+ * Returns amount in smallest units of target currency.
+ */
+export function convertCurrencySmallest(
+  amountSmallest: number,
+  fromCurrency: string,
+  toCurrency: string
+): number {
+  if (fromCurrency === toCurrency) return amountSmallest;
+  const major = amountSmallest / 100;
+  const converted = convertCurrency(major, fromCurrency, toCurrency);
+  return Math.round(converted * 100);
+}
+
+export function getCurrencySymbol(currency: string): string {
+  return symbols[currency] || currency + " ";
+}
 
 /* ── Country → currency mapping ─────────────────────────── */
 const countryCurrencyMap: Record<string, string> = {
