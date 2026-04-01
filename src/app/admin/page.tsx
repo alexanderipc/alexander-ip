@@ -7,6 +7,7 @@ import {
   getStatusLabel,
   getDaysRemaining,
   isComplete,
+  isDelivered,
 } from "@/lib/portal/status";
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
@@ -66,11 +67,13 @@ export default async function AdminDashboard() {
   const overdue = active.filter(
     (p) =>
       p.estimated_delivery_date &&
+      !isDelivered(p.status) &&
       getDaysRemaining(p.estimated_delivery_date) < 0
   );
   const dueSoon = active.filter(
     (p) =>
       p.estimated_delivery_date &&
+      !isDelivered(p.status) &&
       getDaysRemaining(p.estimated_delivery_date) >= 0 &&
       getDaysRemaining(p.estimated_delivery_date) <= 7
   );
@@ -150,8 +153,10 @@ export default async function AdminDashboard() {
                   email: string;
                 } | null;
                 const urgency =
-                  p.estimated_delivery_date &&
-                  getDaysRemaining(p.estimated_delivery_date) < 0
+                  isDelivered(p.status)
+                    ? "normal"
+                    : p.estimated_delivery_date &&
+                      getDaysRemaining(p.estimated_delivery_date) < 0
                     ? "overdue"
                     : p.estimated_delivery_date &&
                       getDaysRemaining(p.estimated_delivery_date) <= 7
