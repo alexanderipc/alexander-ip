@@ -7,7 +7,6 @@ import {
   getStatusLabel,
   getDaysRemaining,
   isComplete,
-  isDelivered,
 } from "@/lib/portal/status";
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
@@ -30,7 +29,7 @@ export default async function AdminDashboard() {
     .order("estimated_delivery_date", { ascending: true });
 
   const all = projects || [];
-  const active = all.filter((p) => !isComplete(p.status) && !isDelivered(p.status));
+  const active = all.filter((p) => !isComplete(p.status));
 
   // Fetch unread client messages (is_admin = false, unread)
   const activeIds = active.map((p) => p.id);

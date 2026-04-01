@@ -215,7 +215,7 @@ export function getPreviousStatus(serviceType: ServiceType, currentStatus: strin
 }
 
 export function isComplete(status: string): boolean {
-  return status === "complete";
+  return status === "complete" || status === "complete_granted";
 }
 
 export function isDelivered(status: string): boolean {

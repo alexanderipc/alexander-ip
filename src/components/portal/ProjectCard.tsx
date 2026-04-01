@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Calendar, ArrowRight, MessageCircle } from "lucide-react";
 import type { Project } from "@/lib/supabase/types";
-import { getServiceLabel, getProgressPercent, getDaysRemaining, isComplete, isDelivered } from "@/lib/portal/status";
+import { getServiceLabel, getProgressPercent, getDaysRemaining, isComplete } from "@/lib/portal/status";
 import StatusBadge from "./StatusBadge";
 import ProgressBar from "./ProgressBar";
 
@@ -13,7 +13,7 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project, href, unreadMessages = 0 }: ProjectCardProps) {
   const percent = getProgressPercent(project.service_type, project.status);
-  const complete = isComplete(project.status) || isDelivered(project.status);
+  const complete = isComplete(project.status);
   const daysLeft = project.estimated_delivery_date
     ? getDaysRemaining(project.estimated_delivery_date)
     : null;
