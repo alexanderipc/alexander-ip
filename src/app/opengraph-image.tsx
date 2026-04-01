@@ -76,7 +76,7 @@ export default function OGImage() {
             }}
           >
             <div style={{ fontSize: 36, fontWeight: 700, color: "#14b8a6" }}>
-              50+
+              100+
             </div>
             <div style={{ fontSize: 16, color: "#94a3b8", marginTop: 4 }}>
               Patents Granted

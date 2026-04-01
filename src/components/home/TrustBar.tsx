@@ -15,7 +15,7 @@ const proofStats = [
   },
   {
     icon: Award,
-    value: "50+",
+    value: "100+",
     label: "patents granted across US, UK, Europe, and Australia",
   },
   {

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title:
     "Alexander IP — Affordable Patent Services for Inventors & Startups",
   description:
-    "Patent drafting from $895, patent search from $300, filing from $225. Legal 500-trained specialist with 50+ patents granted and 800+ five-star reviews. Transparent pricing, personal service — built for individual inventors and startups, not corporations.",
+    "Patent drafting from $895, patent search from $300, filing from $225. Legal 500-trained specialist with 100+ patents granted and 800+ five-star reviews. Transparent pricing, personal service — built for individual inventors and startups, not corporations.",
 };
 
 export default function Home() {

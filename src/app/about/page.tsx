@@ -16,7 +16,7 @@ import Button from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "About Alexander Rowley | Alexander IP",
   description:
-    "MSc Physics from the University of Bristol, trained at Kilburn & Strode LLP (Legal 500). 10 years in the patent industry, 50+ patents granted across US, UK, and Europe. The specialist behind Alexander IP.",
+    "MSc Physics from the University of Bristol, trained at Kilburn & Strode LLP (Legal 500). 10 years in the patent industry, 100+ patents granted across US, UK, and Europe. The specialist behind Alexander IP.",
 };
 
 const credentials = [
@@ -48,7 +48,7 @@ const credentials = [
 
 const stats = [
   { icon: Star, value: "800+", label: "Five-Star Reviews" },
-  { icon: Award, value: "50+", label: "Patents Granted" },
+  { icon: Award, value: "100+", label: "Patents Granted" },
   { icon: Globe, value: "155+", label: "PCT Contracting States" },
   { icon: Clock, value: "10", label: "Years in the Industry" },
 ];
@@ -227,7 +227,7 @@ export default function AboutPage() {
               pre-EQE passed &mdash; but chose independent practice over the
               qualification bureaucracy. I file applications under clients&apos;
               names (as pro se for US applications, or through registered agents
-              where required). My track record of 50+ grants across multiple
+              where required). My track record of 100+ grants across multiple
               jurisdictions speaks for itself, but I&apos;m always transparent
               about this distinction.
             </p>
