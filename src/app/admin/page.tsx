@@ -9,6 +9,7 @@ import {
   isComplete,
   isDelivered,
 } from "@/lib/portal/status";
+import { getCurrencySymbol } from "@/lib/pricing";
 import DeadlineIndicator from "@/components/admin/DeadlineIndicator";
 import StatusBadge from "@/components/portal/StatusBadge";
 import { Plus, AlertTriangle, Clock, FolderOpen, MessageCircle, Send } from "lucide-react";
@@ -141,6 +142,9 @@ export default async function AdminDashboard() {
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
                   Status
                 </th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
+                  Price
+                </th>
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
                   Due
                 </th>
@@ -200,6 +204,19 @@ export default async function AdminDashboard() {
                     </td>
                     <td className="px-5 py-3">
                       <StatusBadge status={p.status} size="sm" />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      {p.price_paid ? (
+                        <span className="text-sm font-medium text-slate-700">
+                          {getCurrencySymbol(p.currency || "GBP")}
+                          {(p.price_paid / 100).toLocaleString("en-GB", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3">
                       <DeadlineIndicator
