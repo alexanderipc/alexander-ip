@@ -5,12 +5,15 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight, CheckCircle2 } from "lucide-react";
 import StatusBadge from "@/components/portal/StatusBadge";
 import { getServiceLabel } from "@/lib/portal/status";
+import { getCurrencySymbol } from "@/lib/pricing";
 
 interface CompletedProject {
   id: string;
   title: string;
   service_type: string;
   status: string;
+  price_paid: number | null;
+  currency: string | null;
   actual_delivery_date: string | null;
   estimated_delivery_date: string | null;
   profiles: { name: string | null; email: string } | null;
@@ -24,6 +27,13 @@ export default function CompletedProjects({ projects }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   if (projects.length === 0) return null;
+
+  // Sort by completion date, most recent first
+  const sorted = [...projects].sort((a, b) => {
+    const dateA = a.actual_delivery_date || a.estimated_delivery_date || "";
+    const dateB = b.actual_delivery_date || b.estimated_delivery_date || "";
+    return dateB.localeCompare(dateA);
+  });
 
   return (
     <div className="mt-2">
@@ -59,13 +69,16 @@ export default function CompletedProjects({ projects }: Props) {
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
                   Status
                 </th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
+                  Price
+                </th>
                 <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
                   Completed
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {projects.map((p) => {
+              {sorted.map((p) => {
                 const profile = p.profiles as { name: string | null; email: string } | null;
                 const completedDate = p.actual_delivery_date || p.estimated_delivery_date;
 
@@ -94,6 +107,19 @@ export default function CompletedProjects({ projects }: Props) {
                     </td>
                     <td className="px-5 py-3">
                       <StatusBadge status={p.status} size="sm" />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      {p.price_paid ? (
+                        <span className="text-sm font-medium text-slate-700">
+                          {getCurrencySymbol(p.currency || "GBP")}
+                          {(p.price_paid / 100).toLocaleString("en-GB", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-xs text-slate-400">
