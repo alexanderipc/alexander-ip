@@ -12,6 +12,7 @@ interface CompletedProject {
   title: string;
   service_type: string;
   status: string;
+  project_number: number | null;
   price_paid: number | null;
   currency: string | null;
   actual_delivery_date: string | null;
@@ -92,6 +93,9 @@ export default function CompletedProjects({ projects }: Props) {
                         href={`/admin/projects/${p.id}`}
                         className="text-sm font-medium text-navy hover:text-blue-600 transition-colors"
                       >
+                        {p.project_number && (
+                          <span className="text-xs text-slate-400 font-normal mr-1">#{p.project_number}</span>
+                        )}
                         {p.title}
                       </Link>
                     </td>
