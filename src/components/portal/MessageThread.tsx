@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useTransition, useEffect, useRef, useOptimistic } from "react";
 import { sendClientMessage, markMessagesRead } from "@/app/portal/actions";
 import { Send } from "lucide-react";
 import Markdown from "react-markdown";
@@ -30,6 +30,13 @@ export default function MessageThread({
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Optimistic messages — appear instantly before server confirms
+  const [optimisticMessages, addOptimistic] = useOptimistic(
+    messages,
+    (state: Message[], newMsg: Message) => [...state, newMsg]
+  );
 
   // Mark unread admin messages as read when component mounts
   useEffect(() => {
@@ -42,18 +49,34 @@ export default function MessageThread({
   // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [optimisticMessages.length]);
 
   function handleSend() {
     if (!body.trim() || isPending) return;
+    const messageText = body.trim();
     setError(null);
+    setBody("");
+
+    // Focus back on input for quick follow-up messages
+    textareaRef.current?.focus();
 
     startTransition(async () => {
+      // Show message instantly
+      addOptimistic({
+        id: `optimistic-${Date.now()}`,
+        body: messageText,
+        is_admin: false,
+        read_at: null,
+        created_at: new Date().toISOString(),
+        sender_id: userId,
+      });
+
       try {
-        await sendClientMessage(projectId, body.trim());
-        setBody("");
+        await sendClientMessage(projectId, messageText);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to send message");
+        // Restore the message text so they can retry
+        setBody(messageText);
       }
     });
   }
@@ -78,8 +101,16 @@ export default function MessageThread({
     }
   }
 
+  // Auto-resize textarea to fit content
+  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setBody(e.target.value);
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  }
+
   // Show messages in chronological order (oldest first)
-  const sorted = [...messages].sort(
+  const sorted = [...optimisticMessages].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
@@ -94,6 +125,7 @@ export default function MessageThread({
         ) : (
           sorted.map((msg) => {
             const isMe = msg.sender_id === userId;
+            const isOptimistic = msg.id.startsWith("optimistic-");
             return (
               <div
                 key={msg.id}
@@ -104,7 +136,7 @@ export default function MessageThread({
                     isMe
                       ? "bg-blue-600 text-white"
                       : "bg-slate-100 text-slate-800"
-                  }`}
+                  } ${isOptimistic ? "opacity-70" : ""}`}
                 >
                   {!isMe && (
                     <p
@@ -129,12 +161,14 @@ export default function MessageThread({
                       isMe ? "text-blue-200" : "text-slate-400"
                     }`}
                   >
-                    {new Date(msg.created_at).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {isOptimistic
+                      ? "Sending..."
+                      : new Date(msg.created_at).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                   </time>
                 </div>
               </div>
@@ -144,41 +178,41 @@ export default function MessageThread({
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="flex gap-2">
+      {/* Input — compact chat-style */}
+      <div className="flex items-end gap-2 bg-slate-50 rounded-xl border border-slate-200 p-2">
         <textarea
+          ref={textareaRef}
           value={body}
-          onChange={(e) => setBody(e.target.value)}
+          onChange={handleInput}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          placeholder="Type a message... (paste from Word/email — formatting is preserved)"
-          rows={6}
+          placeholder="Type a message..."
+          rows={1}
           maxLength={10000}
-          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[120px]"
+          className="flex-1 px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
+          style={{ minHeight: "40px", maxHeight: "160px" }}
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={!body.trim() || isPending}
-          className="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0 self-end"
+          className="p-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
         >
           <Send className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="flex items-center justify-between mt-1">
-        <p className="text-[11px] text-slate-400">
-          {isPending ? "Sending..." : "Enter to send \u00B7 Shift+Enter for new line"}
-        </p>
+      <p className="text-[11px] text-slate-400 mt-1.5 ml-1">
+        Enter to send · Shift+Enter for new line
         {body.length > 9000 && (
-          <p className={`text-[11px] ${body.length >= 10000 ? "text-red-500" : "text-slate-400"}`}>
+          <span className={`ml-2 ${body.length >= 10000 ? "text-red-500" : ""}`}>
             {body.length.toLocaleString()}/10,000
-          </p>
+          </span>
         )}
-      </div>
+      </p>
 
       {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
+        <p className="text-xs text-red-500 mt-1 ml-1">{error}</p>
       )}
     </div>
   );
