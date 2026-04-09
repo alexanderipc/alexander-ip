@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Calendar, ArrowRight, MessageCircle } from "lucide-react";
 import type { Project } from "@/lib/supabase/types";
-import { getServiceLabel, getProgressPercent, getDaysRemaining, isComplete } from "@/lib/portal/status";
+import { getServiceLabel, getProgressPercent, getDaysRemaining, isComplete, isDelivered } from "@/lib/portal/status";
 import StatusBadge from "./StatusBadge";
 import ProgressBar from "./ProgressBar";
 
@@ -29,6 +29,9 @@ export default function ProjectCard({ project, href, unreadMessages = 0 }: Proje
             {getServiceLabel(project.service_type)}
           </p>
           <h3 className="text-lg font-semibold text-navy truncate group-hover:text-blue-700 transition-colors">
+            {project.project_number && (
+              <span className="text-slate-400 font-normal text-sm">#{project.project_number} </span>
+            )}
             {project.title}
           </h3>
         </div>
@@ -53,7 +56,7 @@ export default function ProjectCard({ project, href, unreadMessages = 0 }: Proje
         <ProgressBar percent={percent} size="sm" />
       </div>
 
-      {!complete && project.estimated_delivery_date && (
+      {!complete && !isDelivered(project.status) && project.estimated_delivery_date && (
         <div className="flex items-center gap-1.5 text-sm text-slate-500">
           <Calendar className="w-4 h-4" />
           <span>

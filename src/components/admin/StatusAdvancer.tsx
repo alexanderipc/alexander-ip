@@ -21,6 +21,7 @@ export default function StatusAdvancer({
   const [note, setNote] = useState("");
   const [internalNote, setInternalNote] = useState("");
   const [notifyClient, setNotifyClient] = useState(true);
+  const [showTrustpilot, setShowTrustpilot] = useState(false);
 
   const isCompleting =
     nextStatus === "complete" || nextStatus === "complete_granted";
@@ -40,7 +41,8 @@ export default function StatusAdvancer({
         projectId,
         note || undefined,
         internalNote || undefined,
-        notifyClient
+        notifyClient,
+        isCompleting ? showTrustpilot : undefined
       );
       setNote("");
       setInternalNote("");
@@ -118,6 +120,20 @@ export default function StatusAdvancer({
               className="rounded border-blue-300"
             />
             Notify client by email
+          </label>
+        </div>
+      )}
+
+      {isCompleting && (
+        <div className="mt-3 pt-3 border-t border-blue-200">
+          <label className="flex items-center gap-2 text-sm text-green-700">
+            <input
+              type="checkbox"
+              checked={showTrustpilot}
+              onChange={(e) => setShowTrustpilot(e.target.checked)}
+              className="rounded border-green-300"
+            />
+            Show Trustpilot review request to client
           </label>
         </div>
       )}

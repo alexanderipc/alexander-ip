@@ -190,7 +190,8 @@ export async function advanceStatus(
   projectId: string,
   note?: string,
   internalNote?: string,
-  notifyClient: boolean = true
+  notifyClient: boolean = true,
+  showTrustpilot?: boolean
 ) {
   await requireAdmin();
   const adminClient = createAdminClient();
@@ -210,9 +211,12 @@ export async function advanceStatus(
   // Update project status
   const updateData: Record<string, unknown> = { status: nextStatus };
 
-  // If completing, set actual delivery date
+  // If completing, set actual delivery date and Trustpilot preference
   if (nextStatus === "complete" || nextStatus === "complete_granted") {
     updateData.actual_delivery_date = new Date().toISOString().split("T")[0];
+    if (showTrustpilot !== undefined) {
+      updateData.show_trustpilot = showTrustpilot;
+    }
   }
 
   await adminClient.from("projects").update(updateData).eq("id", projectId);
@@ -928,6 +932,93 @@ export async function createOffer(formData: FormData) {
     console.error("Failed to send offer email:", emailErr);
   }
 
+  revalidatePath("/admin/offers");
+
+  return { success: true, offerId: offer.id };
+}
+
+/* ── Create Extra Offer (within an existing project) ────────── */
+
+export async function createExtraOffer(formData: FormData) {
+  const { user } = await requireAdmin();
+  const adminClient = createAdminClient();
+
+  const projectId = formData.get("project_id") as string;
+  const clientEmail = formData.get("client_email") as string;
+  const clientName = (formData.get("client_name") as string) || null;
+  const title = formData.get("title") as string;
+  const description = (formData.get("description") as string) || null;
+  const amountRaw = parseFloat(formData.get("amount") as string);
+  const currency = (formData.get("currency") as string) || "GBP";
+  const installmentsRaw = formData.get("installments") as string;
+  const installments = installmentsRaw ? Math.max(1, parseInt(installmentsRaw, 10)) : 1;
+
+  const amount = Math.round(amountRaw * 100);
+
+  if (!projectId || !clientEmail || !title || !amount || amount < 50) {
+    throw new Error("Missing required fields or invalid amount (minimum 0.50)");
+  }
+
+  // Verify project exists
+  const { data: project } = await adminClient
+    .from("projects")
+    .select("id, title, service_type")
+    .eq("id", projectId)
+    .single();
+
+  if (!project) throw new Error("Project not found");
+
+  // Insert extra offer linked to project
+  const { data: offer, error: insertError } = await adminClient
+    .from("offers")
+    .insert({
+      client_email: clientEmail,
+      client_name: clientName,
+      title,
+      description,
+      service_type: project.service_type,
+      amount,
+      currency,
+      installments,
+      installments_paid: 0,
+      created_by: user.id,
+      project_id: projectId,
+      is_extra: true,
+    })
+    .select()
+    .single();
+
+  if (insertError || !offer) {
+    throw new Error(
+      `Failed to create extra offer: ${insertError?.message || "Unknown error"}`
+    );
+  }
+
+  // Format amount for email
+  const symbol = CURRENCY_SYMBOLS[currency] || "$";
+  const formattedAmount = installments > 1
+    ? `${symbol}${amountRaw.toFixed(2)} (${installments} installments of ${symbol}${(amountRaw / installments).toFixed(2)})`
+    : `${symbol}${amountRaw.toFixed(2)}`;
+  const offerUrl = `${OFFER_BASE_URL}/${offer.token}`;
+
+  // Send email
+  try {
+    await sendOfferEmail(clientEmail, {
+      clientName,
+      title,
+      description,
+      serviceType: project.service_type as import("@/lib/supabase/types").ServiceType,
+      formattedAmount,
+      timelineDays: null,
+      offerUrl,
+      officialFeesLine: null,
+      coverFeeLine: null,
+    });
+  } catch (emailErr) {
+    console.error("Failed to send extra offer email:", emailErr);
+  }
+
+  revalidatePath(`/admin/projects/${projectId}`);
   revalidatePath("/admin/offers");
 
   return { success: true, offerId: offer.id };

@@ -661,6 +661,56 @@ async function handleOfferPayment(
   await saveBillingAddressToProfile(adminClient, clientId, session);
 
   // ═══════════════════════════════════════════════════════════════
+  // EXTRA OFFER (project_id already set) — invoice only, no new project
+  // ═══════════════════════════════════════════════════════════════
+  if (offer.project_id && offer.is_extra) {
+    const serviceType = (offer.service_type || "custom") as ServiceType;
+
+    // Mark offer as accepted
+    await adminClient
+      .from("offers")
+      .update({
+        status: "accepted",
+        stripe_payment_id: paymentIntentId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", offerId);
+
+    // Fetch existing project for invoice
+    const { data: existingProject } = await adminClient
+      .from("projects")
+      .select("*")
+      .eq("id", offer.project_id)
+      .single();
+
+    if (!existingProject) {
+      throw new Error(`Extra offer project not found: ${offer.project_id}`);
+    }
+
+    // Generate invoice on the existing project
+    const invoiceTitle = `${offer.title} (Extra)`;
+    try {
+      await generateAndStoreInvoice({
+        projectId: existingProject.id,
+        clientName: customerName,
+        clientEmail: email,
+        clientAddress: formatBillingAddress(session),
+        title: invoiceTitle,
+        amountTotal: session.amount_total || offer.amount,
+        amountTax: session.total_details?.amount_tax || 0,
+        currency: offer.currency,
+        stripePaymentIntentId: paymentIntentId,
+        stripeSessionId: session.id,
+      });
+    } catch (invoiceErr) {
+      console.error("[webhook] Extra offer invoice generation failed:", invoiceErr);
+    }
+
+    console.log(`[webhook] Extra offer ${offerId} accepted, invoice added to project ${existingProject.id}`);
+    return;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // SINGLE PAYMENT (installments <= 1) — original flow, unchanged
   // ═══════════════════════════════════════════════════════════════
   if (!isInstallmentPlan) {

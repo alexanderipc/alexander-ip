@@ -24,7 +24,8 @@ import TimelineEditor from "@/components/admin/TimelineEditor";
 import AdminMessageThread from "@/components/admin/MessageThread";
 import NotificationMuteControls from "@/components/admin/NotificationMuteControls";
 import AdminTeamManager from "@/components/admin/TeamManager";
-import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff, Users, Eye, ExternalLink } from "lucide-react";
+import ExtraOfferForm from "@/components/admin/ExtraOfferForm";
+import { ArrowLeft, Calendar, Globe, User, CreditCard, MessageCircle, BellOff, Users, Eye, ExternalLink, Receipt } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -82,9 +83,11 @@ export default async function AdminProjectDetailPage({ params }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let milestones: any[] = [];
   let messages: Msg[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let linkedOffers: any[] = [];
 
   try {
-    const [updatesResult, docsResult, milestonesResult] = await Promise.all([
+    const [updatesResult, docsResult, milestonesResult, offersResult] = await Promise.all([
       adminClient
         .from("project_updates")
         .select("*")
@@ -100,10 +103,16 @@ export default async function AdminProjectDetailPage({ params }: Props) {
         .select("*")
         .eq("project_id", id)
         .order("target_date", { ascending: true }),
+      adminClient
+        .from("offers")
+        .select("id, token, title, amount, currency, status, is_extra, installments, installments_paid, created_at")
+        .eq("project_id", id)
+        .order("created_at", { ascending: false }),
     ]);
     updates = updatesResult.data || [];
     rawDocs = docsResult.data || [];
     milestones = milestonesResult.data || [];
+    linkedOffers = offersResult.data || [];
   } catch (fetchErr) {
     console.error("[Admin] Failed to fetch project data:", fetchErr);
   }
@@ -201,7 +210,12 @@ export default async function AdminProjectDetailPage({ params }: Props) {
             <p className="text-sm font-medium text-blue-600 mb-1">
               {getServiceLabel(project.service_type)}
             </p>
-            <h1 className="text-2xl font-bold text-navy">{project.title}</h1>
+            <h1 className="text-2xl font-bold text-navy">
+              {project.project_number && (
+                <span className="text-slate-400 font-normal">#{project.project_number} </span>
+              )}
+              {project.title}
+            </h1>
             {project.description && (
               <p className="text-slate-500 mt-1 line-clamp-3">{project.description}</p>
             )}
@@ -422,6 +436,52 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                 </div>
               );
             })()}
+          </div>
+
+          {/* Extra Offers */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Receipt className="w-4 h-4" />
+              Offers ({linkedOffers.length})
+            </h2>
+            {linkedOffers.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {linkedOffers.map((offer) => {
+                  const sym = offer.currency === "GBP" ? "\u00A3" : offer.currency === "EUR" ? "\u20AC" : "$";
+                  const statusColors: Record<string, string> = {
+                    pending: "bg-amber-100 text-amber-700",
+                    accepted: "bg-green-100 text-green-700",
+                    cancelled: "bg-red-100 text-red-700",
+                    expired: "bg-slate-100 text-slate-500",
+                  };
+                  return (
+                    <div key={offer.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-navy truncate">
+                          {offer.is_extra && <span className="text-xs text-blue-500 mr-1">Extra</span>}
+                          {offer.title}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {sym}{(offer.amount / 100).toFixed(2)}
+                          {offer.installments > 1 && ` (${offer.installments_paid}/${offer.installments} paid)`}
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${statusColors[offer.status] || "bg-slate-100 text-slate-500"}`}>
+                        {offer.status}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {client && (
+              <ExtraOfferForm
+                projectId={project.id}
+                clientEmail={client.email}
+                clientName={client.name}
+                currency={project.currency || "GBP"}
+              />
+            )}
           </div>
 
           {/* Milestones / Phases */}

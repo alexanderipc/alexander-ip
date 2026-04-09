@@ -22,7 +22,8 @@ import ClientNotificationMute from "@/components/portal/ClientNotificationMute";
 import TeamMembers from "@/components/portal/TeamMembers";
 import PortalVisitTracker from "@/components/portal/PortalVisitTracker";
 import UploadNudgeModal from "@/components/portal/UploadNudgeModal";
-import { ArrowLeft, Calendar, Globe, Clock, MessageCircle, Users, Star, ExternalLink, UploadCloud } from "lucide-react";
+import OfferPayButton from "@/components/offer/OfferPayButton";
+import { ArrowLeft, Calendar, Globe, Clock, MessageCircle, Users, Star, ExternalLink, UploadCloud, Receipt } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -85,9 +86,11 @@ export default async function ProjectDetailPage({ params }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let milestones: any[] = [];
   let messages: Msg[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let pendingExtras: any[] = [];
 
   try {
-    const [updatesResult, docsResult, milestonesResult] = await Promise.all([
+    const [updatesResult, docsResult, milestonesResult, extrasResult] = await Promise.all([
       adminClient
         .from("project_updates")
         .select("id, project_id, status_from, status_to, note, notify_client, created_at")
@@ -105,6 +108,13 @@ export default async function ProjectDetailPage({ params }: Props) {
         .eq("project_id", id)
         .eq("is_client_visible", true)
         .order("target_date", { ascending: true }),
+      adminClient
+        .from("offers")
+        .select("id, token, title, description, amount, currency, status, installments, installments_paid, is_extra")
+        .eq("project_id", id)
+        .eq("is_extra", true)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false }),
     ]);
     if (updatesResult.error) console.error("[Portal] Updates query error:", updatesResult.error.message);
     if (docsResult.error) console.error("[Portal] Documents query error:", docsResult.error.message);
@@ -112,6 +122,7 @@ export default async function ProjectDetailPage({ params }: Props) {
     updates = updatesResult.data || [];
     rawDocs = docsResult.data || [];
     milestones = milestonesResult.data || [];
+    pendingExtras = extrasResult.data || [];
   } catch (fetchErr) {
     console.error("[Portal] Failed to fetch project data:", fetchErr);
   }
@@ -306,8 +317,8 @@ export default async function ProjectDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* Trustpilot review prompt — shown when project is complete */}
-      {complete && (
+      {/* Trustpilot review prompt — shown when project is complete and admin opted in */}
+      {complete && project.show_trustpilot && (
         <a
           href="https://uk.trustpilot.com/review/alexander-ip.com"
           target="_blank"
@@ -327,6 +338,39 @@ export default async function ProjectDetailPage({ params }: Props) {
         </a>
       )}
 
+      {/* Pending extra offers */}
+      {pendingExtras.length > 0 && (
+        <div className="space-y-3 mb-4">
+          {pendingExtras.map((extra) => {
+            const sym = extra.currency === "GBP" ? "\u00A3" : extra.currency === "EUR" ? "\u20AC" : "$";
+            const displayAmount = `${sym}${(extra.amount / 100).toFixed(2)}`;
+            return (
+              <div
+                key={extra.id}
+                className="rounded-xl border border-blue-200 bg-blue-50 p-5"
+              >
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Receipt className="w-4 h-4 text-blue-600" />
+                      <p className="text-sm font-semibold text-navy">{extra.title}</p>
+                    </div>
+                    {extra.description && (
+                      <p className="text-xs text-slate-600 mb-2">{extra.description}</p>
+                    )}
+                    <p className="text-lg font-bold text-navy">{displayAmount}</p>
+                  </div>
+                </div>
+                <OfferPayButton
+                  token={extra.token}
+                  amount={displayAmount}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
@@ -334,7 +378,12 @@ export default async function ProjectDetailPage({ params }: Props) {
             <p className="text-sm font-medium text-blue-600 mb-1">
               {getServiceLabel(project.service_type)}
             </p>
-            <h1 className="text-2xl font-bold text-navy">{project.title}</h1>
+            <h1 className="text-2xl font-bold text-navy">
+              {project.project_number && (
+                <span className="text-slate-400 font-normal">#{project.project_number} </span>
+              )}
+              {project.title}
+            </h1>
             {project.description && (
               <p className="text-slate-500 mt-1">{project.description}</p>
             )}

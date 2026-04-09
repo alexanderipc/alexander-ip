@@ -183,6 +183,9 @@ export default async function AdminDashboard() {
                         href={`/admin/projects/${p.id}`}
                         className="text-sm font-medium text-navy hover:text-blue-600 transition-colors inline-flex items-center gap-2"
                       >
+                        {p.project_number && (
+                          <span className="text-xs text-slate-400 font-normal">#{p.project_number}</span>
+                        )}
                         {p.title}
                         {(unreadMap[p.id] || 0) > 0 && (
                           <span className="inline-flex items-center gap-0.5 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
