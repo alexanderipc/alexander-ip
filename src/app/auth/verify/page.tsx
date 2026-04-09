@@ -64,12 +64,21 @@ function VerifyContent() {
 
         setStatus("success");
 
+        // Support a `next` param for deep-linking (e.g. straight to a project after payment).
+        // Only allow relative paths starting with /portal or /admin to prevent open redirect.
+        const nextParam = searchParams.get("next");
+        const safeNext =
+          nextParam &&
+          (nextParam.startsWith("/portal") || nextParam.startsWith("/admin"))
+            ? nextParam
+            : null;
+
         // Brief delay so the user sees the success state
         setTimeout(() => {
           if (profile?.role === "admin") {
-            window.location.href = "/admin";
+            window.location.href = safeNext || "/admin";
           } else {
-            window.location.href = "/portal";
+            window.location.href = safeNext || "/portal";
           }
         }, 800);
       } else {

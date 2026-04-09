@@ -1,8 +1,10 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Stripe from "stripe";
-import { CheckCircle2, Mail, FolderOpen, ArrowRight } from "lucide-react";
+import { CheckCircle2, Mail, FolderOpen } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -12,19 +14,47 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const SERVICE_NAMES: Record<string, string> = {
-  consultation: "Patent Consultation",
-  "patent-search-basic": "Patent Search (Basic)",
-  "patent-search-standard": "Patent Search (Standard)",
-  "patent-search-premium": "Patent Search (Premium)",
-  "patent-drafting-simple": "Patent Drafting (Simple)",
-  "patent-drafting-mid": "Patent Drafting (Mid-Tier)",
-  "patent-drafting-complex": "Patent Drafting (Complex)",
-  "fto-landscape": "FTO — Patent Landscape",
-  "fto-simple": "FTO (Simple)",
-  "fto-complex": "FTO (Complex)",
-  custom: "Custom Project",
-};
+const BASE_URL = "https://www.alexander-ip.com";
+
+/** Try to find the project by payment_intent ID, retrying a few times to handle
+ *  the race between Stripe's redirect and our webhook processing. */
+async function findProjectByPaymentIntent(
+  paymentIntentId: string
+): Promise<string | null> {
+  const adminClient = createAdminClient();
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) {
+      // Wait before retrying: 500ms, 1s, 1.5s
+      await new Promise((r) => setTimeout(r, 500 * attempt));
+    }
+
+    const { data } = await adminClient
+      .from("projects")
+      .select("id")
+      .eq("stripe_payment_id", paymentIntentId)
+      .maybeSingle();
+
+    if (data?.id) return data.id;
+  }
+
+  return null;
+}
+
+async function generateMagicLinkToken(email: string): Promise<string | null> {
+  const adminClient = createAdminClient();
+  const { data, error } = await adminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email,
+  });
+
+  if (error || !data?.properties?.hashed_token) {
+    console.error("[success] Failed to generate magic link:", error?.message);
+    return null;
+  }
+
+  return data.properties.hashed_token;
+}
 
 export default async function BookingSuccessPage(props: {
   searchParams: Promise<{ session_id?: string }>;
@@ -32,24 +62,63 @@ export default async function BookingSuccessPage(props: {
   const searchParams = await props.searchParams;
   const sessionId = searchParams.session_id;
 
-  let serviceSlug: string | null = null;
+  if (!sessionId || !process.env.STRIPE_SECRET_KEY) {
+    // No session — show generic confirmation page
+    return <StaticSuccessPage />;
+  }
 
-  // Try to fetch service info from Stripe session
-  if (sessionId && process.env.STRIPE_SECRET_KEY) {
-    try {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-      serviceSlug = session.metadata?.service || null;
-    } catch {
-      // Silently fall back to generic messaging
-    }
+  let serviceSlug: string | null = null;
+  let clientEmail: string | null = null;
+  let paymentIntentId: string | null = null;
+
+  try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    serviceSlug = session.metadata?.service || null;
+    clientEmail = session.customer_details?.email || null;
+    paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : (session.payment_intent as Stripe.PaymentIntent | null)?.id || null;
+  } catch {
+    return <StaticSuccessPage />;
   }
 
   const isConsultation = serviceSlug === "consultation";
-  const serviceName = serviceSlug
-    ? SERVICE_NAMES[serviceSlug] || "your order"
-    : null;
 
+  // Consultations have no portal project — show the static page
+  if (isConsultation) {
+    return <StaticSuccessPage isConsultation />;
+  }
+
+  // For all other services, try to authenticate the client and land them on their project
+  if (!clientEmail) {
+    return <StaticSuccessPage />;
+  }
+
+  // Look up the project (webhook may still be processing)
+  let projectId: string | null = null;
+  if (paymentIntentId) {
+    projectId = await findProjectByPaymentIntent(paymentIntentId);
+  }
+
+  // Generate a magic link token to authenticate the client immediately
+  const hashedToken = await generateMagicLinkToken(clientEmail);
+
+  if (!hashedToken) {
+    // Couldn't generate token — fall back to static page
+    return <StaticSuccessPage />;
+  }
+
+  const next = projectId ? `/portal/projects/${projectId}` : "/portal";
+  const verifyUrl = `${BASE_URL}/auth/verify?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink&next=${encodeURIComponent(next)}`;
+
+  redirect(verifyUrl);
+}
+
+/* ── Static fallback (consultation or error path) ─────────────────── */
+
+function StaticSuccessPage({ isConsultation = false }: { isConsultation?: boolean }) {
   return (
     <section className="py-20 lg:py-28 bg-gradient-to-b from-slate-50 to-white">
       <Container size="narrow">
@@ -65,9 +134,7 @@ export default async function BookingSuccessPage(props: {
           <p className="text-lg text-slate-600 mb-10 max-w-lg mx-auto">
             {isConsultation
               ? "Thank you for booking a patent consultation. We\u2019ll be in touch shortly to arrange a time that works for you."
-              : serviceName
-                ? `Thank you \u2014 your payment for ${serviceName} has been received and your project is being set up.`
-                : "Thank you \u2014 your payment has been received and your project is being set up."}
+              : "Thank you \u2014 your payment has been received and your project is being set up."}
           </p>
 
           <div className="bg-white border border-slate-200 rounded-xl p-6 max-w-md mx-auto mb-10">
@@ -75,7 +142,6 @@ export default async function BookingSuccessPage(props: {
               What Happens Next
             </h2>
             <div className="space-y-4 text-left">
-              {/* Step 1: Confirmation Email */}
               <div className="flex gap-3">
                 <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Mail className="w-4 h-4 text-blue" />
@@ -92,7 +158,6 @@ export default async function BookingSuccessPage(props: {
                 </div>
               </div>
 
-              {/* Step 2 */}
               <div className="flex gap-3">
                 <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <FolderOpen className="w-4 h-4 text-blue" />
@@ -105,8 +170,7 @@ export default async function BookingSuccessPage(props: {
                       </p>
                       <p className="text-slate-500 text-sm">
                         We&apos;ll propose available times for your consultation
-                        via email. Sessions typically run 45&ndash;60 minutes
-                        via video call.
+                        via email.
                       </p>
                     </>
                   ) : (
@@ -115,39 +179,8 @@ export default async function BookingSuccessPage(props: {
                         Project Created
                       </p>
                       <p className="text-slate-500 text-sm">
-                        Your project has been set up in your account. You
-                        can track progress and receive updates in real time.
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <ArrowRight className="w-4 h-4 text-blue" />
-                </div>
-                <div>
-                  {isConsultation ? (
-                    <>
-                      <p className="font-medium text-navy text-sm">
-                        Prepare Your Ideas
-                      </p>
-                      <p className="text-slate-500 text-sm">
-                        Think about what you&apos;d like to discuss. A brief
-                        description of your invention and any questions will
-                        help us make the most of the session.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="font-medium text-navy text-sm">
-                        Work Begins
-                      </p>
-                      <p className="text-slate-500 text-sm">
-                        Alexander IP will review your project and begin work
-                        within 1&ndash;2 business days.
+                        Your project has been set up. Sign in below to access
+                        it directly.
                       </p>
                     </>
                   )}
@@ -156,13 +189,8 @@ export default async function BookingSuccessPage(props: {
             </div>
           </div>
 
-          <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
-            To access your projects, use the sign-in link in your welcome
-            email, or enter the email you used at checkout below.
-          </p>
-
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button href="/auth/login">Sign In</Button>
+            <Button href="/auth/login">Sign In to Portal</Button>
             <Button href="/" variant="outline">
               Return to Homepage
             </Button>

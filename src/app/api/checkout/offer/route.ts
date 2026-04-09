@@ -176,8 +176,8 @@ export async function POST(request: NextRequest) {
       line_items: lineItems,
       mode: "payment",
       success_url: isInstallmentPlan
-        ? `${BASE_URL}/offer/${token}/success?installment=${nextInstallment}&total=${totalInstallments}&token=${token}`
-        : `${BASE_URL}/offer/${token}/success`,
+        ? `${BASE_URL}/offer/${token}/success?session_id={CHECKOUT_SESSION_ID}&installment=${nextInstallment}&total=${totalInstallments}&token=${token}`
+        : `${BASE_URL}/offer/${token}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${BASE_URL}/offer/${token}`,
       customer_email: offer.client_email,
       customer_creation: "always",
