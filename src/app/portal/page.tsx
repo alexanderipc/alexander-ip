@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { isComplete } from "@/lib/portal/status";
 import { getAccessibleProjectIds } from "@/lib/portal/access";
 import ProjectCard from "@/components/portal/ProjectCard";
+import PortalVisitTracker from "@/components/portal/PortalVisitTracker";
 import { FolderOpen } from "lucide-react";
 
 export default async function PortalDashboard() {
@@ -73,6 +74,11 @@ export default async function PortalDashboard() {
 
   return (
     <div>
+      {/* Track portal visit for all accessible projects */}
+      {allProjects.map((p) => (
+        <PortalVisitTracker key={p.id} projectId={p.id} />
+      ))}
+
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-navy">Your Projects</h1>
         <p className="text-slate-500 mt-1">

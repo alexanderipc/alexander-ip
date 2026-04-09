@@ -95,7 +95,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         .order("created_at", { ascending: false }),
       adminClient
         .from("project_documents")
-        .select("id, project_id, filename, file_url, document_type, client_visible, uploaded_at, uploaded_by")
+        .select("id, project_id, filename, file_url, document_type, client_visible, uploaded_at, uploaded_by, last_client_access")
         .eq("project_id", id)
         .eq("client_visible", true)
         .order("uploaded_at", { ascending: false }),
