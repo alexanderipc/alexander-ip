@@ -174,26 +174,27 @@ export async function sendClientMessage(projectId: string, body: string) {
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
-  // Notify admin via email (skip if project-level admin mute is on)
+  // Notify admin via email in background (don't block the response)
   if (!project?.admin_notifications_muted) {
-    try {
-      const { data: clientProfile } = await adminClient
-        .from("profiles")
-        .select("name, email")
-        .eq("id", user.id)
-        .single();
+    (async () => {
+      try {
+        const { data: clientProfile } = await adminClient
+          .from("profiles")
+          .select("name, email")
+          .eq("id", user.id)
+          .single();
 
-      const senderName = clientProfile?.name || clientProfile?.email || "Client";
-
-      await sendNewMessageEmail("alexanderip.contact@gmail.com", {
-        projectTitle: project.title,
-        senderName,
-        messagePreview: body.trim(),
-        portalUrl: PORTAL_URL,
-      });
-    } catch (emailErr) {
-      console.error("Failed to send message notification email:", emailErr);
-    }
+        const senderName = clientProfile?.name || clientProfile?.email || "Client";
+        await sendNewMessageEmail("alexanderip.contact@gmail.com", {
+          projectTitle: project.title,
+          senderName,
+          messagePreview: body.trim(),
+          portalUrl: PORTAL_URL,
+        });
+      } catch (err) {
+        console.error("Failed to send message notification email:", err);
+      }
+    })();
   }
 
   revalidatePath(`/portal/projects/${projectId}`);

@@ -630,30 +630,31 @@ export async function sendAdminMessage(projectId: string, body: string) {
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
-  // Notify client via email (skip if project-level mute is on)
+  // Notify client via email in background (don't block the response)
   if (!project?.client_notifications_muted) {
-    try {
-      const { data: clientProfile } = await adminClient
-        .from("profiles")
-        .select("email, notification_preferences")
-        .eq("id", project.client_id)
-        .single();
+    (async () => {
+      try {
+        const { data: clientProfile } = await adminClient
+          .from("profiles")
+          .select("email, notification_preferences")
+          .eq("id", project.client_id)
+          .single();
 
-      const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
-
-      if (clientProfile?.email && prefs.new_messages) {
-        const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "new_messages");
-        await sendNewMessageEmail(clientProfile.email, {
-          projectTitle: project.title,
-          senderName: "Alexander IP",
-          messagePreview: body.trim(),
-          portalUrl: PORTAL_URL,
-          unsubscribeUrl,
-        });
+        const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
+        if (clientProfile?.email && prefs.new_messages) {
+          const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "new_messages");
+          await sendNewMessageEmail(clientProfile.email, {
+            projectTitle: project.title,
+            senderName: "Alexander IP",
+            messagePreview: body.trim(),
+            portalUrl: PORTAL_URL,
+            unsubscribeUrl,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send message notification email:", err);
       }
-    } catch (emailErr) {
-      console.error("Failed to send message notification email:", emailErr);
-    }
+    })();
   }
 
   revalidatePath(`/admin/projects/${projectId}`);
