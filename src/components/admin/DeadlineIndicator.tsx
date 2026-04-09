@@ -5,7 +5,7 @@ interface DeadlineIndicatorProps {
   status: string;
 }
 
-const DELIVERED_STATUSES = ["report_delivered", "draft_delivered", "complete", "complete_granted"];
+const DELIVERED_STATUSES = ["report_delivered", "draft_delivered", "review", "complete", "complete_granted"];
 
 function isDelivered(status: string): boolean {
   return DELIVERED_STATUSES.includes(status) || status.includes("delivered");

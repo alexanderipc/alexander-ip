@@ -219,7 +219,7 @@ export function isComplete(status: string): boolean {
 }
 
 export function isDelivered(status: string): boolean {
-  return status.includes("delivered") || status === "complete" || status === "complete_granted";
+  return status.includes("delivered") || status === "review" || status === "complete" || status === "complete_granted";
 }
 
 /* ── Status colors for badges ────────────────────────────────── */
