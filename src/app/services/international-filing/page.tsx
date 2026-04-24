@@ -10,8 +10,8 @@ import { getServiceBySlug } from "@/data/services";
 
 const service = getServiceBySlug("international-filing")!;
 
-const filingTierRange: Record<string, [number, number] | null> = {
-  "PCT Filing": [600, 950],
+const filingTierAmount: Record<string, number | null> = {
+  "PCT Filing": 1150,
   "National Phase Entry": null, // "Varies by jurisdiction" — no conversion
 };
 
@@ -212,8 +212,8 @@ export default function InternationalFilingPage() {
                     {tier.description}
                   </p>
                   <div className="text-3xl font-bold text-navy">
-                    {filingTierRange[tier.name] ? (
-                      <LocalizedPrice range={filingTierRange[tier.name]!} fallback={tier.price} />
+                    {filingTierAmount[tier.name] ? (
+                      <LocalizedPrice amount={filingTierAmount[tier.name]!} fallback={tier.price} />
                     ) : (
                       tier.price
                     )}

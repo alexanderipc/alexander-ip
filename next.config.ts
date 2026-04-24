@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pdfkit"],
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "55mb",

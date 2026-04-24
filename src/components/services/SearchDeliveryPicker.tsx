@@ -55,8 +55,6 @@ const tiers: SearchTier[] = [
     features: [
       "Everything in Basic",
       "Web disclosures and non-patent publications",
-      "Broader prior art landscape",
-      "Enhanced novelty assessment",
     ],
     popular: true,
   },
@@ -69,8 +67,6 @@ const tiers: SearchTier[] = [
     features: [
       "Everything in Standard",
       "Live strategy call after search",
-      "Personalised filing advice",
-      "Jurisdiction recommendations",
     ],
   },
 ];

@@ -320,7 +320,7 @@ export const services: Service[] = [
       "Strategic international patent protection through PCT applications and national phase entries across all major markets.",
     longDescription:
       "Extend your patent protection globally through the Patent Cooperation Treaty (PCT) route. We handle PCT international applications, strategic advice on ISA/IPEA selection, Chapter II demands, and coordination of national phase entries across multiple jurisdictions. This includes timing advice to maximise your protection windows and cost optimisation across countries.",
-    startingPrice: "$540",
+    startingPrice: "$1,150",
     currency: "USD",
     delivery: "21\u201345 days",
     icon: "Globe",
@@ -335,7 +335,7 @@ export const services: Service[] = [
     pricing: [
       {
         name: "PCT Filing",
-        price: "$540\u2013$855",
+        price: "$1,150",
         description: "International patent application via WIPO",
         features: [
           "PCT application preparation",

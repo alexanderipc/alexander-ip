@@ -71,7 +71,7 @@ const extras: Extra[] = [
   {
     key: "illustrations-created",
     name: "Illustrations (Created)",
-    usd: 315,
+    usd: 585,
     note: "Professional patent drawings",
   },
   {
@@ -82,18 +82,24 @@ const extras: Extra[] = [
   },
   {
     key: "filing",
-    name: "Filing / Submission",
+    name: "National Filing",
     usd: 225,
-    note: "Filed on your behalf",
+    note: "US, CA, GB or AU \u2014 filed on your behalf",
+  },
+  {
+    key: "filing-international",
+    name: "Int'l / European Filing",
+    usd: 1150,
+    note: "EPO, PCT or other foreign national routes",
   },
 ];
 
 const timelines: Timeline[] = [
   { key: "standard", name: "Standard", days: 45, surchargeUsd: 0 },
-  { key: "30", name: "Express", days: 30, surchargeUsd: 360 },
-  { key: "21", name: "Rush", days: 21, surchargeUsd: 540 },
-  { key: "14", name: "Urgent", days: 14, surchargeUsd: 945 },
-  { key: "7", name: "Emergency", days: 7, surchargeUsd: 1420 },
+  { key: "30", name: "Express", days: 30, surchargeUsd: 630 },
+  { key: "21", name: "Rush", days: 21, surchargeUsd: 810 },
+  { key: "14", name: "Urgent", days: 14, surchargeUsd: 1215 },
+  { key: "7", name: "Emergency", days: 7, surchargeUsd: 1690 },
 ];
 
 /* ── Flow line types & helpers ────────────────────────────── */
@@ -474,7 +480,7 @@ export default function PackageBuilder() {
         <p className="text-xs text-slate-400 mb-4">
           Most clients add illustrations and filing. Only skip these if you can handle them yourself.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 relative z-10">
           {extras.map((extra, i) => {
             const isSelected = selectedExtras.has(extra.key);
             return (
