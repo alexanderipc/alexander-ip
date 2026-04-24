@@ -38,10 +38,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const startingPriceUsd: Record<string, number | null> = {
   consultation: 112,
-  "patent-search": 300,
+  "patent-search": 340,
   "patent-drafting": 895,
   "patent-prosecution": null,
-  "international-filing": 540,
+  "international-filing": 1150,
   fto: 540,
 };
 

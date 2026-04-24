@@ -15,6 +15,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/services/custom",
     "/process",
     "/about",
+    "/portfolio",
+    "/tinkers-workshop",
     "/faq",
     "/contact",
     "/blog",

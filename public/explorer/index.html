@@ -225,5 +225,28 @@
 </div>
 
 <script type="module" src="/explorer/js/app.js"></script>
+<script>
+  // Accept ?q= URL param to auto-load a portfolio (e.g. /explorer?q=fontaine+farm)
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var q = params.get('q');
+    if (!q) return;
+    var tryRun = function () {
+      var input = document.getElementById('search-input');
+      var btn = document.getElementById('search-btn');
+      if (input && btn) {
+        input.value = q;
+        btn.click();
+      } else {
+        setTimeout(tryRun, 120);
+      }
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tryRun);
+    } else {
+      tryRun();
+    }
+  })();
+</script>
 </body>
 </html>
