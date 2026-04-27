@@ -480,6 +480,81 @@ export async function uploadDocument(
   return { success: true };
 }
 
+/* ── Register Admin-Uploaded Document (signed-URL path) ──── */
+/**
+ * Lightweight server action used after the browser uploads directly to Supabase Storage
+ * via a signed URL. Bypasses the serverless function body-size ceiling for large files.
+ */
+export async function registerAdminUploadedDocument(
+  projectId: string,
+  filename: string,
+  filePath: string,
+  documentType: string = "other",
+  clientVisible: boolean = true
+) {
+  const { user } = await requireAdmin();
+  const adminClient = createAdminClient();
+
+  const { error: insertError } = await adminClient
+    .from("project_documents")
+    .insert({
+      project_id: projectId,
+      filename,
+      file_url: filePath,
+      document_type: documentType as import("@/lib/supabase/types").DocumentType,
+      client_visible: clientVisible,
+      uploaded_by: user.id,
+    });
+
+  if (insertError) {
+    console.error("[AdminUpload] DB insert error:", insertError.message);
+    throw new Error(`Failed to save document record: ${insertError.message}`);
+  }
+
+  // Send email notification for client-visible documents (skip if project-level mute is on)
+  if (clientVisible) {
+    try {
+      const { data: project } = await adminClient
+        .from("projects")
+        .select("*")
+        .eq("id", projectId)
+        .single();
+
+      if (project && !project?.client_notifications_muted) {
+        const { data: clientProfile } = await adminClient
+          .from("profiles")
+          .select("email, notification_preferences")
+          .eq("id", project.client_id)
+          .single();
+
+        const prefs =
+          (clientProfile?.notification_preferences as NotificationPreferences | null) ??
+          DEFAULT_NOTIFICATION_PREFERENCES;
+
+        if (clientProfile?.email && prefs.document_uploads) {
+          const unsubscribeUrl = buildUnsubscribeUrl(
+            project.client_id,
+            "document_uploads"
+          );
+          await sendDocumentUploadedEmail(clientProfile.email, {
+            title: project.title,
+            filename,
+            portalUrl: PORTAL_URL,
+            unsubscribeUrl,
+          });
+        }
+      }
+    } catch (emailErr) {
+      console.error("Failed to send document email:", emailErr);
+    }
+  }
+
+  revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/portal/projects/${projectId}`);
+
+  return { success: true };
+}
+
 /* ── Add Milestone ───────────────────────────────────────── */
 
 export async function addMilestone(

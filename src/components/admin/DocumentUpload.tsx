@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { uploadDocument } from "@/app/admin/actions";
+import {
+  uploadDocument,
+  registerAdminUploadedDocument,
+} from "@/app/admin/actions";
 import { Upload, X, CheckCircle2, FileIcon, Loader2 } from "lucide-react";
 
 interface DocumentUploadProps {
@@ -9,6 +12,7 @@ interface DocumentUploadProps {
 }
 
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+const DIRECT_UPLOAD_THRESHOLD = 4 * 1024 * 1024; // 4 MB — use signed URL beyond this
 const ALLOWED_EXTENSIONS = [
   ".pdf",
   ".png",
@@ -105,11 +109,70 @@ export default function DocumentUpload({ projectId }: DocumentUploadProps) {
         );
 
         try {
-          const formData = new FormData();
-          formData.append("file", files[i].file);
-          formData.set("document_type", docType);
-          formData.set("client_visible", clientVisible ? "true" : "false");
-          await uploadDocument(projectId, formData);
+          const currentFile = files[i].file;
+
+          if (currentFile.size > DIRECT_UPLOAD_THRESHOLD) {
+            // Large file: get a signed URL, upload directly to storage, then register.
+            // This bypasses Vercel's serverless function body-size limit.
+            const urlRes = await fetch("/api/upload/signed-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                projectId,
+                filename: currentFile.name,
+                contentType: currentFile.type,
+              }),
+            });
+            if (!urlRes.ok) {
+              const err = await urlRes.json().catch(() => ({}));
+              throw new Error(err.error || "Failed to get upload URL");
+            }
+            const {
+              signedUrl,
+              filePath,
+              contentType: resolvedType,
+            } = await urlRes.json();
+
+            const uploadRes = await fetch(signedUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  resolvedType ||
+                  currentFile.type ||
+                  "application/octet-stream",
+              },
+              body: currentFile,
+            });
+            if (!uploadRes.ok) {
+              const errorText = await uploadRes.text().catch(() => "");
+              console.error(
+                "[AdminUpload] Storage PUT failed:",
+                uploadRes.status,
+                errorText
+              );
+              throw new Error(
+                `Storage upload failed (${uploadRes.status}): ${errorText.slice(
+                  0,
+                  100
+                )}`
+              );
+            }
+
+            await registerAdminUploadedDocument(
+              projectId,
+              currentFile.name,
+              filePath,
+              docType,
+              clientVisible
+            );
+          } else {
+            // Small file: server action is simpler/faster
+            const formData = new FormData();
+            formData.append("file", currentFile);
+            formData.set("document_type", docType);
+            formData.set("client_visible", clientVisible ? "true" : "false");
+            await uploadDocument(projectId, formData);
+          }
 
           setFiles((prev) =>
             prev.map((f, idx) =>
