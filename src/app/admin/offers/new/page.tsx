@@ -12,7 +12,12 @@ import {
   convertCurrency,
 } from "@/lib/pricing";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Send } from "lucide-react";
+import { ArrowLeft, CheckCircle, Send, Sparkles } from "lucide-react";
+
+// Stripe fee rate used to suggest a cover fee. Based on actual UK Stripe data:
+// International cards + currency conversion = ~5.3%. Adds 0.5% buffer for FX
+// rate slippage. Override per offer as needed.
+const STRIPE_COVER_RATE = 0.058;
 
 const SERVICE_OPTIONS: ServiceType[] = [
   "consultation",
@@ -66,6 +71,20 @@ export default function NewOfferPage() {
     setServiceType(value);
     const defaultDays = DEFAULT_TIMELINES[value];
     setTimelineDays(defaultDays ? String(defaultDays) : "");
+  }
+
+  function suggestCoverFee() {
+    // Calculate based on official fee amount converted to offer currency
+    const officialNative = officialFeeAmount ? parseFloat(officialFeeAmount) : 0;
+    if (officialNative <= 0) return;
+    const officialInOfferCurrency = convertCurrency(
+      officialNative,
+      feeCurrency,
+      currency
+    );
+    // Round up to nearest whole currency unit
+    const suggested = Math.ceil(officialInOfferCurrency * STRIPE_COVER_RATE);
+    setCoverFeeAmount(String(suggested));
   }
 
   // Derive office currency
@@ -441,12 +460,24 @@ export default function NewOfferPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="cover_fee_amount"
-                    className="block text-sm font-medium text-slate-700 mb-1"
-                  >
-                    {isFxConversion ? "Currency Conversion Cover Fee" : "Service / Cover Fee"} ({symbol})
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label
+                      htmlFor="cover_fee_amount"
+                      className="block text-sm font-medium text-slate-700"
+                    >
+                      {isFxConversion ? "Currency Conversion Cover Fee" : "Service / Cover Fee"} ({symbol})
+                    </label>
+                    <button
+                      type="button"
+                      onClick={suggestCoverFee}
+                      disabled={!officialFeeAmount || parseFloat(officialFeeAmount) <= 0}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 hover:text-blue-800 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
+                      title={`Suggests ${(STRIPE_COVER_RATE * 100).toFixed(1)}% of the official fee — covers Stripe processing + FX margin for international cards`}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      Suggest
+                    </button>
+                  </div>
                   <input
                     id="cover_fee_amount"
                     name="cover_fee_amount"
@@ -460,8 +491,8 @@ export default function NewOfferPage() {
                   />
                   <p className="text-xs text-slate-500 mt-1">
                     {isFxConversion
-                      ? "Covers FX margin + handling. + VAT where applicable."
-                      : "Service charge for processing the official fee payment. + VAT where applicable."}
+                      ? `Covers Stripe processing + FX margin (~${(STRIPE_COVER_RATE * 100).toFixed(1)}%). + VAT where applicable.`
+                      : `Service charge for processing the official fee payment (~${(STRIPE_COVER_RATE * 100).toFixed(1)}%). + VAT where applicable.`}
                   </p>
                 </div>
               </div>
