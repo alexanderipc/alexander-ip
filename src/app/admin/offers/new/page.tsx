@@ -74,7 +74,7 @@ export default function NewOfferPage() {
     feeOffice,
     feeOffice === "WIPO" ? feeSubOffice : null
   );
-  const needsCoverFee = feeCurrency !== currency;
+  const isFxConversion = feeCurrency !== currency;
 
   const displayAmount = amount ? parseFloat(amount).toFixed(2) : "0.00";
   const symbol = CURRENCY_SYMBOLS[currency] || "$";
@@ -86,6 +86,8 @@ export default function NewOfferPage() {
     ? convertCurrency(officialFeesNative, feeCurrency, currency)
     : 0;
   const coverFees = includeOfficialFees && coverFeeAmount ? parseFloat(coverFeeAmount) : 0;
+  // alias for clarity in JSX — keeps coverFee always available when official fees included
+  const showCoverFee = includeOfficialFees;
   const totalEstimate = professionalFees + officialFeesConverted + coverFees;
 
   async function handleSubmit(formData: FormData) {
@@ -438,30 +440,30 @@ export default function NewOfferPage() {
                   )}
                 </div>
 
-                {needsCoverFee && (
-                  <div>
-                    <label
-                      htmlFor="cover_fee_amount"
-                      className="block text-sm font-medium text-slate-700 mb-1"
-                    >
-                      Currency Conversion Cover Fee ({symbol}) *
-                    </label>
-                    <input
-                      id="cover_fee_amount"
-                      name="cover_fee_amount"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={coverFeeAmount}
-                      onChange={(e) => setCoverFeeAmount(e.target.value)}
-                      placeholder="e.g., 25.00"
-                      className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <p className="text-xs text-slate-500 mt-1">
-                      + VAT where applicable
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <label
+                    htmlFor="cover_fee_amount"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    {isFxConversion ? "Currency Conversion Cover Fee" : "Service / Cover Fee"} ({symbol})
+                  </label>
+                  <input
+                    id="cover_fee_amount"
+                    name="cover_fee_amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={coverFeeAmount}
+                    onChange={(e) => setCoverFeeAmount(e.target.value)}
+                    placeholder="e.g., 25.00"
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    {isFxConversion
+                      ? "Covers FX margin + handling. + VAT where applicable."
+                      : "Service charge for processing the official fee payment. + VAT where applicable."}
+                  </p>
+                </div>
               </div>
 
               {/* Hidden fields for form data */}
@@ -492,9 +494,11 @@ export default function NewOfferPage() {
                   )}
                 </span>
               </div>
-              {needsCoverFee && coverFees > 0 && (
+              {coverFees > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Currency Conversion Cover Fee</span>
+                  <span className="text-slate-600">
+                    {isFxConversion ? "Currency Conversion Cover Fee" : "Service / Cover Fee"}
+                  </span>
                   <span className="text-navy font-medium">{symbol}{coverFees.toFixed(2)} + VAT</span>
                 </div>
               )}

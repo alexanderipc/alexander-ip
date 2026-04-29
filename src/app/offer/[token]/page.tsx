@@ -165,7 +165,11 @@ export default async function OfferPage({
                   {/* Cover fee */}
                   {coverFeeDisplay && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Currency Conversion Cover Fee</span>
+                      <span className="text-slate-600">
+                        {offer.official_fee_currency !== offer.currency
+                          ? "Currency Conversion Cover Fee"
+                          : "Service / Cover Fee"}
+                      </span>
                       <span className="text-navy font-semibold">{coverFeeDisplay}</span>
                     </div>
                   )}

@@ -986,7 +986,10 @@ export async function createOffer(formData: FormData) {
     officialFeesLine = `Official Patent Office Fees — ${officeLabel}: ${feeSymbol}${(officialFeeAmount / 100).toFixed(2)} ${officialFeeCurrency}`;
 
     if (coverFeeAmount && coverFeeAmount > 0) {
-      coverFeeLine = `Currency Conversion Cover Fee: ${symbol}${(coverFeeAmount / 100).toFixed(2)}`;
+      const coverLabel = officialFeeCurrency !== currency
+        ? "Currency Conversion Cover Fee"
+        : "Service / Cover Fee";
+      coverFeeLine = `${coverLabel}: ${symbol}${(coverFeeAmount / 100).toFixed(2)}`;
     }
   }
 
@@ -1153,7 +1156,10 @@ export async function resendOfferEmail(offerId: string) {
     officialFeesLine = `Official Patent Office Fees — ${officeLabel}: ${feeSymbol}${(offer.official_fee_amount / 100).toFixed(2)} ${offer.official_fee_currency}`;
 
     if (offer.cover_fee_amount && offer.cover_fee_amount > 0) {
-      coverFeeLine = `Currency Conversion Cover Fee: ${symbol}${(offer.cover_fee_amount / 100).toFixed(2)}`;
+      const coverLabel = offer.official_fee_currency !== offer.currency
+        ? "Currency Conversion Cover Fee"
+        : "Service / Cover Fee";
+      coverFeeLine = `${coverLabel}: ${symbol}${(offer.cover_fee_amount / 100).toFixed(2)}`;
     }
   }
 
