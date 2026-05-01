@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import {
   getNextStatus,
+  getStatusFlow,
   getStatusLabel,
   calculateDeliveryDate,
   DEFAULT_TIMELINES,
@@ -191,7 +192,8 @@ export async function advanceStatus(
   note?: string,
   internalNote?: string,
   notifyClient: boolean = true,
-  showTrustpilot?: boolean
+  showTrustpilot?: boolean,
+  targetStatus?: string
 ) {
   await requireAdmin();
   const adminClient = createAdminClient();
@@ -205,14 +207,29 @@ export async function advanceStatus(
 
   if (!project) throw new Error("Project not found");
 
-  const nextStatus = getNextStatus(project.service_type, project.status);
-  if (!nextStatus) throw new Error("Project is already at final status");
+  // Resolve the destination — either an explicit target (skipping stages)
+  // or the immediate next stage. A skip still produces a single update
+  // record and a single client notification.
+  const flow = getStatusFlow(project.service_type);
+  const currentIdx = flow.indexOf(project.status);
+  let destinationStatus: string;
+
+  if (targetStatus) {
+    const targetIdx = flow.indexOf(targetStatus);
+    if (targetIdx < 0) throw new Error("Target status is not in this project's flow");
+    if (targetIdx <= currentIdx) throw new Error("Target status must be later than the current status");
+    destinationStatus = targetStatus;
+  } else {
+    const next = getNextStatus(project.service_type, project.status);
+    if (!next) throw new Error("Project is already at final status");
+    destinationStatus = next;
+  }
 
   // Update project status
-  const updateData: Record<string, unknown> = { status: nextStatus };
+  const updateData: Record<string, unknown> = { status: destinationStatus };
 
   // If completing, set actual delivery date and Trustpilot preference
-  if (nextStatus === "complete" || nextStatus === "complete_granted") {
+  if (destinationStatus === "complete" || destinationStatus === "complete_granted") {
     updateData.actual_delivery_date = new Date().toISOString().split("T")[0];
     if (showTrustpilot !== undefined) {
       updateData.show_trustpilot = showTrustpilot;
@@ -225,9 +242,9 @@ export async function advanceStatus(
   await adminClient.from("project_updates").insert({
     project_id: projectId,
     status_from: project.status,
-    status_to: nextStatus,
+    status_to: destinationStatus,
     note:
-      note || `Status updated to ${getStatusLabel(nextStatus)}.`,
+      note || `Status updated to ${getStatusLabel(destinationStatus)}.`,
     internal_note: internalNote || null,
     notify_client: notifyClient,
   });
@@ -248,8 +265,8 @@ export async function advanceStatus(
         await sendStatusUpdateEmail(clientProfile.email, {
           title: project.title,
           serviceType: project.service_type as ServiceType,
-          newStatus: nextStatus,
-          statusLabel: getStatusLabel(nextStatus),
+          newStatus: destinationStatus,
+          statusLabel: getStatusLabel(destinationStatus),
           note: note || null,
           portalUrl: PORTAL_URL,
           unsubscribeUrl,
@@ -265,7 +282,7 @@ export async function advanceStatus(
   revalidatePath(`/portal/projects/${projectId}`);
   revalidatePath("/portal");
 
-  return { success: true, newStatus: nextStatus };
+  return { success: true, newStatus: destinationStatus };
 }
 
 /* ── Add Update/Note ─────────────────────────────────────── */
@@ -335,64 +352,101 @@ export async function addUpdate(
 export async function updateDeliveryDate(
   projectId: string,
   newDate: string,
-  note?: string
+  note?: string,
+  notifyClient: boolean = false
 ) {
   await requireAdmin();
   const adminClient = createAdminClient();
+
+  const { data: project } = await adminClient
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .single();
 
   await adminClient
     .from("projects")
     .update({ estimated_delivery_date: newDate })
     .eq("id", projectId);
 
-  if (note) {
-    const { data: project } = await adminClient
-      .from("projects")
-      .select("*")
-      .eq("id", projectId)
-      .single();
-
-    await adminClient.from("project_updates").insert({
-      project_id: projectId,
-      status_from: project?.status || "",
-      status_to: project?.status || "",
-      note: `Delivery date updated to ${new Date(newDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. ${note}`,
-      notify_client: true,
-    });
-
-    // Send email notification (was missing prefs check — now fixed)
-    if (project && !project?.client_notifications_muted) {
-      try {
-        const { data: clientProfile } = await adminClient
-          .from("profiles")
-          .select("email, notification_preferences")
-          .eq("id", project.client_id)
-          .single();
-
-        const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
-
-        if (clientProfile?.email && prefs.status_updates) {
-          const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "status_updates");
-          await sendStatusUpdateEmail(clientProfile.email, {
-            title: project.title,
-            serviceType: "" as ServiceType,
-            newStatus: project.status,
-            statusLabel: `Delivery date updated`,
-            note: `Delivery date updated to ${new Date(newDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. ${note}`,
-            portalUrl: PORTAL_URL,
-            unsubscribeUrl,
-          });
-        }
-      } catch (emailErr) {
-        console.error("Failed to send delivery date email:", emailErr);
-      }
-    }
-  }
+  await notifyTimelineChange(adminClient, project, newDate, note, notifyClient);
 
   revalidatePath(`/admin/projects/${projectId}`);
   revalidatePath("/admin");
+  revalidatePath(`/portal/projects/${projectId}`);
 
   return { success: true };
+}
+
+/* ── Helper: shared notification for delivery-date / timeline edits ── */
+
+async function notifyTimelineChange(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adminClient: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  project: any,
+  newDate: string | null,
+  note: string | undefined,
+  notifyClient: boolean
+) {
+  if (!project) return;
+
+  // Silent edit: no update record, no email. Matches the prior behavior where
+  // only an admin who chose to explain the change surfaced it to the client.
+  if (!notifyClient) return;
+
+  const formattedDate = newDate
+    ? new Date(newDate).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
+  const baseLine = formattedDate
+    ? `Delivery date updated to ${formattedDate}.`
+    : "Delivery date cleared.";
+  const fullNote = note ? `${baseLine} ${note}` : baseLine;
+
+  await adminClient.from("project_updates").insert({
+    project_id: project.id,
+    status_from: project.status || "",
+    status_to: project.status || "",
+    note: fullNote,
+    notify_client: true,
+  });
+
+  if (project.client_notifications_muted) return;
+
+  try {
+    const { data: clientProfile } = await adminClient
+      .from("profiles")
+      .select("email, notification_preferences")
+      .eq("id", project.client_id)
+      .single();
+
+    const prefs =
+      (clientProfile?.notification_preferences as NotificationPreferences | null) ??
+      DEFAULT_NOTIFICATION_PREFERENCES;
+
+    if (clientProfile?.email && prefs.status_updates) {
+      const unsubscribeUrl = buildUnsubscribeUrl(
+        project.client_id,
+        "status_updates"
+      );
+      await sendStatusUpdateEmail(clientProfile.email, {
+        title: project.title,
+        serviceType: project.service_type as ServiceType,
+        newStatus: project.status,
+        statusLabel: "Delivery date updated",
+        note: fullNote,
+        portalUrl: PORTAL_URL,
+        unsubscribeUrl,
+      });
+    }
+  } catch (emailErr) {
+    console.error("Failed to send delivery date email:", emailErr);
+  }
 }
 
 /* ── Upload Document ─────────────────────────────────────── */
@@ -644,14 +698,16 @@ export async function deleteMilestone(
 
 export async function updateTimelineDays(
   projectId: string,
-  timelineDays: number | null
+  timelineDays: number | null,
+  note?: string,
+  notifyClient: boolean = false
 ) {
   await requireAdmin();
   const adminClient = createAdminClient();
 
   const { data: project } = await adminClient
     .from("projects")
-    .select("start_date")
+    .select("*")
     .eq("id", projectId)
     .single();
 
@@ -669,6 +725,14 @@ export async function updateTimelineDays(
       estimated_delivery_date: estimatedDelivery,
     })
     .eq("id", projectId);
+
+  await notifyTimelineChange(
+    adminClient,
+    project,
+    estimatedDelivery,
+    note,
+    notifyClient
+  );
 
   revalidatePath(`/admin/projects/${projectId}`);
   revalidatePath(`/portal/projects/${projectId}`);

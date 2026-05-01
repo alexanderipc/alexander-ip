@@ -274,6 +274,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
           <AdminStatusAdvancer
             projectId={project.id}
+            serviceType={project.service_type}
             currentStatus={project.status}
             nextStatus={nextStatus}
           />

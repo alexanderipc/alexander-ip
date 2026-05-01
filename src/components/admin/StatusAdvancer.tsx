@@ -2,17 +2,20 @@
 
 import { useState, useTransition } from "react";
 import { advanceStatus } from "@/app/admin/actions";
-import { getStatusLabel } from "@/lib/portal/status";
+import { getStatusFlow, getStatusLabel } from "@/lib/portal/status";
+import type { ServiceType } from "@/lib/supabase/types";
 import { ArrowRight, ChevronDown } from "lucide-react";
 
 interface StatusAdvancerProps {
   projectId: string;
+  serviceType: ServiceType;
   currentStatus: string;
   nextStatus: string;
 }
 
 export default function StatusAdvancer({
   projectId,
+  serviceType,
   currentStatus,
   nextStatus,
 }: StatusAdvancerProps) {
@@ -22,9 +25,15 @@ export default function StatusAdvancer({
   const [internalNote, setInternalNote] = useState("");
   const [notifyClient, setNotifyClient] = useState(true);
   const [showTrustpilot, setShowTrustpilot] = useState(false);
+  const [targetStatus, setTargetStatus] = useState(nextStatus);
 
+  const flow = getStatusFlow(serviceType);
+  const currentIdx = flow.indexOf(currentStatus);
+  const futureStages = currentIdx >= 0 ? flow.slice(currentIdx + 1) : [];
+
+  const isSkipping = targetStatus !== nextStatus;
   const isCompleting =
-    nextStatus === "complete" || nextStatus === "complete_granted";
+    targetStatus === "complete" || targetStatus === "complete_granted";
 
   function handleAdvance() {
     if (
@@ -36,13 +45,23 @@ export default function StatusAdvancer({
       return;
     }
 
+    if (
+      isSkipping &&
+      !confirm(
+        `Skip directly to "${getStatusLabel(targetStatus)}"? The client will receive a single notification covering all skipped stages.`
+      )
+    ) {
+      return;
+    }
+
     startTransition(async () => {
       await advanceStatus(
         projectId,
         note || undefined,
         internalNote || undefined,
         notifyClient,
-        isCompleting ? showTrustpilot : undefined
+        isCompleting ? showTrustpilot : undefined,
+        isSkipping ? targetStatus : undefined
       );
       setNote("");
       setInternalNote("");
@@ -56,13 +75,33 @@ export default function StatusAdvancer({
           <p className="text-sm font-medium text-blue-800 mb-1">
             Ready to advance?
           </p>
-          <p className="text-sm text-blue-600">
-            {getStatusLabel(currentStatus)}{" "}
-            <ArrowRight className="w-3.5 h-3.5 inline" />{" "}
-            <span className="font-semibold">
-              {getStatusLabel(nextStatus)}
-            </span>
-          </p>
+          <div className="flex items-center gap-2 flex-wrap text-sm text-blue-600">
+            <span>{getStatusLabel(currentStatus)}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+            {futureStages.length > 1 ? (
+              <select
+                value={targetStatus}
+                onChange={(e) => setTargetStatus(e.target.value)}
+                disabled={isPending}
+                className="font-semibold bg-white border border-blue-200 rounded px-2 py-1 text-sm text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {futureStages.map((s) => (
+                  <option key={s} value={s}>
+                    {getStatusLabel(s)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="font-semibold">{getStatusLabel(targetStatus)}</span>
+            )}
+          </div>
+          {isSkipping && (
+            <p className="text-[11px] text-blue-500 mt-1">
+              Skipping {flow.indexOf(targetStatus) - currentIdx - 1} intermediate{" "}
+              {flow.indexOf(targetStatus) - currentIdx - 1 === 1 ? "stage" : "stages"} —
+              one notification will be sent.
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -81,7 +120,9 @@ export default function StatusAdvancer({
             disabled={isPending}
             className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isPending ? "Advancing..." : `Advance to ${getStatusLabel(nextStatus)}`}
+            {isPending
+              ? "Advancing..."
+              : `${isSkipping ? "Skip to" : "Advance to"} ${getStatusLabel(targetStatus)}`}
           </button>
         </div>
       </div>
