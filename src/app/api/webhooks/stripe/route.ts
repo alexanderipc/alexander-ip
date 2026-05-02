@@ -5,7 +5,7 @@ import {
   DEFAULT_TIMELINES,
   calculateDeliveryDate,
 } from "@/lib/portal/status";
-import { sendProjectCreatedEmail, sendAdminNewOrderEmail } from "@/lib/email";
+import { sendProjectCreatedEmail, sendAdminNewOrderEmail, sendMagicLinkEmail } from "@/lib/email";
 import type { ServiceType } from "@/lib/supabase/types";
 import { generateAndStoreInvoice } from "@/lib/invoice";
 import { getOfficeLabel, convertCurrencySmallest } from "@/lib/pricing";
@@ -191,6 +191,99 @@ async function saveBillingAddressToProfile(
 
   if (error) {
     console.error("[webhook] Failed to save billing details:", error.message);
+  }
+}
+
+/* ── Team-member invites from Stripe custom_fields ───────────── */
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+async function inviteTeamMembersFromCheckout(
+  adminClient: ReturnType<typeof createAdminClient>,
+  session: Stripe.Checkout.Session,
+  projectId: string,
+  ownerEmail: string
+): Promise<void> {
+  const field = session.custom_fields?.find((f) => f.key === "team_emails");
+  const raw = field?.text?.value;
+  if (!raw) return;
+
+  const ownerLower = ownerEmail.toLowerCase();
+  const seen = new Set<string>();
+  const emails = raw
+    .split(/[,;\s]+/)
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => {
+      if (!EMAIL_RE.test(e)) return false;
+      if (e === ownerLower) return false;
+      if (seen.has(e)) return false;
+      seen.add(e);
+      return true;
+    });
+
+  if (!emails.length) return;
+
+  console.log(`[webhook] Inviting ${emails.length} team member(s) to project ${projectId}`);
+
+  for (const inviteEmail of emails) {
+    try {
+      // Find or create profile
+      const { data: existingProfile } = await adminClient
+        .from("profiles")
+        .select("id")
+        .eq("email", inviteEmail)
+        .maybeSingle();
+
+      let inviteeId: string;
+      if (existingProfile) {
+        inviteeId = existingProfile.id;
+      } else {
+        const { data: newUser, error: createError } =
+          await adminClient.auth.admin.createUser({
+            email: inviteEmail,
+            email_confirm: false,
+          });
+        if (createError || !newUser?.user) {
+          console.error(`[webhook] Failed to create invitee ${inviteEmail}:`, createError?.message);
+          continue;
+        }
+        inviteeId = newUser.user.id;
+      }
+
+      // Skip if already a member (defensive — race conditions, retries)
+      const { data: alreadyMember } = await adminClient
+        .from("project_members")
+        .select("id")
+        .eq("project_id", projectId)
+        .eq("user_id", inviteeId)
+        .maybeSingle();
+      if (alreadyMember) continue;
+
+      const { error: memberError } = await adminClient
+        .from("project_members")
+        .insert({
+          project_id: projectId,
+          user_id: inviteeId,
+          role: "member",
+        });
+      if (memberError) {
+        console.error(`[webhook] Failed to add ${inviteEmail} as member:`, memberError.message);
+        continue;
+      }
+
+      // Send magic-link login email
+      const { data: linkData } = await adminClient.auth.admin.generateLink({
+        type: "magiclink",
+        email: inviteEmail,
+      });
+      const hashedToken = linkData?.properties?.hashed_token;
+      if (hashedToken) {
+        const verifyUrl = `https://www.alexander-ip.com/auth/verify?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink`;
+        await sendMagicLinkEmail(inviteEmail, verifyUrl);
+      }
+    } catch (err) {
+      console.error(`[webhook] Team-member invite failed for ${inviteEmail}:`, err);
+    }
   }
 }
 
@@ -476,6 +569,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   });
 
   console.log(`[webhook] Project created: ${project.id}`);
+
+  // 7c. Invite any team members the client added at Stripe checkout (non-blocking)
+  try {
+    await inviteTeamMembersFromCheckout(adminClient, session, project.id, email);
+  } catch (teamErr) {
+    console.error("[webhook] Team-member invite stage failed:", teamErr);
+  }
 
   // 7b. Generate invoice PDF (non-blocking)
   try {

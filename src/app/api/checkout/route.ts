@@ -5,6 +5,7 @@ import {
   getCurrencyForCountry,
   DEFAULT_CURRENCY,
 } from "@/lib/pricing";
+import { sendCheckoutErrorAlert } from "@/lib/email";
 
 const serviceConfig: Record<string, { name: string; description: string }> = {
   consultation: {
@@ -78,6 +79,8 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 const BASE_URL = "https://www.alexander-ip.com";
 
 export async function POST(request: NextRequest) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let body: any = {};
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
@@ -87,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const body = await request.json();
+    body = await request.json();
     const { service = "consultation", customAmount, description, currency: bodyCurrency, timelineDays } = body;
 
     const config = serviceConfig[service];
@@ -188,12 +191,38 @@ export async function POST(request: NextRequest) {
       automatic_tax: { enabled: true },
       metadata,
       allow_promotion_codes: true,
+      custom_fields: [
+        {
+          key: "team_emails",
+          label: {
+            type: "custom",
+            custom: "Team member emails (optional)",
+          },
+          type: "text",
+          optional: true,
+          text: { maximum_length: 250 },
+        },
+      ],
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error: unknown) {
     // Log full error details server-side only — don't leak to client
     console.error("Stripe checkout error:", error);
+
+    // Fire-and-forget admin alert so silent checkout failures are visible
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
+    void sendCheckoutErrorAlert({
+      service: String(body?.service || "unknown"),
+      customAmount:
+        typeof body?.customAmount === "number" ? body.customAmount : null,
+      currency: body?.currency ? String(body.currency) : null,
+      description: body?.description ? String(body.description) : null,
+      errorMessage,
+      detectedCountry: request.headers.get("x-vercel-ip-country"),
+      userAgent: request.headers.get("user-agent"),
+    });
 
     return NextResponse.json(
       { error: "Failed to create checkout session. Please try again." },

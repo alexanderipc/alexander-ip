@@ -841,6 +841,57 @@ function adminWaitlistHtml(data: { name: string; email: string }): string {
 </html>`;
 }
 
+/* ── Checkout Error Alert (admin-only) ───────────────────────── */
+
+interface CheckoutErrorData {
+  service: string;
+  customAmount: number | null;
+  currency: string | null;
+  description: string | null;
+  errorMessage: string;
+  detectedCountry: string | null;
+  userAgent: string | null;
+}
+
+export async function sendCheckoutErrorAlert(
+  data: CheckoutErrorData
+): Promise<void> {
+  try {
+    const subject = `🚨 Checkout failure: ${data.service}`;
+    const amountStr =
+      data.customAmount && data.currency
+        ? `${(data.customAmount / 100).toFixed(2)} ${data.currency.toUpperCase()}`
+        : "n/a";
+
+    const html = `
+<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f1f5f9;padding:24px;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h2 style="color:#dc2626;margin:0 0 16px;font-size:20px;">Checkout failure</h2>
+    <p style="color:#334155;margin:0 0 16px;">A user attempted to start a Stripe checkout but it failed before redirect. They likely saw the generic "Something went wrong" error.</p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0;">
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;width:140px;">Service</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;">${escapeHtml(data.service)}</td></tr>
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Amount</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(amountStr)}</td></tr>
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Country (Vercel)</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.detectedCountry || "unknown")}</td></tr>
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">User agent</td><td style="padding:12px 16px;color:#0f1729;font-size:12px;border-top:1px solid #e2e8f0;word-break:break-all;">${escapeHtml(data.userAgent || "unknown")}</td></tr>
+      ${data.description ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;vertical-align:top;">Description</td><td style="padding:12px 16px;color:#0f1729;font-size:12px;border-top:1px solid #e2e8f0;white-space:pre-wrap;">${escapeHtml(data.description)}</td></tr>` : ""}
+    </table>
+    <p style="color:#64748b;margin:20px 0 8px;font-size:13px;font-weight:600;">Error</p>
+    <pre style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:6px;padding:12px;font-size:12px;white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(data.errorMessage)}</pre>
+    <p style="color:#94a3b8;margin:24px 0 0;font-size:12px;">Check Vercel logs for the full stack trace and Stripe dashboard for any related events.</p>
+  </div>
+</body></html>`;
+
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject,
+      html,
+    });
+  } catch (err) {
+    console.error("Failed to send checkout error alert:", err);
+  }
+}
+
 /* ── Custom Offer Email ──────────────────────────────────────── */
 
 interface OfferEmailData {

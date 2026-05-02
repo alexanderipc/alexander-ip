@@ -620,6 +620,36 @@ export default function PackageBuilder() {
         </p>
       )}
 
+      {/* What happens next — reassurance copy */}
+      {complexity && (
+        <div className="mt-6 grid sm:grid-cols-3 gap-4 relative z-10">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              1. Secure checkout
+            </p>
+            <p className="text-sm text-slate-600">
+              Pay securely via Stripe &mdash; cards, Apple Pay or Google Pay. VAT auto-applied.
+            </p>
+          </div>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              2. Instant project portal
+            </p>
+            <p className="text-sm text-slate-600">
+              You&rsquo;ll get a magic-link login to your project dashboard with VAT invoice attached.
+            </p>
+          </div>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              3. Personal welcome
+            </p>
+            <p className="text-sm text-slate-600">
+              I&rsquo;ll be in touch within 1 business day to kick off your project personally.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Gov fees note */}
       <p className="text-center text-sm text-slate-400 mt-6 relative z-10">
         Government patent office fees are paid by you directly to the patent
