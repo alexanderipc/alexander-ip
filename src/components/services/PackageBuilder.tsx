@@ -96,7 +96,7 @@ const extras: Extra[] = [
   {
     key: "design-patent",
     name: "+ Design Patent",
-    usd: 1150,
+    usd: 1075,
     note: "Adds a 2nd patent covering the same invention's appearance — spec, drawings & UK/US filing included",
     badge: "Bundle add-on",
   },

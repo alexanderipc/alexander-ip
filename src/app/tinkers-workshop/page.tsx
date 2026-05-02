@@ -114,7 +114,7 @@ export default function TinkersWorkshop() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h2 className="text-2xl font-bold text-navy">
-                  Live demo — Fontaine Farm portfolio
+                  Live demo — Music Production portfolio
                 </h2>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 text-xs font-medium rounded-full">
                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
@@ -128,7 +128,7 @@ export default function TinkersWorkshop() {
               </p>
             </div>
             <a
-              href="/explorer?q=fontaine+farm"
+              href="/explorer?q=music+production"
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-700 font-medium whitespace-nowrap transition-colors"
@@ -138,8 +138,8 @@ export default function TinkersWorkshop() {
             </a>
           </div>
 
-          {/* Explorer embed — auto-loads Fontaine Farm via ?q= param */}
-          <PatentExplorer src="/explorer?q=fontaine+farm" />
+          {/* Explorer embed — auto-loads Music Production family via ?q= param */}
+          <PatentExplorer src="/explorer?q=music+production" />
         </Container>
       </section>
 

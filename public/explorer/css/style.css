@@ -175,6 +175,7 @@ body {
 .viz-container svg, .viz-container canvas { width: 100%; height: 100%; display: block; }
 
 /* ═══ Legend ═══ */
+.legend-toggle { display: none; }
 .legend {
   position: absolute; bottom: 16px; left: 16px;
   background: rgba(255,255,255,0.92); border: 1px solid #d0d8e0;
