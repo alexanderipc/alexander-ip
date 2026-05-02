@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Hero from "@/components/home/Hero";
-import ProcessPreview from "@/components/home/ProcessPreview";
-import TrustBar from "@/components/home/TrustBar";
 import WhoIsThisFor from "@/components/home/WhoIsThisFor";
 import ServicesOverview from "@/components/home/ServicesOverview";
 import PackageBuilderSection from "@/components/home/PackageBuilderSection";
@@ -22,8 +20,6 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <ProcessPreview />
-      <TrustBar />
       <ServicesOverview />
       <PackageBuilderSection />
       <MidPageCTA />

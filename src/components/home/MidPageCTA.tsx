@@ -8,11 +8,11 @@ export default function MidPageCTA() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
             <h3 className="text-xl font-bold text-white mb-1">
-              Know what you need?
+              Want to discuss before committing?
             </h3>
             <p className="text-slate-400 text-sm">
-              Get in touch with your project details and receive a response
-              within 24&ndash;48 hours.
+              Send me your invention details or book a consultation &mdash;
+              I&rsquo;ll personally reply within 24&ndash;48 hours.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
