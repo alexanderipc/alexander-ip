@@ -249,6 +249,11 @@ export const services: Service[] = [
     ],
     faq: [
       {
+        question: "What if I'm not happy with the draft?",
+        answer:
+          "My promise: I'll keep revising the written specification and claims until your invention is captured correctly — there's no fixed cap on rounds for the written work. Drawings include one revision pass (additional aesthetic redos can be quoted separately), and your application will meet patent-office formal requirements. Because I'm the only person on your project, revisions are a direct conversation, not an admin process.",
+      },
+      {
         question: "Which complexity tier is right for me?",
         answer:
           "If your invention is purely mechanical with few moving parts, choose Simple. If it involves electronics but no software, choose Mid-Tier. If it involves software, AI, or advanced chemistry/biology, choose Complex. Not sure? Book a consultation and we'll advise.",
