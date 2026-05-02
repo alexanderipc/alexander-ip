@@ -20,12 +20,10 @@ export default function PackageBuilderSection() {
         <div className="max-w-3xl mx-auto mb-10 bg-gradient-to-r from-blue-50 to-teal-50 border border-blue-100 rounded-xl p-5 text-center">
           <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
             <span className="font-semibold text-navy">£8,000&ndash;£15,000</span>{" "}
-            at a traditional patent firm.{" "}
-            <span className="font-semibold text-navy">£695&ndash;£2,000 with me</span>{" "}
-            &mdash; most full packages land between &pound;1,500 and &pound;2,000.
+            at a traditional patent firm.
             <br className="hidden sm:block" />
             <span className="text-slate-500">
-              Same Legal&nbsp;500 training, same outcome &mdash; different overhead.
+              Same Legal&nbsp;500 training, same outcome &mdash; different overhead. See your transparent, fixed-fee quote below &darr;
             </span>
           </p>
         </div>
