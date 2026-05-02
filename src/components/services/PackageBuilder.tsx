@@ -25,6 +25,7 @@ interface Extra {
   name: string;
   usd: number;
   note: string;
+  badge?: string;
 }
 
 interface Timeline {
@@ -94,9 +95,10 @@ const extras: Extra[] = [
   },
   {
     key: "design-patent",
-    name: "Design Patent",
+    name: "+ Design Patent",
     usd: 1150,
-    note: "All-inclusive: spec, drawings & UK/US filing",
+    note: "Adds a 2nd patent covering the same invention's appearance — spec, drawings & UK/US filing included",
+    badge: "Bundle add-on",
   },
 ];
 
@@ -500,6 +502,11 @@ export default function PackageBuilder() {
                     : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
                 }`}
               >
+                {extra.badge && (
+                  <div className="inline-block px-2 py-0.5 mb-2 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-amber-100 text-amber-800">
+                    {extra.badge}
+                  </div>
+                )}
                 <h4 className="text-sm font-semibold text-navy mb-1">
                   {extra.name}
                 </h4>

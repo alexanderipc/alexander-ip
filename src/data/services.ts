@@ -237,9 +237,9 @@ export const services: Service[] = [
         note: "Filing with the patent office on your behalf (excludes government fees)",
       },
       {
-        name: "Design Patent (add-on)",
+        name: "+ Design Patent (bundle add-on)",
         price: "$1,150",
-        note: "All-inclusive design patent: written specification, drawings, and filing with the UKIPO or USPTO. Government patent office fees not included — reach out during the project if you'd like me to pay the fees on your behalf as a separate invoice.",
+        note: "Add a second patent covering the same invention's appearance, alongside the utility patent. All-inclusive: written specification, drawings, and filing with the UKIPO or USPTO. Government patent office fees not included — reach out during the project if you'd like me to pay the fees on your behalf as a separate invoice.",
       },
     ],
     whoIsItFor: [
