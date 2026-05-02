@@ -149,7 +149,18 @@ export async function POST(request: NextRequest) {
     }
 
     const successUrl = `${BASE_URL}/booking/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${BASE_URL}/booking/cancelled?service=${encodeURIComponent(service)}`;
+
+    /* Allow the client to pass a richer cancel path (e.g. with package
+       config) so the cancelled page can offer one-click resume.
+       Strict allow-list: must be a relative path to /booking/cancelled
+       with a query string of safe characters only. */
+    const defaultCancelUrl = `${BASE_URL}/booking/cancelled?service=${encodeURIComponent(service)}`;
+    const cancelPathRaw = body.cancelPath;
+    const isValidCancelPath =
+      typeof cancelPathRaw === "string" &&
+      cancelPathRaw.length <= 500 &&
+      /^\/booking\/cancelled(?:\?[A-Za-z0-9._%&=,+\-]*)?$/.test(cancelPathRaw);
+    const cancelUrl = isValidCancelPath ? `${BASE_URL}${cancelPathRaw}` : defaultCancelUrl;
 
     const metadata: Record<string, string> = {
       service,

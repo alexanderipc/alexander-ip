@@ -409,12 +409,26 @@ export default function PackageBuilder() {
     const hasExtras = selectedExtras.size > 0;
     const hasRush = timeline && timeline !== "standard";
 
+    /* Build a cancel path that preserves the package config so the
+       cancelled page can offer one-click resume back into the builder */
+    const cancelParams = new URLSearchParams();
+    cancelParams.set("service", !hasExtras && !hasRush ? tier.service : "custom");
+    if (complexity) cancelParams.set("c", complexity);
+    if (selectedExtras.size) cancelParams.set("e", [...selectedExtras].join(","));
+    if (timeline) cancelParams.set("t", timeline);
+    const builderPath =
+      typeof window !== "undefined" && window.location.pathname.includes("patent-drafting")
+        ? "/services/patent-drafting"
+        : "/";
+    cancelParams.set("from", builderPath);
+    const cancelPath = `/booking/cancelled?${cancelParams.toString()}`;
+
     try {
       let body: Record<string, unknown>;
 
       if (!hasExtras && !hasRush) {
         /* Simple: use the standard service checkout */
-        body = { service: tier.service };
+        body = { service: tier.service, cancelPath };
       } else {
         /* Custom: build description and use total */
         const parts = [tier.name + " drafting"];
@@ -442,6 +456,7 @@ export default function PackageBuilder() {
           currency: curr.code,
           description: `Patent Drafting Package: ${parts.join(" + ")}`,
           timelineDays: timelines.find((t) => t.key === timeline)?.days || null,
+          cancelPath,
         };
       }
 
