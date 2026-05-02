@@ -92,6 +92,12 @@ const extras: Extra[] = [
     usd: 1150,
     note: "EPO, PCT or other foreign national routes",
   },
+  {
+    key: "design-patent",
+    name: "Design Patent",
+    usd: 1150,
+    note: "All-inclusive: spec, drawings & UK/US filing",
+  },
 ];
 
 const timelines: Timeline[] = [
@@ -480,7 +486,7 @@ export default function PackageBuilder() {
         <p className="text-xs text-slate-400 mb-4">
           Most clients add illustrations and filing. Only skip these if you can handle them yourself.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 relative z-10">
           {extras.map((extra, i) => {
             const isSelected = selectedExtras.has(extra.key);
             return (
@@ -610,7 +616,9 @@ export default function PackageBuilder() {
       {/* Gov fees note */}
       <p className="text-center text-sm text-slate-400 mt-6 relative z-10">
         Government patent office fees are paid by you directly to the patent
-        office and are not included above.
+        office and are not included above. If you&rsquo;d prefer me to pay the
+        fees on your behalf, just reach out during the project &mdash; I&rsquo;ll
+        set it up as a separate invoice.
       </p>
     </div>
   );
