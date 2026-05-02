@@ -718,11 +718,22 @@ export default function PackageBuilder() {
         </div>
       )}
 
+      {/* Prominent satisfaction guarantee */}
+      {complexity && (
+        <div className="mt-3 px-4 py-3 bg-emerald-50 border border-emerald-100 rounded-lg relative z-10">
+          <p className="text-sm text-emerald-900 text-center sm:text-left">
+            <span className="font-semibold">My promise: </span>
+            I&rsquo;ll keep revising the written spec and claims until your
+            invention is captured correctly. Drawings include one revision pass.
+          </p>
+        </div>
+      )}
+
       {/* Risk-reversal copy + Save Quote */}
       {complexity && (
-        <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
+        <div className="mt-2 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
           <p className="text-xs text-slate-500 text-center sm:text-left">
-            <span className="text-slate-700 font-medium">Fixed fee &middot; 1 round of revisions included &middot; Direct line to me &mdash; no juniors, no handoffs.</span>
+            Fixed fee &middot; Meets patent-office formalities &middot; Direct line to me &mdash; no juniors, no handoffs.
           </p>
           {emailSent ? (
             <p className="text-xs text-teal-600 font-medium">
