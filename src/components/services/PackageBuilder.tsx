@@ -185,6 +185,13 @@ export default function PackageBuilder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /* Save Quote (email this configuration) */
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [emailValue, setEmailValue] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   /* Refs for SVG line drawing */
   const containerRef = useRef<HTMLDivElement>(null);
   const complexityRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -196,6 +203,30 @@ export default function PackageBuilder() {
   /* Detect currency */
   useEffect(() => {
     setCurrency(getCurrencyFromBrowserLocale());
+  }, []);
+
+  /* Restore package from URL (?c=mid&e=search,illustrations-created&t=21) — used by emailed quote links */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const c = params.get("c");
+    if (c && complexityTiers.some((t) => t.key === c)) {
+      setComplexity(c);
+    }
+    const e = params.get("e");
+    if (e) {
+      const validKeys = e
+        .split(",")
+        .map((k) => k.trim())
+        .filter((k) => extras.some((ex) => ex.key === k));
+      if (validKeys.length) setSelectedExtras(new Set(validKeys));
+    }
+    const t = params.get("t");
+    if (t && timelines.some((tl) => tl.key === t)) {
+      setTimeline(t);
+    } else if (c && !t) {
+      setTimeline("standard");
+    }
   }, []);
 
   /* Calculate orthogonal line positions */
@@ -309,6 +340,63 @@ export default function PackageBuilder() {
       return next;
     });
   };
+
+  /* Build a shareable URL that restores this exact configuration */
+  function buildResumeUrl(): string {
+    const params = new URLSearchParams();
+    if (complexity) params.set("c", complexity);
+    if (selectedExtras.size) params.set("e", [...selectedExtras].join(","));
+    if (timeline) params.set("t", timeline);
+    const path =
+      typeof window !== "undefined" && window.location.pathname.includes("patent-drafting")
+        ? "/services/patent-drafting"
+        : "/";
+    return `https://www.alexander-ip.com${path}?${params.toString()}#build-package`;
+  }
+
+  /* Email-this-quote handler */
+  async function handleSaveQuote() {
+    if (!complexity) return;
+    if (!emailValue.trim()) {
+      setEmailError("Enter your email address.");
+      return;
+    }
+    setEmailSending(true);
+    setEmailError(null);
+
+    const tier = complexityTiers.find((t) => t.key === complexity)!;
+    const tl = timeline ? timelines.find((x) => x.key === timeline) : null;
+    const totalDisplay = `${convertPrice(getTotal(), currency)}${currency === "GBP" ? " +VAT" : ""}`;
+    const extrasNames = [...selectedExtras]
+      .map((k) => extras.find((e) => e.key === k)?.name)
+      .filter((n): n is string => Boolean(n));
+
+    try {
+      const res = await fetch("/api/quote-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailValue.trim(),
+          total: totalDisplay,
+          complexityName: tier.name,
+          extrasNames,
+          timelineName: tl?.name || null,
+          timelineDays: tl?.days || null,
+          resumeUrl: buildResumeUrl(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEmailSent(true);
+      } else {
+        setEmailError(data.error || "Couldn't send. Please try again.");
+      }
+    } catch {
+      setEmailError("Network error. Please try again.");
+    } finally {
+      setEmailSending(false);
+    }
+  }
 
   /* Checkout handler */
   async function handleCheckout() {
@@ -613,6 +701,61 @@ export default function PackageBuilder() {
             )}
           </Button>
         </div>
+      )}
+
+      {/* Risk-reversal copy + Save Quote */}
+      {complexity && (
+        <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
+          <p className="text-xs text-slate-500 text-center sm:text-left">
+            <span className="text-slate-700 font-medium">Fixed fee &middot; 1 round of revisions included &middot; Direct line to me &mdash; no juniors, no handoffs.</span>
+          </p>
+          {emailSent ? (
+            <p className="text-xs text-teal-600 font-medium">
+              Sent &mdash; check your inbox.
+            </p>
+          ) : showEmailForm ? (
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={emailValue}
+                onChange={(e) => setEmailValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveQuote()}
+                className="px-3 py-2 text-sm rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-0 sm:w-56"
+                disabled={emailSending}
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={handleSaveQuote}
+                disabled={emailSending}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              >
+                {emailSending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Sending&hellip;
+                  </>
+                ) : (
+                  "Send Quote"
+                )}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowEmailForm(true)}
+              className="text-xs text-blue-600 font-semibold hover:text-blue-700 underline-offset-2 hover:underline whitespace-nowrap"
+            >
+              Email me this quote &rarr;
+            </button>
+          )}
+        </div>
+      )}
+      {emailError && (
+        <p className="text-xs text-red-600 mt-2 text-right relative z-10">
+          {emailError}
+        </p>
       )}
       {error && (
         <p className="text-sm text-red-600 mt-3 bg-red-50 px-4 py-2 rounded-lg relative z-10">

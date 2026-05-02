@@ -190,6 +190,12 @@ export async function POST(request: NextRequest) {
       billing_address_collection: "required",
       automatic_tax: { enabled: true },
       metadata,
+      after_expiration: {
+        recovery: {
+          enabled: true,
+          allow_promotion_codes: false,
+        },
+      },
       custom_fields: [
         {
           key: "team_emails",

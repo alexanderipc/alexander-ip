@@ -110,7 +110,7 @@ export default function PatentDraftingPage() {
       {/* Build Your Drafting Package */}
       <section id="build-package" className="py-20 bg-white scroll-mt-8">
         <Container>
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-navy mb-4">
               Build Your Drafting Package
             </h2>
@@ -120,6 +120,20 @@ export default function PatentDraftingPage() {
               you build your package.
             </p>
           </div>
+
+          {/* Price-anchor banner */}
+          <div className="max-w-3xl mx-auto mb-10 bg-gradient-to-r from-blue-50 to-teal-50 border border-blue-100 rounded-xl p-5 text-center">
+            <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
+              <span className="font-semibold text-navy">£8,000&ndash;£15,000</span>{" "}
+              at a traditional patent firm.{" "}
+              <span className="font-semibold text-navy">From £660 with me.</span>
+              <br className="hidden sm:block" />
+              <span className="text-slate-500">
+                Same Legal&nbsp;500 training, same outcome &mdash; different overhead.
+              </span>
+            </p>
+          </div>
+
           <PackageBuilder />
         </Container>
       </section>

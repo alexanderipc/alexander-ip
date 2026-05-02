@@ -10,17 +10,17 @@ export const metadata: Metadata = {
 };
 
 const SERVICE_BACK_LINKS: Record<string, { label: string; href: string }> = {
-  consultation: { label: "Back to Consultation", href: "/services/consultation" },
-  "patent-search-basic": { label: "Back to Patent Search", href: "/services/patent-search" },
-  "patent-search-standard": { label: "Back to Patent Search", href: "/services/patent-search" },
-  "patent-search-premium": { label: "Back to Patent Search", href: "/services/patent-search" },
-  "patent-drafting-simple": { label: "Back to Patent Drafting", href: "/services/patent-drafting" },
-  "patent-drafting-mid": { label: "Back to Patent Drafting", href: "/services/patent-drafting" },
-  "patent-drafting-complex": { label: "Back to Patent Drafting", href: "/services/patent-drafting" },
-  "fto-landscape": { label: "Back to FTO", href: "/services/fto" },
-  "fto-simple": { label: "Back to FTO", href: "/services/fto" },
-  "fto-complex": { label: "Back to FTO", href: "/services/fto" },
-  custom: { label: "Back to Custom Project", href: "/services/custom" },
+  consultation: { label: "Resume Booking", href: "/services/consultation" },
+  "patent-search-basic": { label: "Resume Your Order", href: "/services/patent-search#build-package" },
+  "patent-search-standard": { label: "Resume Your Order", href: "/services/patent-search#build-package" },
+  "patent-search-premium": { label: "Resume Your Order", href: "/services/patent-search#build-package" },
+  "patent-drafting-simple": { label: "Resume Your Package", href: "/services/patent-drafting#build-package" },
+  "patent-drafting-mid": { label: "Resume Your Package", href: "/services/patent-drafting#build-package" },
+  "patent-drafting-complex": { label: "Resume Your Package", href: "/services/patent-drafting#build-package" },
+  "fto-landscape": { label: "Resume Your Order", href: "/services/fto" },
+  "fto-simple": { label: "Resume Your Order", href: "/services/fto" },
+  "fto-complex": { label: "Resume Your Order", href: "/services/fto" },
+  custom: { label: "Resume Your Order", href: "/services/custom" },
 };
 
 const DEFAULT_BACK = { label: "Back to Services", href: "/services" };
@@ -42,24 +42,23 @@ export default async function BookingCancelledPage({
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold text-navy mb-4">
-            Booking Cancelled
+            No Charge — Pick Up Where You Left Off
           </h1>
 
           <p className="text-lg text-slate-600 mb-6 max-w-lg mx-auto">
-            No worries &mdash; you haven&apos;t been charged. If you changed
-            your mind or had a question, we&apos;re happy to help.
+            Your card hasn&rsquo;t been charged. If you got cold feet or hit a
+            snag, here are your options &mdash; no pressure either way.
           </p>
 
           <p className="text-slate-500 mb-10 max-w-md mx-auto">
-            Not ready to commit? You can enquire first &mdash; no
-            obligation. Or email us directly at{" "}
+            Have a question first? Reply directly to{" "}
             <a
               href="mailto:alexanderip.contact@gmail.com"
               className="text-blue hover:text-blue-dark"
             >
               alexanderip.contact@gmail.com
-            </a>
-            .
+            </a>{" "}
+            and I&rsquo;ll personally get back to you within a business day.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

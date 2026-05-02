@@ -80,7 +80,7 @@ export default function Hero() {
             </div>
 
             <p className="text-sm text-slate-500 mt-5">
-              Already spoken with me?{" "}
+              Ready to order?{" "}
               <a
                 href="#build-package"
                 className="text-blue-600 font-semibold hover:text-blue-700 underline-offset-2 hover:underline"
