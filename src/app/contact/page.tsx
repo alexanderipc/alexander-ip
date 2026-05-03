@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Mail, MapPin, Shield, MessageSquare, ArrowRight } from "lucide-react";
+import { Mail, MapPin, Shield, MessageSquare, ArrowRight, Phone } from "lucide-react";
 import Link from "next/link";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
@@ -32,12 +32,32 @@ export default async function ContactPage({
               <h1 className="text-4xl sm:text-5xl font-bold text-navy mb-4">
                 Tell me about your invention.
               </h1>
-              <p className="text-lg text-slate-600 mb-8">
+              <p className="text-lg text-slate-600 mb-6">
                 Alexander IP personally reviews every enquiry and responds
                 within 24&ndash;48 hours during business days. If your invention
                 isn&apos;t something Alexander IP can help with, you&apos;ll be
                 told honestly &mdash; and pointed in the right direction.
               </p>
+
+              {/* Soft nudge to the free call — for people who'd rather talk than write */}
+              <Link href="/book-call" className="group block mb-8">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-blue/30 bg-blue/5 hover:bg-blue/10 transition-colors">
+                  <div className="w-9 h-9 bg-blue rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-navy">
+                      Prefer to talk it through? Book a free 15-min call
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      Often quicker than back-and-forth by email. Pick a slot
+                      that suits you &mdash; UK or your local time.
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </Link>
+
               <IntakeForm defaultService={service} />
             </div>
 

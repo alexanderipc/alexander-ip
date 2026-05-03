@@ -18,6 +18,7 @@ const footerLinks = {
     { label: "About", href: "/about" },
     { label: "How It Works", href: "/process" },
     { label: "FAQ", href: "/faq" },
+    { label: "Book a Free Call", href: "/book-call" },
     { label: "Contact", href: "/contact" },
     { label: "Returning Clients", href: "/returning-clients" },
     { label: "My Projects", href: "/auth/login" },
@@ -37,15 +38,16 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
             <div>
               <h3 className="text-xl font-bold text-white mb-1">
-                Ready to protect your invention?
+                Ready to talk it through?
               </h3>
               <p className="text-slate-400 text-sm">
-                Book a consultation or get started with a patent search today.
+                Book a free 15-minute call &mdash; or send a written enquiry if
+                you&rsquo;d prefer.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
-              <Button href="/services/consultation" size="md">
-                Book a Consultation
+              <Button href="/book-call" size="md">
+                Book Free 15-min Call
               </Button>
               <Button href="/contact" variant="outline" size="md" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white">
                 Get in Touch

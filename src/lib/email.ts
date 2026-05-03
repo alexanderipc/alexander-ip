@@ -846,6 +846,7 @@ function adminWaitlistHtml(data: { name: string; email: string }): string {
 interface BookingEmailData {
   leadName: string;
   leadEmail: string;
+  stageLabel: string | null;
   topic: string | null;
   ukDateLabel: string; // e.g. "Tuesday, 5 May 2026"
   ukTimeLabel: string; // e.g. "10:30"
@@ -888,6 +889,7 @@ export async function sendBookingConfirmationToLead(
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr><td style="padding:6px 0;color:#64748b;font-size:14px;width:120px;">When</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.ukDateLabel)}</td></tr>
                 <tr><td style="padding:6px 0;color:#64748b;font-size:14px;">Time</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.ukTimeLabel)} UK time (15 min)</td></tr>
+                ${data.stageLabel ? `<tr><td style="padding:6px 0;color:#64748b;font-size:14px;">Stage</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.stageLabel)}</td></tr>` : ""}
                 ${data.topic ? `<tr><td style="padding:6px 0;color:#64748b;font-size:14px;vertical-align:top;">Topic</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.topic)}</td></tr>` : ""}
               </table>
             </td></tr>
@@ -940,6 +942,7 @@ export async function sendBookingNotificationToAdmin(
     <table cellpadding="0" cellspacing="0" style="width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
       <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;width:120px;">When</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;">${escapeHtml(data.ukDateLabel)} at ${escapeHtml(data.ukTimeLabel)} UK</td></tr>
       <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Lead</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.leadName)} &lt;${escapeHtml(data.leadEmail)}&gt;</td></tr>
+      ${data.stageLabel ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Stage</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.stageLabel)}</td></tr>` : ""}
       ${data.topic ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;vertical-align:top;">Topic</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;border-top:1px solid #e2e8f0;white-space:pre-wrap;">${escapeHtml(data.topic)}</td></tr>` : ""}
       ${data.meetUrl ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Meet link</td><td style="padding:12px 16px;border-top:1px solid #e2e8f0;"><a href="${data.meetUrl}" style="color:#2563eb;font-size:13px;">${data.meetUrl}</a></td></tr>` : ""}
     </table>

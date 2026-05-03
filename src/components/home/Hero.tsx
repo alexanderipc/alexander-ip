@@ -71,8 +71,8 @@ export default function Hero() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button href="/contact" size="lg">
-                Tell Me About Your Invention
+              <Button href="/book-call" size="lg">
+                Book a Free 15-min Call
               </Button>
               <Button href="/services" variant="outline" size="lg">
                 View Services &amp; Pricing
@@ -80,12 +80,12 @@ export default function Hero() {
             </div>
 
             <p className="text-sm text-slate-500 mt-5">
-              Or{" "}
+              Prefer to write?{" "}
               <a
-                href="/book-call"
+                href="/contact"
                 className="text-blue-600 font-semibold hover:text-blue-700 underline-offset-2 hover:underline"
               >
-                book a free 15-min intro call &rarr;
+                Send a written enquiry instead &rarr;
               </a>
             </p>
           </div>

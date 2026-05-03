@@ -149,10 +149,13 @@ export default function Navbar() {
             </Link>
             <Link
               href="/contact"
-              className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-navy rounded-md hover:bg-slate-50 transition-colors"
+              className="px-2 py-2 text-sm font-medium text-slate-500 hover:text-navy rounded-md hover:bg-slate-50 transition-colors"
             >
               Get in Touch
             </Link>
+            <Button href="/book-call" size="sm" variant="outline">
+              Book Free Call
+            </Button>
             <Button href={isLoggedIn ? "/portal" : "/auth/login"} size="sm">
               {isLoggedIn ? "My Projects" : "Login / Register"}
             </Button>
@@ -237,7 +240,15 @@ export default function Navbar() {
             >
               Get in Touch
             </Link>
-            <div className="pt-3">
+            <div className="pt-3 flex flex-col gap-2">
+              <Button
+                href="/book-call"
+                size="md"
+                variant="outline"
+                className="w-full"
+              >
+                Book Free 15-min Call
+              </Button>
               <Button href={isLoggedIn ? "/portal" : "/auth/login"} size="md" className="w-full">
                 {isLoggedIn ? "My Projects" : "Login / Register"}
               </Button>

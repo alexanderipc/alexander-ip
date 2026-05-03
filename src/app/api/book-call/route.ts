@@ -18,9 +18,20 @@ const HOST_EMAIL_FALLBACK = "alexanderip.contact@gmail.com";
 interface BookCallRequest {
   email?: string;
   name?: string;
+  stage?: string;
   topic?: string;
   startUtc?: string;
 }
+
+const STAGE_VALUES = ["idea", "prototype", "filed", "unsure"] as const;
+type Stage = (typeof STAGE_VALUES)[number];
+
+const STAGE_LABELS: Record<Stage, string> = {
+  idea: "Just an idea",
+  prototype: "Built a prototype / proof of concept",
+  filed: "Already filed something",
+  unsure: "Not sure",
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,12 +42,20 @@ export async function POST(request: NextRequest) {
     const topicRaw = (body.topic || "").trim();
     const topic = topicRaw ? topicRaw.slice(0, 1000) : null;
     const startUtcIso = body.startUtc || "";
+    const stage =
+      body.stage && (STAGE_VALUES as readonly string[]).includes(body.stage)
+        ? (body.stage as Stage)
+        : null;
+    const stageLabel = stage ? STAGE_LABELS[stage] : null;
 
     if (!EMAIL_RE.test(email)) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
     if (!name || name.length < 2 || name.length > 100) {
       return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
+    }
+    if (!stage) {
+      return NextResponse.json({ error: "Please tell me where you're at with this." }, { status: 400 });
     }
     if (!startUtcIso) {
       return NextResponse.json({ error: "Please pick a slot." }, { status: 400 });
@@ -76,6 +95,7 @@ export async function POST(request: NextRequest) {
       .insert({
         lead_email: email,
         lead_name: name,
+        stage,
         topic,
         scheduled_at: startUtc.toISOString(),
         duration_minutes: 15,
@@ -116,6 +136,7 @@ export async function POST(request: NextRequest) {
           durationMinutes: 15,
           leadEmail: email,
           leadName: name,
+          stageLabel,
           topic,
         });
         if (event) {
@@ -154,6 +175,7 @@ export async function POST(request: NextRequest) {
       sendBookingConfirmationToLead({
         leadName: name,
         leadEmail: email,
+        stageLabel,
         topic,
         ukDateLabel,
         ukTimeLabel,
@@ -163,6 +185,7 @@ export async function POST(request: NextRequest) {
       sendBookingNotificationToAdmin({
         leadName: name,
         leadEmail: email,
+        stageLabel,
         topic,
         ukDateLabel,
         ukTimeLabel,

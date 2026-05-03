@@ -119,6 +119,7 @@ export async function createBookingEvent(params: {
   durationMinutes: number;
   leadEmail: string;
   leadName: string;
+  stageLabel: string | null;
   topic: string | null;
 }): Promise<CreatedEvent | null> {
   if (!isGoogleCalendarConfigured()) return null;
@@ -133,6 +134,9 @@ export async function createBookingEvent(params: {
     ``,
     `Lead: ${params.leadName} <${params.leadEmail}>`,
   ];
+  if (params.stageLabel) {
+    descriptionLines.push(`Stage: ${params.stageLabel}`);
+  }
   if (params.topic) {
     descriptionLines.push(``, `What they want to discuss:`, params.topic);
   }
