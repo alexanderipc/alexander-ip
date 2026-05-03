@@ -28,7 +28,6 @@ export async function GET() {
     const endUtc = new Date(lastSlot.getTime() + 60 * 60 * 1000);
 
     const adminClient = createAdminClient();
-    const now = new Date();
     const consultLookback = new Date(startUtc.getTime() - 60 * 60 * 1000);
 
     // 1. Pull existing bookings from BOTH tables in parallel:
