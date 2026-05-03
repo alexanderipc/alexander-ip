@@ -78,6 +78,16 @@ export default function Hero() {
                 View Services &amp; Pricing
               </Button>
             </div>
+
+            <p className="text-sm text-slate-500 mt-5">
+              Or{" "}
+              <a
+                href="/book-call"
+                className="text-blue-600 font-semibold hover:text-blue-700 underline-offset-2 hover:underline"
+              >
+                book a free 15-min intro call &rarr;
+              </a>
+            </p>
           </div>
 
           {/* Right: Photo */}

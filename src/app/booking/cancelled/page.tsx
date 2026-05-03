@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { XCircle, ArrowLeft, Mail } from "lucide-react";
+import { XCircle, ArrowLeft, Calendar } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 
@@ -122,9 +122,9 @@ export default async function BookingCancelledPage({
               <ArrowLeft className="w-4 h-4 mr-2" />
               {backLink.label}
             </Button>
-            <Button href="/contact" variant="outline">
-              <Mail className="w-4 h-4 mr-2" />
-              Enquire First — No Obligation
+            <Button href="/book-call" variant="outline">
+              <Calendar className="w-4 h-4 mr-2" />
+              Talk it through — Free 15-min Call
             </Button>
           </div>
         </div>

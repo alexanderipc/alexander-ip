@@ -55,6 +55,24 @@ export default function ConsultationPage() {
                 Enquire First
               </Button>
             </div>
+
+            <div className="mt-6 inline-flex items-start gap-3 bg-blue/5 border border-blue/20 rounded-xl p-4 max-w-xl">
+              <Calendar className="w-5 h-5 text-blue flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-slate-700">
+                Just want a quick chat first?{" "}
+                <a
+                  href="/book-call"
+                  className="text-blue font-semibold hover:text-blue-dark underline-offset-2 hover:underline"
+                >
+                  Book a free 15-min intro call &rarr;
+                </a>
+                <br />
+                <span className="text-xs text-slate-500">
+                  (The paid consultation includes a written patentability report
+                  &mdash; the free call is a fit/scoping conversation.)
+                </span>
+              </p>
+            </div>
           </div>
         </Container>
       </section>
