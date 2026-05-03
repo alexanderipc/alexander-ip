@@ -121,6 +121,8 @@ export async function createBookingEvent(params: {
   leadName: string;
   stageLabel: string | null;
   topic: string | null;
+  /** When supplied, customises the calendar event copy for a paid consultation. */
+  kind?: "free_intro" | "paid_consultation";
 }): Promise<CreatedEvent | null> {
   if (!isGoogleCalendarConfigured()) return null;
 
@@ -128,9 +130,14 @@ export async function createBookingEvent(params: {
   const endUtc = new Date(params.startUtc.getTime() + params.durationMinutes * 60_000);
   const requestId = `book-${params.startUtc.getTime()}-${Math.random().toString(36).slice(2, 10)}`;
 
-  const summary = `Intro call — Alexander IP & ${params.leadName}`;
+  const isPaid = params.kind === "paid_consultation";
+  const summary = isPaid
+    ? `Patent consultation — Alexander IP & ${params.leadName}`
+    : `Intro call — Alexander IP & ${params.leadName}`;
   const descriptionLines = [
-    `Free 15-minute intro call.`,
+    isPaid
+      ? `Paid ${params.durationMinutes}-minute patent consultation.`
+      : `Free ${params.durationMinutes}-minute intro call.`,
     ``,
     `Lead: ${params.leadName} <${params.leadEmail}>`,
   ];
@@ -142,7 +149,9 @@ export async function createBookingEvent(params: {
   }
   descriptionLines.push(
     ``,
-    `Booked via https://www.alexander-ip.com/book-call`
+    isPaid
+      ? `Booked via https://www.alexander-ip.com/book-consultation`
+      : `Booked via https://www.alexander-ip.com/book-call`
   );
 
   const res = await fetch(

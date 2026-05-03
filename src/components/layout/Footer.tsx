@@ -19,6 +19,7 @@ const footerLinks = {
     { label: "How It Works", href: "/process" },
     { label: "FAQ", href: "/faq" },
     { label: "Book a Free Call", href: "/book-call" },
+    { label: "Book a Consultation", href: "/book-consultation" },
     { label: "Contact", href: "/contact" },
     { label: "Returning Clients", href: "/returning-clients" },
     { label: "My Projects", href: "/auth/login" },

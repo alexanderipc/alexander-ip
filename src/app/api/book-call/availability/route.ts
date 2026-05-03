@@ -28,14 +28,38 @@ export async function GET() {
     const endUtc = new Date(lastSlot.getTime() + 60 * 60 * 1000);
 
     const adminClient = createAdminClient();
+    const now = new Date();
+    const consultLookback = new Date(startUtc.getTime() - 60 * 60 * 1000);
 
-    // 1. Pull existing bookings from DB
-    const { data: bookedRows, error: bookedErr } = await adminClient
-      .from("lead_call_bookings")
-      .select("scheduled_at")
-      .eq("status", "booked")
-      .gte("scheduled_at", startUtc.toISOString())
-      .lte("scheduled_at", endUtc.toISOString());
+    // 1. Pull existing bookings from BOTH tables in parallel:
+    //    - free 15-min calls already booked
+    //    - paid consultations (active OR pending-still-held) — they're an
+    //      hour long, so any 15-min slot inside that hour must be blocked
+    const [
+      { data: bookedRows, error: bookedErr },
+      { data: paidConsults },
+      { data: pendingConsults },
+    ] = await Promise.all([
+      adminClient
+        .from("lead_call_bookings")
+        .select("scheduled_at")
+        .eq("status", "booked")
+        .gte("scheduled_at", startUtc.toISOString())
+        .lte("scheduled_at", endUtc.toISOString()),
+      adminClient
+        .from("paid_consultation_bookings")
+        .select("scheduled_at, duration_minutes")
+        .eq("status", "paid")
+        .gte("scheduled_at", consultLookback.toISOString())
+        .lte("scheduled_at", endUtc.toISOString()),
+      adminClient
+        .from("paid_consultation_bookings")
+        .select("scheduled_at, duration_minutes")
+        .eq("status", "pending")
+        .gt("pending_until", now.toISOString())
+        .gte("scheduled_at", consultLookback.toISOString())
+        .lte("scheduled_at", endUtc.toISOString()),
+    ]);
 
     if (bookedErr) {
       console.error("[booking] Failed to read bookings:", bookedErr.message);
@@ -43,6 +67,14 @@ export async function GET() {
     const bookedSet = new Set(
       (bookedRows ?? []).map((r) => new Date(r.scheduled_at).getTime())
     );
+    const consultationWindows = [
+      ...(paidConsults ?? []),
+      ...(pendingConsults ?? []),
+    ].map((r) => {
+      const s = new Date(r.scheduled_at).getTime();
+      const dur = (r.duration_minutes ?? 60) * 60 * 1000;
+      return { start: s, end: s + dur };
+    });
 
     // 2. Pull busy windows from Google Calendar (returns [] if not configured)
     let busyWindows: { startUtc: string; endUtc: string }[] = [];
@@ -56,13 +88,17 @@ export async function GET() {
       end: new Date(b.endUtc).getTime(),
     }));
 
-    // 3. Filter: not booked, not within a busy window
+    // 3. Filter: not exact-match booked, not inside any consultation window,
+    //    not inside a Google busy window.
     const slots = candidates.filter((slot) => {
       const slotStart = new Date(slot.startUtc).getTime();
       const slotEnd = slotStart + 15 * 60 * 1000;
       if (bookedSet.has(slotStart)) return false;
+      for (const w of consultationWindows) {
+        if (slotStart < w.end && slotEnd > w.start) return false;
+      }
       for (const b of busyMs) {
-        if (slotStart < b.end && slotEnd > b.start) return false; // overlap
+        if (slotStart < b.end && slotEnd > b.start) return false;
       }
       return true;
     });

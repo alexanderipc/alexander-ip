@@ -3,7 +3,6 @@ import { CheckCircle2, ShieldCheck, Calendar, RefreshCw } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
-import CheckoutButton from "@/components/ui/CheckoutButton";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
 import Card from "@/components/ui/Card";
 import Accordion from "@/components/ui/Accordion";
@@ -50,7 +49,9 @@ export default function ConsultationPage() {
               {service.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <CheckoutButton service="consultation" size="lg" label="Book & Pay" />
+              <Button href="/book-consultation" size="lg">
+                Book & Pay (1 hour)
+              </Button>
               <Button href="/contact" variant="outline" size="lg">
                 Enquire First
               </Button>
@@ -228,7 +229,9 @@ export default function ConsultationPage() {
                   </div>
                 ))}
               </div>
-              <CheckoutButton service="consultation" size="lg" label="Book & Pay" />
+              <Button href="/book-consultation" size="lg">
+                Book & Pay (1 hour)
+              </Button>
             </Card>
           ))}
         </Container>
@@ -257,7 +260,9 @@ export default function ConsultationPage() {
               Book a consultation and get expert advice tailored to your
               specific situation. Full refund if we can&apos;t provide value.
             </p>
-            <CheckoutButton service="consultation" size="lg" label="Book & Pay" />
+            <Button href="/book-consultation" size="lg">
+              Book & Pay (1 hour)
+            </Button>
           </div>
         </Container>
       </section>

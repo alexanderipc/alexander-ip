@@ -955,6 +955,121 @@ export async function sendBookingNotificationToAdmin(
   }
 }
 
+/* ── Paid Consultation: Confirmation to lead + admin notify ───── */
+
+interface ConsultationBookingEmailData {
+  leadName: string;
+  leadEmail: string;
+  stageLabel: string | null;
+  topic: string | null;
+  ukDateLabel: string;
+  ukTimeLabel: string;
+  durationMinutes: number;
+  meetUrl: string | null;
+  hostEmail: string;
+}
+
+export async function sendConsultationBookingConfirmationToLead(
+  data: ConsultationBookingEmailData
+): Promise<void> {
+  try {
+    const meetBlock = data.meetUrl
+      ? `<p style="margin:0 0 24px;color:#334155;font-size:15px;line-height:1.6;">A calendar invite with the Google Meet link will land in your inbox separately. You can also join directly here:</p>
+         <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+           <a href="${data.meetUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:14px 36px;border-radius:10px;">Join Google Meet &rarr;</a>
+         </td></tr></table>
+         <p style="margin:18px 0 0;word-break:break-all;color:#94a3b8;font-size:11px;">Link: ${data.meetUrl}</p>`
+      : `<p style="margin:0 0 24px;color:#334155;font-size:15px;line-height:1.6;">I&rsquo;ll send a calendar invite with the Google Meet link to <strong>${escapeHtml(data.leadEmail)}</strong> shortly.</p>`;
+
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.leadEmail,
+      replyTo: data.hostEmail,
+      subject: `Confirmed — patent consultation ${data.ukDateLabel} at ${data.ukTimeLabel} UK`,
+      html: `
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+        <tr><td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
+          <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Patent Consultation Confirmed</p>
+        </td></tr>
+        <tr><td style="padding:36px 32px 40px;">
+          <h2 style="margin:0 0 12px;color:#0f1729;font-size:22px;font-weight:700;">See you ${escapeHtml(data.ukDateLabel)}</h2>
+          <p style="margin:0 0 20px;color:#334155;font-size:16px;line-height:1.6;">Hi ${escapeHtml(data.leadName)}, your ${data.durationMinutes}-minute patent consultation is locked in. Payment received — invoice will follow separately.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:24px;">
+            <tr><td style="padding:20px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="padding:6px 0;color:#64748b;font-size:14px;width:120px;">When</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.ukDateLabel)}</td></tr>
+                <tr><td style="padding:6px 0;color:#64748b;font-size:14px;">Time</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.ukTimeLabel)} UK time (${data.durationMinutes} min)</td></tr>
+                ${data.stageLabel ? `<tr><td style="padding:6px 0;color:#64748b;font-size:14px;">Stage</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.stageLabel)}</td></tr>` : ""}
+                ${data.topic ? `<tr><td style="padding:6px 0;color:#64748b;font-size:14px;vertical-align:top;">Topic</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.topic)}</td></tr>` : ""}
+              </table>
+            </td></tr>
+          </table>
+          ${meetBlock}
+          <p style="margin:28px 0 0;color:#64748b;font-size:14px;line-height:1.6;">Need to reschedule? Just reply to this email and I&rsquo;ll sort it. Full refund if I can&rsquo;t provide value during the consultation.</p>
+        </td></tr>
+        <tr><td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
+          <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">Alexander IP &mdash; Patent Drafting &amp; Office Correspondence</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`,
+    });
+  } catch (err) {
+    console.error("Consultation booking confirmation email failed:", err);
+  }
+}
+
+export async function sendConsultationBookingNotificationToAdmin(
+  data: ConsultationBookingEmailData & {
+    bookingId: string;
+    projectId: string;
+    googleConfigured: boolean;
+    googleError: string | null;
+  }
+): Promise<void> {
+  try {
+    let statusMsg: string;
+    if (data.meetUrl) {
+      statusMsg = "✅ Google Calendar event created — invite sent automatically.";
+    } else if (data.googleError) {
+      statusMsg = `❌ Google event creation FAILED — send invite manually. Error: ${escapeHtml(data.googleError)}`;
+    } else if (!data.googleConfigured) {
+      statusMsg = "⚠️ Google env vars not set — send a calendar invite manually.";
+    } else {
+      statusMsg = "⚠️ Google call returned no event — send a calendar invite manually.";
+    }
+
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: `💼 Paid consultation booked: ${data.ukDateLabel} ${data.ukTimeLabel} — ${data.leadName}`,
+      html: `
+<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f1f5f9;padding:24px;">
+  <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h2 style="color:#0f1729;margin:0 0 8px;font-size:20px;">💼 Paid consultation booked</h2>
+    <p style="color:#64748b;margin:0 0 20px;font-size:14px;">${statusMsg}</p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;width:120px;">When</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;">${escapeHtml(data.ukDateLabel)} at ${escapeHtml(data.ukTimeLabel)} UK (${data.durationMinutes} min)</td></tr>
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Lead</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.leadName)} &lt;${escapeHtml(data.leadEmail)}&gt;</td></tr>
+      ${data.stageLabel ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Stage</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.stageLabel)}</td></tr>` : ""}
+      ${data.topic ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;vertical-align:top;">Topic</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;border-top:1px solid #e2e8f0;white-space:pre-wrap;">${escapeHtml(data.topic)}</td></tr>` : ""}
+      ${data.meetUrl ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Meet link</td><td style="padding:12px 16px;border-top:1px solid #e2e8f0;"><a href="${data.meetUrl}" style="color:#2563eb;font-size:13px;">${data.meetUrl}</a></td></tr>` : ""}
+    </table>
+    <p style="color:#94a3b8;margin:20px 0 0;font-size:12px;">Booking ID: ${escapeHtml(data.bookingId)} · Project ID: ${escapeHtml(data.projectId)}</p>
+  </div>
+</body></html>`,
+    });
+  } catch (err) {
+    console.error("Admin consultation booking notification failed:", err);
+  }
+}
+
 /* ── Quote Request: Send saved package to client ─────────────── */
 
 interface QuoteEmailData {

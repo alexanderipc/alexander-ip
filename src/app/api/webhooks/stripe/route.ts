@@ -5,10 +5,21 @@ import {
   DEFAULT_TIMELINES,
   calculateDeliveryDate,
 } from "@/lib/portal/status";
-import { sendProjectCreatedEmail, sendAdminNewOrderEmail, sendMagicLinkEmail } from "@/lib/email";
+import {
+  sendProjectCreatedEmail,
+  sendAdminNewOrderEmail,
+  sendMagicLinkEmail,
+  sendConsultationBookingConfirmationToLead,
+  sendConsultationBookingNotificationToAdmin,
+} from "@/lib/email";
 import type { ServiceType } from "@/lib/supabase/types";
 import { generateAndStoreInvoice } from "@/lib/invoice";
 import { getOfficeLabel, convertCurrencySmallest } from "@/lib/pricing";
+import {
+  createBookingEvent,
+  isGoogleCalendarConfigured,
+} from "@/lib/booking/google-calendar";
+import { ukParts } from "@/lib/booking/availability";
 
 export const runtime = "nodejs";
 
@@ -665,6 +676,167 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error("Failed to send welcome email:", emailErr);
   }
 
+  // 10. Consultation slot booking finalisation — only fires if this checkout
+  // came from /book-consultation, which sets `consultation_booking_id` in
+  // metadata. Marks the booking paid, creates a Google Calendar event with a
+  // Meet link, sends scheduling-specific emails, and links the booking to
+  // the project that was just created.
+  const consultationBookingId = session.metadata?.consultation_booking_id;
+  if (consultationBookingId) {
+    try {
+      await finaliseConsultationBooking({
+        adminClient,
+        bookingId: consultationBookingId,
+        leadEmail: email,
+        leadName: customerName,
+        projectId: project.id,
+        paymentIntentId,
+      });
+    } catch (cbErr) {
+      // Don't fail the webhook — payment is captured, project exists. We
+      // surface the issue so admin can manually invite if needed.
+      console.error("[webhook] Consultation booking finalisation failed:", cbErr);
+    }
+  }
+}
+
+/* ── Consultation booking finaliser ──────────────────────────────── */
+
+async function finaliseConsultationBooking(args: {
+  adminClient: ReturnType<typeof createAdminClient>;
+  bookingId: string;
+  leadEmail: string;
+  leadName: string;
+  projectId: string;
+  paymentIntentId: string | null;
+}): Promise<void> {
+  const { adminClient, bookingId, leadEmail, leadName, projectId, paymentIntentId } = args;
+
+  const { data: booking, error: fetchErr } = await adminClient
+    .from("paid_consultation_bookings")
+    .select(
+      "id, scheduled_at, duration_minutes, stage, topic, status, google_event_id"
+    )
+    .eq("id", bookingId)
+    .maybeSingle();
+
+  if (fetchErr || !booking) {
+    console.error("[webhook] consultation booking not found:", bookingId, fetchErr);
+    return;
+  }
+
+  // Idempotency: if it's already paid + has an event, nothing to do.
+  if (booking.status === "paid" && booking.google_event_id) {
+    return;
+  }
+
+  const startUtc = new Date(booking.scheduled_at);
+  const stage = booking.stage as
+    | "idea"
+    | "prototype"
+    | "filed"
+    | "unsure"
+    | null;
+  const stageLabels: Record<string, string> = {
+    idea: "Just an idea",
+    prototype: "Built a prototype / proof of concept",
+    filed: "Already filed something",
+    unsure: "Not sure",
+  };
+  const stageLabel = stage ? stageLabels[stage] : null;
+
+  // Mark paid + link to the project regardless of Google success.
+  await adminClient
+    .from("paid_consultation_bookings")
+    .update({
+      status: "paid",
+      paid_at: new Date().toISOString(),
+      stripe_payment_intent_id: paymentIntentId,
+      project_id: projectId,
+    })
+    .eq("id", bookingId);
+
+  // Create Google Calendar event with Meet link.
+  let meetUrl: string | null = null;
+  let googleEventId: string | null = null;
+  let googleError: string | null = null;
+  const googleConfigured = isGoogleCalendarConfigured();
+  if (googleConfigured) {
+    try {
+      const event = await createBookingEvent({
+        startUtc,
+        durationMinutes: booking.duration_minutes ?? 60,
+        leadEmail,
+        leadName,
+        stageLabel,
+        topic: booking.topic,
+        kind: "paid_consultation",
+      });
+      if (event) {
+        meetUrl = event.meetUrl;
+        googleEventId = event.eventId;
+        await adminClient
+          .from("paid_consultation_bookings")
+          .update({
+            google_event_id: event.eventId,
+            google_meet_url: event.meetUrl,
+          })
+          .eq("id", bookingId);
+      } else {
+        googleError = "createBookingEvent returned null";
+      }
+    } catch (err) {
+      googleError = err instanceof Error ? err.message : String(err);
+      console.error(
+        "[webhook] Consultation Google event creation failed:",
+        err
+      );
+    }
+  }
+
+  // Format human-friendly UK labels for the confirmation emails.
+  const parts = ukParts(startUtc);
+  const ukDateLabel = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(startUtc);
+  const ukTimeLabel = `${parts.hour.toString().padStart(2, "0")}:${parts.minute
+    .toString()
+    .padStart(2, "0")}`;
+  const hostEmail =
+    process.env.BOOKING_HOST_EMAIL || "alexanderip.contact@gmail.com";
+
+  await Promise.all([
+    sendConsultationBookingConfirmationToLead({
+      leadName,
+      leadEmail,
+      stageLabel,
+      topic: booking.topic,
+      ukDateLabel,
+      ukTimeLabel,
+      durationMinutes: booking.duration_minutes ?? 60,
+      meetUrl,
+      hostEmail,
+    }),
+    sendConsultationBookingNotificationToAdmin({
+      leadName,
+      leadEmail,
+      stageLabel,
+      topic: booking.topic,
+      ukDateLabel,
+      ukTimeLabel,
+      durationMinutes: booking.duration_minutes ?? 60,
+      meetUrl,
+      hostEmail,
+      bookingId,
+      projectId,
+      googleConfigured,
+      googleError,
+    }),
+  ]);
 }
 
 

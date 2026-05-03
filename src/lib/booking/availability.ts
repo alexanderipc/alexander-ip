@@ -1,10 +1,13 @@
 /**
- * Slot generation for the free 15-min intro call booking page.
+ * Slot generation for booking pages.
  *
- * Rules (per spec):
- *  - 15-minute slots
+ * Generic over slot duration so it can power both:
+ *  - the free 15-min intro call page (/book-call) and
+ *  - the paid 1-hour consultation page (/book-consultation).
+ *
+ * Rules (shared):
  *  - Mon–Fri only (UK time)
- *  - 10:00 to 17:00 UK time (last slot starts 16:45, ends 17:00)
+ *  - 10:00 to 17:00 UK time (last slot ends at 17:00)
  *  - At least 24 hours in the future
  *  - Surface the next 14 calendar days
  *
@@ -13,9 +16,12 @@
  * BST/GMT transitions are handled automatically.
  */
 
+/** @deprecated Use the duration param explicitly. Kept as the free-call default. */
 export const SLOT_DURATION_MINUTES = 15;
+export const FREE_CALL_DURATION_MINUTES = 15;
+export const PAID_CONSULTATION_DURATION_MINUTES = 60;
 export const SLOT_DAY_START_HOUR = 10; // 10:00 UK
-export const SLOT_DAY_END_HOUR = 17; // last slot ends at 17:00 → starts at 16:45
+export const SLOT_DAY_END_HOUR = 17; // last slot ends at 17:00
 export const MIN_LEAD_HOURS = 24;
 export const DAYS_AHEAD = 14;
 export const UK_TZ = "Europe/London";
@@ -128,13 +134,22 @@ function formatUkTime(hour: number, minute: number): string {
  * - Future ≥ MIN_LEAD_HOURS
  * - Mon–Fri UK time
  * - Within 10:00–17:00 UK time
+ * - The slot must end on/before SLOT_DAY_END_HOUR (so a 60-min slot at 17:00
+ *   would NOT be generated; the last 60-min slot of the day starts at 16:00)
  *
  * Caller is responsible for further filtering against booked slots.
+ *
+ * @param durationMinutes — slot length (also the stride between starts).
+ *                          15 for free intro calls, 60 for paid consultations.
  */
-export function generateCandidateSlots(now: Date = new Date()): Slot[] {
+export function generateCandidateSlots(
+  now: Date = new Date(),
+  durationMinutes: number = FREE_CALL_DURATION_MINUTES
+): Slot[] {
   const minTimeMs = now.getTime() + MIN_LEAD_HOURS * 60 * 60 * 1000;
   const slots: Slot[] = [];
   const today = ukParts(now);
+  const dayEndMinutes = SLOT_DAY_END_HOUR * 60;
 
   // Start from today's UK date and iterate forward
   for (let dayOffset = 0; dayOffset < DAYS_AHEAD; dayOffset++) {
@@ -152,23 +167,30 @@ export function generateCandidateSlots(now: Date = new Date()): Slot[] {
     // Skip weekends
     if (dayParts.weekday === 0 || dayParts.weekday === 6) continue;
 
-    for (let hour = SLOT_DAY_START_HOUR; hour < SLOT_DAY_END_HOUR; hour++) {
-      for (let minute = 0; minute < 60; minute += SLOT_DURATION_MINUTES) {
-        const slotUtc = ukWallClockToUtc(
-          dayParts.year,
-          dayParts.month,
-          dayParts.day,
-          hour,
-          minute
-        );
-        if (slotUtc.getTime() < minTimeMs) continue;
+    // Walk minute-of-day in `durationMinutes` strides; require slot to END
+    // on or before SLOT_DAY_END_HOUR.
+    const dayStartMinutes = SLOT_DAY_START_HOUR * 60;
+    for (
+      let m = dayStartMinutes;
+      m + durationMinutes <= dayEndMinutes;
+      m += durationMinutes
+    ) {
+      const hour = Math.floor(m / 60);
+      const minute = m % 60;
+      const slotUtc = ukWallClockToUtc(
+        dayParts.year,
+        dayParts.month,
+        dayParts.day,
+        hour,
+        minute
+      );
+      if (slotUtc.getTime() < minTimeMs) continue;
 
-        slots.push({
-          startUtc: slotUtc.toISOString(),
-          ukDate: formatUkDate(dayParts),
-          ukTime: formatUkTime(hour, minute),
-        });
-      }
+      slots.push({
+        startUtc: slotUtc.toISOString(),
+        ukDate: formatUkDate(dayParts),
+        ukTime: formatUkTime(hour, minute),
+      });
     }
   }
 
@@ -176,12 +198,18 @@ export function generateCandidateSlots(now: Date = new Date()): Slot[] {
 }
 
 /**
- * Validate a requested slot — must align with our slot grid + meet all constraints.
+ * Validate a requested slot — must align with our slot grid + meet all
+ * constraints for the given duration.
+ *
  * Returns null if valid, or an error string explaining why not.
+ *
+ * @param durationMinutes — slot length used both as the stride and to enforce
+ *                          that the slot ends on/before SLOT_DAY_END_HOUR.
  */
 export function validateSlot(
   startUtcIso: string,
-  now: Date = new Date()
+  now: Date = new Date(),
+  durationMinutes: number = FREE_CALL_DURATION_MINUTES
 ): string | null {
   const slot = new Date(startUtcIso);
   if (isNaN(slot.getTime())) return "Invalid slot timestamp.";
@@ -204,14 +232,20 @@ export function validateSlot(
     return "Slot must be a UK weekday.";
   }
 
-  // Within working hours
-  if (parts.hour < SLOT_DAY_START_HOUR || parts.hour >= SLOT_DAY_END_HOUR) {
-    return "Slot must be within UK working hours (10:00–17:00).";
+  // Slot must start within working hours and END by SLOT_DAY_END_HOUR.
+  const startMinutesOfDay = parts.hour * 60 + parts.minute;
+  const endMinutesOfDay = startMinutesOfDay + durationMinutes;
+  if (
+    startMinutesOfDay < SLOT_DAY_START_HOUR * 60 ||
+    endMinutesOfDay > SLOT_DAY_END_HOUR * 60
+  ) {
+    return `Slot must start at or after 10:00 UK and end by 17:00 UK.`;
   }
 
-  // Aligned to 15-min boundary
-  if (parts.minute % SLOT_DURATION_MINUTES !== 0) {
-    return "Slot must align with a 15-minute boundary.";
+  // Aligned to a duration boundary from 10:00.
+  const offsetFromDayStart = startMinutesOfDay - SLOT_DAY_START_HOUR * 60;
+  if (offsetFromDayStart % durationMinutes !== 0) {
+    return `Slot must align with a ${durationMinutes}-minute boundary.`;
   }
 
   if (parts.second !== 0) {
