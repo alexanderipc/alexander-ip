@@ -909,9 +909,25 @@ export async function sendBookingConfirmationToLead(
 }
 
 export async function sendBookingNotificationToAdmin(
-  data: BookingEmailData & { leadId: string }
+  data: BookingEmailData & {
+    leadId: string;
+    googleConfigured: boolean;
+    googleError: string | null;
+  }
 ): Promise<void> {
   try {
+    let statusMsg: string;
+    if (data.meetUrl) {
+      statusMsg = "✅ Google Calendar event created — invite sent automatically.";
+    } else if (data.googleError) {
+      statusMsg = `❌ Google event creation FAILED — send invite manually. Error: ${escapeHtml(data.googleError)}`;
+    } else if (!data.googleConfigured) {
+      statusMsg =
+        "⚠️ Google env vars not set in Vercel — send a calendar invite manually. (Check GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REFRESH_TOKEN are present in Production env and the deployment was redeployed after adding them.)";
+    } else {
+      statusMsg = "⚠️ Google call returned no event — send a calendar invite manually.";
+    }
+
     await resend.emails.send({
       from: FROM_EMAIL,
       to: ADMIN_EMAIL,
@@ -920,7 +936,7 @@ export async function sendBookingNotificationToAdmin(
 <!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f1f5f9;padding:24px;">
   <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
     <h2 style="color:#0f1729;margin:0 0 8px;font-size:20px;">📞 New intro call booked</h2>
-    <p style="color:#64748b;margin:0 0 20px;font-size:14px;">${data.meetUrl ? "Google Calendar event created — invite sent automatically." : "⚠️ Google not configured — send a calendar invite manually."}</p>
+    <p style="color:#64748b;margin:0 0 20px;font-size:14px;">${statusMsg}</p>
     <table cellpadding="0" cellspacing="0" style="width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
       <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;width:120px;">When</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;">${escapeHtml(data.ukDateLabel)} at ${escapeHtml(data.ukTimeLabel)} UK</td></tr>
       <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Lead</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.leadName)} &lt;${escapeHtml(data.leadEmail)}&gt;</td></tr>

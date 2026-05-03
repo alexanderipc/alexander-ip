@@ -107,7 +107,9 @@ export async function POST(request: NextRequest) {
     // Resend-only confirmation and notify admin to invite manually.
     let meetUrl: string | null = null;
     let googleEventId: string | null = null;
-    if (isGoogleCalendarConfigured()) {
+    let googleError: string | null = null;
+    const googleConfigured = isGoogleCalendarConfigured();
+    if (googleConfigured) {
       try {
         const event = await createBookingEvent({
           startUtc,
@@ -126,8 +128,11 @@ export async function POST(request: NextRequest) {
               google_meet_url: event.meetUrl,
             })
             .eq("id", inserted.id);
+        } else {
+          googleError = "createBookingEvent returned null";
         }
       } catch (err) {
+        googleError = err instanceof Error ? err.message : String(err);
         console.error("[book-call] Google event creation failed:", err);
       }
     }
@@ -164,6 +169,8 @@ export async function POST(request: NextRequest) {
         meetUrl,
         hostEmail,
         leadId: inserted.id,
+        googleConfigured,
+        googleError,
       }),
     ]);
 
