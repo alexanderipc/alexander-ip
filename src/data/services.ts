@@ -223,7 +223,7 @@ export const services: Service[] = [
       },
       {
         name: "Patent Illustrations (created by Alexander IP)",
-        price: "$315",
+        price: "$585",
         note: "Professional patent drawings prepared to patent office standards",
       },
       {

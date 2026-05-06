@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { updateTimelineDays, updateDeliveryDate } from "@/app/admin/actions";
 import { calculateDeliveryDate } from "@/lib/portal/status";
-import { Clock, Save, ChevronDown } from "lucide-react";
+import { Clock, Save, ChevronDown, CalendarPlus } from "lucide-react";
 
 interface TimelineEditorProps {
   projectId: string;
@@ -12,20 +13,55 @@ interface TimelineEditorProps {
   currentDeliveryDate: string | null;
 }
 
+type Mode = "extend" | "reset" | "date";
+
+/** Add N days to a YYYY-MM-DD string, returning a new YYYY-MM-DD string. */
+function addDays(yyyymmdd: string, n: number): string {
+  const [y, m, d] = yyyymmdd.split("-").map((x) => parseInt(x, 10));
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  const yy = dt.getUTCFullYear();
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getUTCDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
+function formatDate(yyyymmdd: string): string {
+  const [y, m, d] = yyyymmdd.split("-").map((x) => parseInt(x, 10));
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export default function TimelineEditor({
   projectId,
   startDate,
   currentDays,
   currentDeliveryDate,
 }: TimelineEditorProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [extendBy, setExtendBy] = useState("");
   const [days, setDays] = useState(currentDays?.toString() || "");
   const [deliveryDate, setDeliveryDate] = useState(currentDeliveryDate || "");
-  const [mode, setMode] = useState<"days" | "date">("days");
+  // Default to "extend" — the most common admin action ("push deadline by N
+  // days"). The legacy "Timeline Days" mode is renamed "Reset from start" to
+  // make it clear it doesn't add to the existing date — it overwrites with
+  // start + N.
+  const [mode, setMode] = useState<Mode>("extend");
   const [saved, setSaved] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [explanation, setExplanation] = useState("");
   const [notifyClient, setNotifyClient] = useState(false);
+
+  const extendByNum = parseInt(extendBy);
+  const validExtend = !!currentDeliveryDate && Number.isFinite(extendByNum) && extendByNum !== 0;
+  const extendedTo = validExtend && currentDeliveryDate
+    ? addDays(currentDeliveryDate, extendByNum)
+    : null;
 
   const estimatedFromDays =
     days && parseInt(days) > 0
@@ -41,13 +77,23 @@ export default function TimelineEditor({
     const shouldNotify = notifyClient || !!note;
 
     startTransition(async () => {
-      if (mode === "days") {
+      if (mode === "extend") {
+        if (!extendedTo) return;
+        // "Extend by N" only changes the delivery date — leaves
+        // default_timeline_days untouched, since this isn't a baseline reset.
+        await updateDeliveryDate(projectId, extendedTo, note, shouldNotify);
+      } else if (mode === "reset") {
         const numDays = days ? parseInt(days) : null;
         await updateTimelineDays(projectId, numDays, note, shouldNotify);
       } else {
         await updateDeliveryDate(projectId, deliveryDate, note, shouldNotify);
       }
+      // Re-fetch the page data so the displayed deadline updates in-place.
+      // revalidatePath alone only takes effect on the next request, which
+      // confused users who saw "Timeline updated" but no change in the UI.
+      router.refresh();
       setSaved(true);
+      setExtendBy("");
       setExplanation("");
       setNotifyClient(false);
       setShowExplanation(false);
@@ -56,7 +102,9 @@ export default function TimelineEditor({
   }
 
   const hasChanged =
-    mode === "days"
+    mode === "extend"
+      ? validExtend
+      : mode === "reset"
       ? days !== (currentDays?.toString() || "")
       : deliveryDate !== (currentDeliveryDate || "");
 
@@ -66,19 +114,30 @@ export default function TimelineEditor({
       <div className="flex gap-1 bg-slate-100 rounded-lg p-0.5">
         <button
           type="button"
-          onClick={() => setMode("days")}
-          className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${
-            mode === "days"
+          onClick={() => setMode("extend")}
+          className={`flex-1 text-[11px] py-1.5 rounded-md transition-colors ${
+            mode === "extend"
               ? "bg-white text-navy font-medium shadow-sm"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          Timeline Days
+          Extend +Days
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("reset")}
+          className={`flex-1 text-[11px] py-1.5 rounded-md transition-colors ${
+            mode === "reset"
+              ? "bg-white text-navy font-medium shadow-sm"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          Reset from Start
         </button>
         <button
           type="button"
           onClick={() => setMode("date")}
-          className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${
+          className={`flex-1 text-[11px] py-1.5 rounded-md transition-colors ${
             mode === "date"
               ? "bg-white text-navy font-medium shadow-sm"
               : "text-slate-500 hover:text-slate-700"
@@ -88,7 +147,41 @@ export default function TimelineEditor({
         </button>
       </div>
 
-      {mode === "days" ? (
+      {mode === "extend" ? (
+        <div>
+          <div className="flex items-center gap-2">
+            <CalendarPlus className="w-4 h-4 text-slate-400" />
+            <input
+              type="number"
+              value={extendBy}
+              onChange={(e) => setExtendBy(e.target.value)}
+              placeholder="e.g. 7"
+              className="flex-1 px-2 py-1.5 rounded border border-slate-300 text-sm text-navy"
+            />
+            <span className="text-xs text-slate-500">days</span>
+          </div>
+          {currentDeliveryDate ? (
+            extendedTo ? (
+              <p className="text-xs text-slate-500 mt-1.5 ml-6">
+                <span className="text-slate-400">{formatDate(currentDeliveryDate)}</span>{" "}
+                <span className="text-slate-400">→</span>{" "}
+                <strong className="text-navy">{formatDate(extendedTo)}</strong>
+                {extendByNum < 0 && (
+                  <span className="ml-2 text-amber-600">(earlier)</span>
+                )}
+              </p>
+            ) : (
+              <p className="text-xs text-slate-400 mt-1.5 ml-6">
+                Current: {formatDate(currentDeliveryDate)}
+              </p>
+            )
+          ) : (
+            <p className="text-xs text-amber-600 mt-1.5 ml-6">
+              No current deadline — set one with &ldquo;Specific Date&rdquo; first.
+            </p>
+          )}
+        </div>
+      ) : mode === "reset" ? (
         <div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-slate-400" />
@@ -100,11 +193,11 @@ export default function TimelineEditor({
               placeholder="e.g. 30"
               className="flex-1 px-2 py-1.5 rounded border border-slate-300 text-sm text-navy"
             />
-            <span className="text-xs text-slate-500">days</span>
+            <span className="text-xs text-slate-500">days from start</span>
           </div>
           {estimatedFromDays && (
             <p className="text-xs text-slate-400 mt-1.5 ml-6">
-              Est. delivery:{" "}
+              Resets delivery to:{" "}
               {new Date(estimatedFromDays).toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "long",
@@ -112,6 +205,10 @@ export default function TimelineEditor({
               })}
             </p>
           )}
+          <p className="text-[10px] text-slate-400 mt-1 ml-6 italic">
+            Overwrites the deadline as start + N days. Use &ldquo;Extend
+            +Days&rdquo; to push an existing deadline forward.
+          </p>
         </div>
       ) : (
         <input
