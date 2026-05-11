@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { sendNewMessageEmail, sendMagicLinkEmail } from "@/lib/email";
 import { canAccessProject, getAccessibleProjectIds } from "@/lib/portal/access";
 import type { NotificationPreferences } from "@/lib/supabase/types";
+import { sanitizeMessageHtml, htmlHasContent } from "@/lib/sanitize-html";
+import type { MessageAttachment } from "@/components/chat/Attachment";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
@@ -144,12 +146,45 @@ export async function registerUploadedDocument(
 
 /* ── Send Message (Client) ─────────────────────────────────── */
 
-export async function sendClientMessage(projectId: string, body: string) {
-  const { supabase, user } = await requireClient();
+/**
+ * Strip HTML tags + collapse whitespace, for plain-text contexts
+ * (email previews, notifications). Caller still HTML-encodes if needed.
+ */
+function htmlToPlainPreview(html: string, maxLen = 280): string {
+  const stripped = html
+    .replace(/<\s*br\s*\/?>/gi, "\n")
+    .replace(/<\s*\/p\s*>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return stripped.length > maxLen ? stripped.slice(0, maxLen - 1) + "…" : stripped;
+}
+
+export async function sendClientMessage(
+  projectId: string,
+  body: string,
+  attachments: MessageAttachment[] = []
+) {
+  const { user } = await requireClient();
   const adminClient = createAdminClient();
 
-  if (!body.trim()) throw new Error("Message cannot be empty");
-  if (body.length > 10000) throw new Error("Message too long (max 10,000 characters)");
+  // Allow attachment-only messages (no body). Both empty = nothing to send.
+  const trimmedBody = (body || "").trim();
+  const hasBody = trimmedBody && htmlHasContent(trimmedBody);
+  if (!hasBody && attachments.length === 0) {
+    throw new Error("Message is empty");
+  }
+  if (trimmedBody.length > 50000) {
+    throw new Error("Message too long (max 50,000 characters)");
+  }
+  if (attachments.length > 10) {
+    throw new Error("Too many attachments (max 10)");
+  }
 
   // Verify client can access this project (team member or owner)
   const hasAccess = await canAccessProject(user.id, projectId);
@@ -163,14 +198,21 @@ export async function sendClientMessage(projectId: string, body: string) {
 
   if (!project) throw new Error("Project not found");
 
-  // Insert message using admin client (user INSERT RLS works, but keep
-  // consistent with the ownership check to avoid the same JWT issue)
-  const { error } = await adminClient.from("project_messages").insert({
-    project_id: projectId,
-    sender_id: user.id,
-    body: body.trim(),
-    is_admin: false,
-  });
+  // Sanitize HTML on the server before storing — defence in depth.
+  const cleanBody = hasBody ? sanitizeMessageHtml(trimmedBody) : "";
+
+  const { data: inserted, error } = await adminClient
+    .from("project_messages")
+    .insert({
+      project_id: projectId,
+      sender_id: user.id,
+      body: cleanBody,
+      body_format: "html",
+      attachments,
+      is_admin: false,
+    })
+    .select("id, body, body_format, attachments, is_admin, read_at, created_at, sender_id")
+    .single();
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
@@ -185,10 +227,13 @@ export async function sendClientMessage(projectId: string, body: string) {
           .single();
 
         const senderName = clientProfile?.name || clientProfile?.email || "Client";
+        const preview = hasBody
+          ? htmlToPlainPreview(cleanBody)
+          : `[${attachments.length} attachment${attachments.length === 1 ? "" : "s"}]`;
         await sendNewMessageEmail("alexanderip.contact@gmail.com", {
           projectTitle: project.title,
           senderName,
-          messagePreview: body.trim(),
+          messagePreview: preview,
           portalUrl: PORTAL_URL,
         });
       } catch (err) {
@@ -197,10 +242,10 @@ export async function sendClientMessage(projectId: string, body: string) {
     })();
   }
 
-  revalidatePath(`/portal/projects/${projectId}`);
-  revalidatePath(`/admin/projects/${projectId}`);
-
-  return { success: true };
+  // No revalidatePath — the client appends `inserted` to local state for
+  // instant UX. revalidate would cause the cached server-rendered page to
+  // be rebuilt, which is what made "Sending..." linger.
+  return { success: true, message: inserted };
 }
 
 /* ── Mark Messages Read (Client) ───────────────────────────── */

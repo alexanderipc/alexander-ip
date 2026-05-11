@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef, useOptimistic } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { sendClientMessage, markMessagesRead } from "@/app/portal/actions";
 import { Send } from "lucide-react";
-import Markdown from "react-markdown";
-import { getMarkdownFromClipboard } from "@/lib/html-to-markdown";
+import RichTextEditor from "@/components/editor/RichTextEditor";
+import AttachmentUploader from "@/components/chat/AttachmentUploader";
+import AttachmentList from "@/components/chat/AttachmentList";
+import MessageBody from "@/components/chat/MessageBody";
+import type { MessageAttachment } from "@/components/chat/Attachment";
 
 interface Message {
   id: string;
   body: string;
+  body_format?: "markdown" | "html" | null;
+  attachments?: MessageAttachment[] | null;
   is_admin: boolean;
   read_at: string | null;
   created_at: string;
@@ -28,15 +33,11 @@ export default function MessageThread({
 }: MessageThreadProps) {
   const [isPending, startTransition] = useTransition();
   const [body, setBody] = useState("");
+  const [pendingAttachments, setPendingAttachments] = useState<MessageAttachment[]>([]);
+  const [sessionMessages, setSessionMessages] = useState<Message[]>([]);
+  const [sendingId, setSendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Optimistic messages — appear instantly before server confirms
-  const [optimisticMessages, addOptimistic] = useOptimistic(
-    messages,
-    (state: Message[], newMsg: Message) => [...state, newMsg]
-  );
 
   // Mark unread admin messages as read when component mounts
   useEffect(() => {
@@ -46,86 +47,85 @@ export default function MessageThread({
     }
   }, [projectId, messages]);
 
-  // Scroll to bottom on new messages
+  // Combined view: server messages + messages sent in this session.
+  // De-dupe by id so a server-revalidate that does include them doesn't double-up.
+  const seen = new Set<string>();
+  const combined: Message[] = [];
+  for (const m of [...messages, ...sessionMessages]) {
+    if (!seen.has(m.id)) {
+      seen.add(m.id);
+      combined.push(m);
+    }
+  }
+  combined.sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [optimisticMessages.length]);
+  }, [combined.length]);
 
   function handleSend() {
-    if (!body.trim() || isPending) return;
-    const messageText = body.trim();
-    setError(null);
-    setBody("");
+    const trimmed = body.trim();
+    const hasContent = trimmed !== "" && trimmed !== "<p></p>";
+    if (!hasContent && pendingAttachments.length === 0) return;
+    if (isPending) return;
 
-    // Focus back on input for quick follow-up messages
-    textareaRef.current?.focus();
+    const optimisticId = `optimistic-${Date.now()}`;
+    const optimistic: Message = {
+      id: optimisticId,
+      body: trimmed,
+      body_format: "html",
+      attachments: pendingAttachments,
+      is_admin: false,
+      read_at: null,
+      created_at: new Date().toISOString(),
+      sender_id: userId,
+    };
+    setSessionMessages((prev) => [...prev, optimistic]);
+    setSendingId(optimisticId);
+    setError(null);
+    const sentAttachments = pendingAttachments;
+    setBody("");
+    setPendingAttachments([]);
 
     startTransition(async () => {
-      // Show message instantly
-      addOptimistic({
-        id: `optimistic-${Date.now()}`,
-        body: messageText,
-        is_admin: false,
-        read_at: null,
-        created_at: new Date().toISOString(),
-        sender_id: userId,
-      });
-
       try {
-        await sendClientMessage(projectId, messageText);
+        const res = await sendClientMessage(projectId, trimmed, sentAttachments);
+        if (res?.message) {
+          // Swap optimistic with real row
+          setSessionMessages((prev) =>
+            prev.map((m) => (m.id === optimisticId ? (res.message as Message) : m))
+          );
+        }
+        setSendingId(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to send message");
-        // Restore the message text so they can retry
-        setBody(messageText);
+        // Roll back the optimistic message; restore the draft so they can retry
+        setSessionMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+        setSendingId(null);
+        setBody(trimmed);
+        setPendingAttachments(sentAttachments);
       }
     });
   }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  }
-
-  function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
-    const md = getMarkdownFromClipboard(e);
-    if (md !== null) {
-      e.preventDefault();
-      const textarea = e.currentTarget;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const before = body.slice(0, start);
-      const after = body.slice(end);
-      setBody(before + md + after);
-    }
-  }
-
-  // Auto-resize textarea to fit content
-  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setBody(e.target.value);
-    const el = e.target;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 160) + "px";
-  }
-
-  // Show messages in chronological order (oldest first)
-  const sorted = [...optimisticMessages].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
 
   return (
     <div>
       {/* Message list */}
       <div className="space-y-3 max-h-[600px] overflow-y-auto mb-4 pr-1">
-        {sorted.length === 0 ? (
+        {combined.length === 0 ? (
           <p className="text-sm text-slate-400 italic py-4 text-center">
             No messages yet. Send a message to start a conversation.
           </p>
         ) : (
-          sorted.map((msg) => {
+          combined.map((msg) => {
             const isMe = msg.sender_id === userId;
-            const isOptimistic = msg.id.startsWith("optimistic-");
+            const isOptimistic = msg.id === sendingId;
+            const attachments = msg.attachments ?? [];
+            const proseClass = isMe
+              ? "prose-invert prose-p:text-white prose-strong:text-white prose-li:text-white prose-a:text-blue-200 prose-headings:text-white"
+              : "prose-slate prose-a:text-blue-600";
             return (
               <div
                 key={msg.id}
@@ -133,29 +133,27 @@ export default function MessageThread({
               >
                 <div
                   className={`max-w-[80%] rounded-xl px-4 py-2.5 ${
-                    isMe
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-800"
+                    isMe ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-800"
                   } ${isOptimistic ? "opacity-70" : ""}`}
                 >
                   {!isMe && (
-                    <p
-                      className={`text-[11px] font-medium mb-0.5 ${
-                        isMe ? "text-blue-200" : "text-blue-600"
-                      }`}
-                    >
+                    <p className="text-[11px] font-medium mb-0.5 text-blue-600">
                       Alexander IP
                     </p>
                   )}
-                  <div
-                    className={`text-sm leading-relaxed prose prose-sm max-w-none ${
-                      isMe
-                        ? "prose-invert prose-p:text-white prose-strong:text-white prose-li:text-white prose-a:text-blue-200 prose-headings:text-white"
-                        : "prose-slate prose-a:text-blue-600"
-                    } prose-p:my-1 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-ul:pl-4 prose-ol:pl-4 prose-headings:my-1.5 prose-pre:my-2 prose-blockquote:my-2`}
-                  >
-                    <Markdown>{msg.body}</Markdown>
-                  </div>
+                  {msg.body && (
+                    <MessageBody
+                      body={msg.body}
+                      bodyFormat={msg.body_format === "html" ? "html" : "markdown"}
+                      proseClassName={`text-sm leading-relaxed ${proseClass} prose-p:my-1 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-ul:pl-4 prose-ol:pl-4 prose-headings:my-1.5 prose-pre:my-2 prose-blockquote:my-2`}
+                    />
+                  )}
+                  {attachments.length > 0 && (
+                    <AttachmentList
+                      attachments={attachments}
+                      tone={isMe ? "dark" : "light"}
+                    />
+                  )}
                   <time
                     className={`text-[10px] mt-1 block ${
                       isMe ? "text-blue-200" : "text-slate-400"
@@ -178,42 +176,60 @@ export default function MessageThread({
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — compact chat-style */}
-      <div className="flex items-end gap-2 bg-slate-50 rounded-xl border border-slate-200 p-2">
-        <textarea
-          ref={textareaRef}
-          value={body}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          placeholder="Type a message..."
-          rows={1}
-          maxLength={10000}
-          className="flex-1 px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
-          style={{ minHeight: "40px", maxHeight: "160px" }}
-        />
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={!body.trim() || isPending}
-          className="p-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
-        >
-          <Send className="w-4 h-4" />
-        </button>
+      {/* Pending attachments preview */}
+      {pendingAttachments.length > 0 && (
+        <div className="mb-2">
+          <AttachmentList
+            attachments={pendingAttachments}
+            removable
+            onRemove={(i) =>
+              setPendingAttachments((prev) => prev.filter((_, idx) => idx !== i))
+            }
+          />
+        </div>
+      )}
+
+      {/* Composer */}
+      <div className="flex items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <RichTextEditor
+            value={body}
+            onChange={setBody}
+            placeholder="Type a message…"
+            submitOnEnter
+            onSubmit={handleSend}
+            disabled={isPending}
+            minHeight={48}
+            maxHeight={200}
+          />
+        </div>
+        <div className="flex items-center gap-1 self-end pb-0.5">
+          <AttachmentUploader
+            projectId={projectId}
+            onUploaded={(att) =>
+              setPendingAttachments((prev) => [...prev, att])
+            }
+            disabled={isPending}
+          />
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={
+              isPending ||
+              (body.trim() === "" && pendingAttachments.length === 0)
+            }
+            className="p-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <p className="text-[11px] text-slate-400 mt-1.5 ml-1">
-        Enter to send · Shift+Enter for new line
-        {body.length > 9000 && (
-          <span className={`ml-2 ${body.length >= 10000 ? "text-red-500" : ""}`}>
-            {body.length.toLocaleString()}/10,000
-          </span>
-        )}
+        Enter to send · Shift+Enter for new line · Ctrl+B/I/U for formatting · Paste from Word preserves formatting
       </p>
 
-      {error && (
-        <p className="text-xs text-red-500 mt-1 ml-1">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500 mt-1 ml-1">{error}</p>}
     </div>
   );
 }

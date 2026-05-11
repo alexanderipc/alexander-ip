@@ -72,6 +72,8 @@ export default async function ProjectDetailPage({ params }: Props) {
   interface Msg {
     id: string;
     body: string;
+    body_format?: "markdown" | "html" | null;
+    attachments?: { filename: string; file_url: string; mime_type: string; size: number }[] | null;
     is_admin: boolean;
     read_at: string | null;
     created_at: string;
@@ -93,7 +95,7 @@ export default async function ProjectDetailPage({ params }: Props) {
     const [updatesResult, docsResult, milestonesResult, extrasResult] = await Promise.all([
       adminClient
         .from("project_updates")
-        .select("id, project_id, status_from, status_to, note, notify_client, created_at")
+        .select("id, project_id, status_from, status_to, note, body_format, attachments, notify_client, created_at")
         .eq("project_id", id)
         .order("created_at", { ascending: false }),
       adminClient
@@ -131,7 +133,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   try {
     const messagesResult = await adminClient
       .from("project_messages")
-      .select("id, project_id, sender_id, body, is_admin, read_at, created_at")
+      .select("id, project_id, sender_id, body, body_format, attachments, is_admin, read_at, created_at")
       .eq("project_id", id)
       .order("created_at", { ascending: true });
     if (messagesResult.error) console.error("[Portal] Messages query error:", messagesResult.error.message);

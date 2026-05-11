@@ -27,6 +27,8 @@ import {
   convertCurrency,
   getCurrencySymbol,
 } from "@/lib/pricing";
+import { sanitizeMessageHtml, htmlHasContent } from "@/lib/sanitize-html";
+import type { MessageAttachment } from "@/components/chat/Attachment";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
@@ -291,7 +293,8 @@ export async function addUpdate(
   projectId: string,
   note: string,
   internalNote?: string,
-  notifyClient: boolean = true
+  notifyClient: boolean = true,
+  attachments: MessageAttachment[] = []
 ) {
   await requireAdmin();
   const adminClient = createAdminClient();
@@ -304,12 +307,18 @@ export async function addUpdate(
 
   if (!project) throw new Error("Project not found");
 
+  const cleanNote = note && htmlHasContent(note) ? sanitizeMessageHtml(note) : "";
+  const cleanInternal =
+    internalNote && htmlHasContent(internalNote) ? sanitizeMessageHtml(internalNote) : null;
+
   await adminClient.from("project_updates").insert({
     project_id: projectId,
     status_from: project.status,
     status_to: project.status,
-    note,
-    internal_note: internalNote || null,
+    note: cleanNote || "(No client-visible note)",
+    body_format: "html",
+    attachments,
+    internal_note: cleanInternal,
     notify_client: notifyClient,
   });
 
@@ -326,12 +335,14 @@ export async function addUpdate(
 
       if (clientProfile?.email && prefs.status_updates) {
         const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "status_updates");
+        // Email template treats `note` as text — strip HTML for safety.
+        const notePreview = cleanNote ? htmlToPlainPreview(cleanNote, 2000) : "";
         await sendStatusUpdateEmail(clientProfile.email, {
           title: project.title,
           serviceType: project.service_type as ServiceType,
           newStatus: project.status,
           statusLabel: getStatusLabel(project.status),
-          note,
+          note: notePreview,
           portalUrl: PORTAL_URL,
           unsubscribeUrl,
         });
@@ -743,12 +754,40 @@ export async function updateTimelineDays(
 
 /* ── Send Message (Admin) ─────────────────────────────────── */
 
-export async function sendAdminMessage(projectId: string, body: string) {
+function htmlToPlainPreview(html: string, maxLen = 280): string {
+  const stripped = html
+    .replace(/<\s*br\s*\/?>/gi, "\n")
+    .replace(/<\s*\/p\s*>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return stripped.length > maxLen ? stripped.slice(0, maxLen - 1) + "…" : stripped;
+}
+
+export async function sendAdminMessage(
+  projectId: string,
+  body: string,
+  attachments: MessageAttachment[] = []
+) {
   const { user } = await requireAdmin();
   const adminClient = createAdminClient();
 
-  if (!body.trim()) throw new Error("Message cannot be empty");
-  if (body.length > 10000) throw new Error("Message too long (max 10,000 characters)");
+  const trimmedBody = (body || "").trim();
+  const hasBody = trimmedBody && htmlHasContent(trimmedBody);
+  if (!hasBody && attachments.length === 0) {
+    throw new Error("Message is empty");
+  }
+  if (trimmedBody.length > 50000) {
+    throw new Error("Message too long (max 50,000 characters)");
+  }
+  if (attachments.length > 10) {
+    throw new Error("Too many attachments (max 10)");
+  }
 
   // Fetch project info for email (admin client for JWT resilience)
   const { data: project, error: projectError } = await adminClient
@@ -763,13 +802,20 @@ export async function sendAdminMessage(projectId: string, body: string) {
 
   if (!project) throw new Error("Project not found");
 
-  // Insert message
-  const { error } = await adminClient.from("project_messages").insert({
-    project_id: projectId,
-    sender_id: user.id,
-    body: body.trim(),
-    is_admin: true,
-  });
+  const cleanBody = hasBody ? sanitizeMessageHtml(trimmedBody) : "";
+
+  const { data: inserted, error } = await adminClient
+    .from("project_messages")
+    .insert({
+      project_id: projectId,
+      sender_id: user.id,
+      body: cleanBody,
+      body_format: "html",
+      attachments,
+      is_admin: true,
+    })
+    .select("id, body, body_format, attachments, is_admin, read_at, created_at, sender_id")
+    .single();
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
@@ -786,10 +832,13 @@ export async function sendAdminMessage(projectId: string, body: string) {
         const prefs = (clientProfile?.notification_preferences as NotificationPreferences | null) ?? DEFAULT_NOTIFICATION_PREFERENCES;
         if (clientProfile?.email && prefs.new_messages) {
           const unsubscribeUrl = buildUnsubscribeUrl(project.client_id, "new_messages");
+          const preview = hasBody
+            ? htmlToPlainPreview(cleanBody)
+            : `[${attachments.length} attachment${attachments.length === 1 ? "" : "s"}]`;
           await sendNewMessageEmail(clientProfile.email, {
             projectTitle: project.title,
             senderName: "Alexander IP",
-            messagePreview: body.trim(),
+            messagePreview: preview,
             portalUrl: PORTAL_URL,
             unsubscribeUrl,
           });
@@ -800,10 +849,8 @@ export async function sendAdminMessage(projectId: string, body: string) {
     })();
   }
 
-  revalidatePath(`/admin/projects/${projectId}`);
-  revalidatePath(`/portal/projects/${projectId}`);
-
-  return { success: true };
+  // No revalidatePath — the client appends `inserted` to local state.
+  return { success: true, message: inserted };
 }
 
 /* ── Mark Messages Read (Admin) ───────────────────────────── */
