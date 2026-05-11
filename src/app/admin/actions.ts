@@ -29,6 +29,10 @@ import {
 } from "@/lib/pricing";
 import { sanitizeMessageHtml, htmlHasContent } from "@/lib/sanitize-html";
 import type { MessageAttachment } from "@/components/chat/Attachment";
+import {
+  attachGuidanceDocToProject,
+  buildWelcomeContent,
+} from "@/lib/welcome";
 
 const PORTAL_URL = "https://www.alexander-ip.com/auth/login";
 
@@ -61,7 +65,7 @@ async function requireAdmin() {
 /* ── Create Project ──────────────────────────────────────── */
 
 export async function createProject(formData: FormData) {
-  await requireAdmin();
+  const { user: adminUser } = await requireAdmin();
   const adminClient = createAdminClient();
 
   const clientEmail = formData.get("client_email") as string;
@@ -179,6 +183,39 @@ export async function createProject(formData: FormData) {
     });
   } catch (emailErr) {
     console.error("Failed to send project created email:", emailErr);
+  }
+
+  // Auto-post welcome message in chat. For patent_drafting / patent_search,
+  // this also uploads the Invention Disclosure Guidance .docx into storage
+  // and creates a project_documents row, plus attaches it to the message.
+  try {
+    const firstName = (clientName || "there").split(" ")[0];
+    const guidance = await attachGuidanceDocToProject(
+      adminClient,
+      project.id,
+      serviceType,
+      adminUser.id
+    );
+    const welcome = buildWelcomeContent(
+      serviceType,
+      firstName,
+      title,
+      estimatedDelivery,
+      guidance,
+      null // admin manual create has no legacy markdown welcome — only the new HTML one fires
+    );
+    if (welcome.body) {
+      await adminClient.from("project_messages").insert({
+        project_id: project.id,
+        sender_id: adminUser.id,
+        body: welcome.body,
+        body_format: welcome.body_format,
+        attachments: welcome.attachments,
+        is_admin: true,
+      });
+    }
+  } catch (welcomeErr) {
+    console.error("Failed to post welcome message:", welcomeErr);
   }
 
   revalidatePath("/admin");

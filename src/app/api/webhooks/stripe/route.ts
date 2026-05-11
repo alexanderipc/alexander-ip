@@ -20,6 +20,10 @@ import {
   isGoogleCalendarConfigured,
 } from "@/lib/booking/google-calendar";
 import { ukParts } from "@/lib/booking/availability";
+import {
+  attachGuidanceDocToProject,
+  buildWelcomeContent,
+} from "@/lib/welcome";
 
 export const runtime = "nodejs";
 
@@ -606,9 +610,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error("[webhook] Invoice generation failed:", invoiceErr);
   }
 
-  // 7d. Auto-generate welcome message from admin (non-blocking)
+  // 7d. Auto-generate welcome message from admin (non-blocking).
+  //     For patent_drafting and patent_search projects, also attaches the
+  //     matching Invention Disclosure Guidance .docx to the message AND
+  //     creates a project_documents row so it appears in the Documents tab.
   try {
-    // Find admin user to send from
     const { data: adminUser } = await adminClient
       .from("profiles")
       .select("id")
@@ -617,19 +623,38 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .single();
 
     if (adminUser) {
-      const welcomeBody = buildWelcomeMessage(
+      const guidance = await attachGuidanceDocToProject(
+        adminClient,
+        project.id,
+        serviceType,
+        adminUser.id
+      );
+
+      const legacyMarkdown = buildWelcomeMessage(
         customerName.split(" ")[0],
         title,
         estimatedDelivery,
         serviceType
       );
+      const welcome = buildWelcomeContent(
+        serviceType,
+        customerName.split(" ")[0],
+        title,
+        estimatedDelivery,
+        guidance,
+        legacyMarkdown
+      );
 
-      await adminClient.from("project_messages").insert({
-        project_id: project.id,
-        sender_id: adminUser.id,
-        body: welcomeBody,
-        is_admin: true,
-      });
+      if (welcome.body) {
+        await adminClient.from("project_messages").insert({
+          project_id: project.id,
+          sender_id: adminUser.id,
+          body: welcome.body,
+          body_format: welcome.body_format,
+          attachments: welcome.attachments,
+          is_admin: true,
+        });
+      }
     }
   } catch (welcomeMsgErr) {
     console.error("[webhook] Welcome message failed:", welcomeMsgErr);
@@ -1340,7 +1365,7 @@ async function postPaymentActions(
     console.error("[webhook] Invoice generation failed:", invoiceErr);
   }
 
-  // Auto-generate welcome message
+  // Auto-generate welcome message (with guidance doc for drafting/search)
   try {
     const { data: adminUser } = await adminClient
       .from("profiles")
@@ -1350,19 +1375,38 @@ async function postPaymentActions(
       .single();
 
     if (adminUser) {
-      const welcomeBody = buildWelcomeMessage(
+      const guidance = await attachGuidanceDocToProject(
+        adminClient,
+        project.id,
+        serviceType,
+        adminUser.id
+      );
+
+      const legacyMarkdown = buildWelcomeMessage(
         customerName.split(" ")[0],
         offer.title,
         estimatedDelivery,
         serviceType
       );
+      const welcome = buildWelcomeContent(
+        serviceType,
+        customerName.split(" ")[0],
+        offer.title,
+        estimatedDelivery,
+        guidance,
+        legacyMarkdown
+      );
 
-      await adminClient.from("project_messages").insert({
-        project_id: project.id,
-        sender_id: adminUser.id,
-        body: welcomeBody,
-        is_admin: true,
-      });
+      if (welcome.body) {
+        await adminClient.from("project_messages").insert({
+          project_id: project.id,
+          sender_id: adminUser.id,
+          body: welcome.body,
+          body_format: welcome.body_format,
+          attachments: welcome.attachments,
+          is_admin: true,
+        });
+      }
     }
   } catch (welcomeMsgErr) {
     console.error("[webhook] Welcome message failed:", welcomeMsgErr);

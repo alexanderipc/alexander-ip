@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  // Ensure runtime-loaded files (read via fs.readFile from process.cwd) are
+  // traced into the Vercel serverless function bundles. Without this, the
+  // Stripe webhook + admin server actions would 404 trying to read the
+  // guidance .docx files we ship in templates/.
+  outputFileTracingIncludes: {
+    "/api/webhooks/stripe/route": ["./templates/**/*"],
+    "/admin/**": ["./templates/**/*"],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "55mb",
