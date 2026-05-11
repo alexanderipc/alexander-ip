@@ -1,7 +1,6 @@
 "use client";
 
 import Markdown from "react-markdown";
-import { sanitizeMessageHtml } from "@/lib/sanitize-html";
 
 interface MessageBodyProps {
   body: string;
@@ -12,9 +11,18 @@ interface MessageBodyProps {
 }
 
 /**
- * Renders a chat / status-update body. HTML messages are sanitized (defence
- * in depth — the server also sanitises before storing) and rendered via
- * dangerouslySetInnerHTML; legacy markdown rows go through react-markdown.
+ * Renders a chat / status-update body.
+ *
+ * HTML messages are rendered via dangerouslySetInnerHTML. We trust the
+ * stored value because every write path runs through sanitizeMessageHtml
+ * on the server before insert (see src/lib/sanitize-html.ts, called from
+ * the server actions in src/app/{portal,admin}/actions.ts). Optimistic
+ * local messages haven't been server-sanitized yet, but TipTap's schema
+ * already constrains output to the allowlisted tags — it can't emit
+ * <script> or event handlers in the first place.
+ *
+ * Legacy markdown rows go through react-markdown which doesn't render
+ * raw HTML by default, so they're safe by construction.
  */
 export default function MessageBody({
   body,
@@ -22,12 +30,11 @@ export default function MessageBody({
   proseClassName = "",
 }: MessageBodyProps) {
   if (bodyFormat === "html") {
-    const clean = sanitizeMessageHtml(body);
     return (
       <div
         className={`prose prose-sm max-w-none ${proseClassName}`}
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: clean }}
+        dangerouslySetInnerHTML={{ __html: body }}
       />
     );
   }

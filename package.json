@@ -21,10 +21,10 @@
     "@tiptap/pm": "^3.23.1",
     "@tiptap/react": "^3.23.1",
     "@tiptap/starter-kit": "^3.23.1",
+    "@types/sanitize-html": "^2.16.1",
     "@vercel/analytics": "^1.6.1",
     "@vnedyalk0v/react19-simple-maps": "^2.0.2",
     "exceljs": "^4.4.0",
-    "isomorphic-dompurify": "^3.12.0",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
     "pdfkit": "^0.17.2",
@@ -32,6 +32,7 @@
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
     "resend": "^6.9.3",
+    "sanitize-html": "^2.17.3",
     "stripe": "^20.3.1"
   },
   "devDependencies": {
