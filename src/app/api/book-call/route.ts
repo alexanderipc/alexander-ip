@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { validateSlot, ukParts } from "@/lib/booking/availability";
 import {
-  createBookingEvent,
-  isGoogleCalendarConfigured,
-} from "@/lib/booking/google-calendar";
-import {
-  sendBookingConfirmationToLead,
-  sendBookingNotificationToAdmin,
+  sendBookingRequestReceivedToLead,
+  sendBookingRequestNotificationToAdmin,
 } from "@/lib/email";
 
 export const runtime = "nodejs";
@@ -69,17 +65,19 @@ export async function POST(request: NextRequest) {
     const startUtc = new Date(startUtcIso);
     const adminClient = createAdminClient();
 
-    // Race-condition guard: re-check the slot is still free
+    // Race-condition guard: re-check the slot is still free.
+    // Both 'pending' (someone else is awaiting approval) and 'booked' (already
+    // approved) take a slot off the table; the lead should pick another.
     const { data: clash } = await adminClient
       .from("lead_call_bookings")
       .select("id")
       .eq("scheduled_at", startUtc.toISOString())
-      .eq("status", "booked")
+      .in("status", ["pending", "booked"])
       .maybeSingle();
 
     if (clash) {
       return NextResponse.json(
-        { error: "Sorry — someone just booked that slot. Please pick another." },
+        { error: "Sorry — that slot was just requested by someone else. Please pick another." },
         { status: 409 }
       );
     }
@@ -90,6 +88,9 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-real-ip") ||
       null;
 
+    // Insert as 'pending' — admin will approve or reject from /admin/bookings.
+    // No Google Calendar event is created yet; the lead does NOT get a Meet
+    // link until the request is approved.
     const { data: inserted, error: insertError } = await adminClient
       .from("lead_call_bookings")
       .insert({
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
         topic,
         scheduled_at: startUtc.toISOString(),
         duration_minutes: 15,
+        status: "pending",
         source: "/book-call",
         ip_address: ipAddress,
         user_agent: request.headers.get("user-agent") || null,
@@ -107,58 +109,21 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError || !inserted) {
-      // Most likely the unique-slot index caught a race
       const msg = insertError?.message || "";
       if (msg.includes("unique") || msg.includes("duplicate")) {
         return NextResponse.json(
-          { error: "Sorry — someone just booked that slot. Please pick another." },
+          { error: "Sorry — that slot was just requested. Please pick another." },
           { status: 409 }
         );
       }
       console.error("[book-call] insert failed:", insertError);
       return NextResponse.json(
-        { error: "Couldn't save your booking. Please try again." },
+        { error: "Couldn't save your request. Please try again." },
         { status: 500 }
       );
     }
 
-    // Try to create the Google Calendar event (with Meet link). If it fails or
-    // Google isn't configured, the booking still stands — we just send a
-    // Resend-only confirmation and notify admin to invite manually.
-    let meetUrl: string | null = null;
-    let googleEventId: string | null = null;
-    let googleError: string | null = null;
-    const googleConfigured = isGoogleCalendarConfigured();
-    if (googleConfigured) {
-      try {
-        const event = await createBookingEvent({
-          startUtc,
-          durationMinutes: 15,
-          leadEmail: email,
-          leadName: name,
-          stageLabel,
-          topic,
-        });
-        if (event) {
-          meetUrl = event.meetUrl;
-          googleEventId = event.eventId;
-          await adminClient
-            .from("lead_call_bookings")
-            .update({
-              google_event_id: event.eventId,
-              google_meet_url: event.meetUrl,
-            })
-            .eq("id", inserted.id);
-        } else {
-          googleError = "createBookingEvent returned null";
-        }
-      } catch (err) {
-        googleError = err instanceof Error ? err.message : String(err);
-        console.error("[book-call] Google event creation failed:", err);
-      }
-    }
-
-    // Format human-friendly UK labels for the confirmation emails
+    // Format human-friendly UK labels for the emails
     const parts = ukParts(startUtc);
     const ukDateLabel = new Intl.DateTimeFormat("en-GB", {
       timeZone: "Europe/London",
@@ -169,31 +134,25 @@ export async function POST(request: NextRequest) {
     }).format(startUtc);
     const ukTimeLabel = `${parts.hour.toString().padStart(2, "0")}:${parts.minute.toString().padStart(2, "0")}`;
 
-    // Fire confirmation emails (await so failures surface, but they swallow errors internally)
     const hostEmail = process.env.BOOKING_HOST_EMAIL || HOST_EMAIL_FALLBACK;
     await Promise.all([
-      sendBookingConfirmationToLead({
+      sendBookingRequestReceivedToLead({
         leadName: name,
         leadEmail: email,
         stageLabel,
         topic,
         ukDateLabel,
         ukTimeLabel,
-        meetUrl,
         hostEmail,
       }),
-      sendBookingNotificationToAdmin({
+      sendBookingRequestNotificationToAdmin({
         leadName: name,
         leadEmail: email,
         stageLabel,
         topic,
         ukDateLabel,
         ukTimeLabel,
-        meetUrl,
-        hostEmail,
         leadId: inserted.id,
-        googleConfigured,
-        googleError,
       }),
     ]);
 
@@ -201,13 +160,11 @@ export async function POST(request: NextRequest) {
       success: true,
       ukDateLabel,
       ukTimeLabel,
-      meetUrl,
-      hasCalendarEvent: Boolean(googleEventId),
     });
   } catch (err) {
     console.error("Book-call error:", err);
     return NextResponse.json(
-      { error: "Couldn't book the call. Please try again." },
+      { error: "Couldn't submit your request. Please try again." },
       { status: 500 }
     );
   }

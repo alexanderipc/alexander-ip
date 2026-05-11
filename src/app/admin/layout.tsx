@@ -10,6 +10,7 @@ import {
   CalendarDays,
   ListChecks,
   Send,
+  Phone,
   LogOut,
   ExternalLink,
 } from "lucide-react";
@@ -77,6 +78,13 @@ export default async function AdminLayout({
               >
                 <CalendarDays className="w-4 h-4" />
                 Calendar
+              </Link>
+              <Link
+                href="/admin/bookings"
+                className="flex items-center gap-2 text-slate-300 text-sm hover:text-white transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                Bookings
               </Link>
               <Link
                 href="/admin/offers"

@@ -18,11 +18,16 @@ export default function BookCallPage() {
             Free &middot; 15 minutes &middot; No obligation
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold text-navy mb-4 leading-tight">
-            Book a Free Intro Call
+            Request a Free Intro Call
           </h1>
           <p className="text-lg text-slate-600 max-w-xl mx-auto">
             Quick chat to see if I&rsquo;m the right fit for your invention &mdash;
             and to ballpark timelines and pricing. Straight to me, no juniors.
+          </p>
+          <p className="text-sm text-slate-500 max-w-xl mx-auto mt-3">
+            Pick a slot and tell me a bit about your project. I review every
+            request personally and confirm within one working day &mdash; usually
+            much sooner.
           </p>
         </div>
 
@@ -42,7 +47,7 @@ export default function BookCallPage() {
               How
             </p>
             <p className="text-sm text-slate-700">
-              Google Meet (link in your invite)
+              Google Meet (link sent once approved)
             </p>
           </div>
           <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">

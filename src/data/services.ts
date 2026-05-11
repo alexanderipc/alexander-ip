@@ -164,7 +164,7 @@ export const services: Service[] = [
     description:
       "Full preparation of patent documents — background, summary, detailed description, claims, abstract, and drawings — ready for filing in any major jurisdiction.",
     longDescription:
-      "Complete preparation of a utility patent application including all required elements: background of the invention, summary, detailed description, patent claims, abstract, and coordination of patent drawings. The application is drafted to professional standards, covering both provisional and non-provisional formats, and can be filed in the US, UK, Europe, Canada, Australia, or internationally via PCT. After purchase, you'll receive a questionnaire to provide technical details about your invention.",
+      "Complete preparation of a utility patent application including all required elements: background of the invention, summary, detailed description, patent claims, abstract, and coordination of patent drawings. The application is drafted to professional standards, covering both provisional and non-provisional formats, and can be filed in the US, UK, Europe, Canada, or internationally via PCT. After purchase, you'll receive a questionnaire to provide technical details about your invention.",
     startingPrice: "$895",
     currency: "USD",
     delivery: "45 days",
@@ -174,7 +174,7 @@ export const services: Service[] = [
       "Professional claims drafting",
       "Detailed description with drawings coordination",
       "Covers both early-stage and full applications",
-      "Multi-jurisdiction support (US, UK, EP, PCT, CA, AU)",
+      "Multi-jurisdiction support (US, UK, EP, PCT, CA)",
       "Filing with patent office included in full packages",
     ],
     pricing: [
@@ -261,7 +261,7 @@ export const services: Service[] = [
       {
         question: "Can you file in my country?",
         answer:
-          "We cover all major jurisdictions: US (USPTO), UK (UKIPO), Europe (EPO), Canada (CIPO), Australia (IP Australia), and international PCT applications. For other countries, we can coordinate national phase entry.",
+          "We cover all major jurisdictions: US (USPTO), UK (UKIPO), Europe (EPO), Canada (CIPO), and international PCT applications. For other countries, we can coordinate national phase entry.",
       },
       {
         question: "What about rush delivery?",

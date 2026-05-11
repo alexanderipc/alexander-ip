@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateCandidateSlots } from "@/lib/booking/availability";
 import { getBusyWindows } from "@/lib/booking/google-calendar";
+import { applyPseudoBusy } from "@/lib/booking/pseudo-busy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +15,14 @@ export const dynamic = "force-dynamic";
  * Filters out:
  *  - slots already booked in our DB (lead_call_bookings)
  *  - slots that overlap host's Google Calendar busy windows (if configured)
+ *
+ * Presentational filter:
+ *  - For anonymous visitors we hide a percentage of real-free slots so the
+ *    picker doesn't look empty (see pseudo-busy.ts).
+ *  - For paying clients — i.e. users authenticated to /portal whose email
+ *    appears in paid_consultation_bookings — we skip that filter and return
+ *    real availability. They've paid; they shouldn't be fed a fake calendar.
+ *  - Admins always see real availability (for testing).
  */
 export async function GET() {
   try {
@@ -42,7 +52,7 @@ export async function GET() {
       adminClient
         .from("lead_call_bookings")
         .select("scheduled_at")
-        .eq("status", "booked")
+        .in("status", ["pending", "booked"])
         .gte("scheduled_at", startUtc.toISOString())
         .lte("scheduled_at", endUtc.toISOString()),
       adminClient
@@ -87,9 +97,9 @@ export async function GET() {
       end: new Date(b.endUtc).getTime(),
     }));
 
-    // 3. Filter: not exact-match booked, not inside any consultation window,
-    //    not inside a Google busy window.
-    const slots = candidates.filter((slot) => {
+    // 3. Filter: not exact-match booked/pending, not inside any consultation
+    //    window, not inside a Google busy window.
+    const realFree = candidates.filter((slot) => {
       const slotStart = new Date(slot.startUtc).getTime();
       const slotEnd = slotStart + 15 * 60 * 1000;
       if (bookedSet.has(slotStart)) return false;
@@ -101,6 +111,42 @@ export async function GET() {
       }
       return true;
     });
+
+    // 4. Decide whether to apply the pseudo-busy filter. We skip it for
+    //    paying clients (so they see real availability) and for admins.
+    let bypassPseudoBusy = false;
+    try {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user?.email) {
+        // Admin check via profiles (one round trip, cheap)
+        const { data: profile } = await adminClient
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (profile?.role === "admin") {
+          bypassPseudoBusy = true;
+        } else {
+          // Paying-client check: any successful paid consultation under this email
+          const { data: paidRow } = await adminClient
+            .from("paid_consultation_bookings")
+            .select("id")
+            .eq("lead_email", user.email.toLowerCase())
+            .eq("status", "paid")
+            .limit(1)
+            .maybeSingle();
+          if (paidRow) bypassPseudoBusy = true;
+        }
+      }
+    } catch (err) {
+      // Auth check is best-effort; on failure, fall back to the public view.
+      console.error("[booking] auth check failed (using public view):", err);
+    }
+
+    const slots = bypassPseudoBusy ? realFree : applyPseudoBusy(realFree);
 
     return NextResponse.json({ slots });
   } catch (err) {

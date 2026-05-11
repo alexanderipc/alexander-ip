@@ -85,7 +85,7 @@ const extras: Extra[] = [
     key: "filing",
     name: "National Filing",
     usd: 225,
-    note: "US, CA, GB or AU \u2014 filed on your behalf",
+    note: "US, CA or GB \u2014 filed on your behalf",
   },
   {
     key: "filing-international",

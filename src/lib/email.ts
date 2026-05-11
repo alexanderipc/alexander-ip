@@ -1414,3 +1414,180 @@ function offerHtml(data: OfferEmailData): string {
 </body>
 </html>`;
 }
+
+/* ── Free Intro Call: Approval-flow emails ───────────────────── */
+
+interface BookingRequestEmailData {
+  leadName: string;
+  leadEmail: string;
+  stageLabel: string | null;
+  topic: string | null;
+  ukDateLabel: string;
+  ukTimeLabel: string;
+  hostEmail: string;
+}
+
+/**
+ * Sent to the lead the moment they submit a booking request.
+ * Sets the expectation that approval is needed before a Meet link is issued.
+ */
+export async function sendBookingRequestReceivedToLead(
+  data: BookingRequestEmailData
+): Promise<void> {
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.leadEmail,
+      replyTo: data.hostEmail,
+      subject: `Call request received — ${data.ukDateLabel} ${data.ukTimeLabel} UK`,
+      html: `
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+        <tr><td style="background-color:#0f1729;padding:36px 32px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
+          <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">Call request received</p>
+        </td></tr>
+        <tr><td style="padding:36px 32px 40px;">
+          <h2 style="margin:0 0 12px;color:#0f1729;font-size:22px;font-weight:700;">Thanks, ${escapeHtml(data.leadName)} &mdash; I&rsquo;ll be in touch shortly</h2>
+          <p style="margin:0 0 20px;color:#334155;font-size:16px;line-height:1.6;">
+            I&rsquo;ve received your request and will review it personally. You&rsquo;ll hear back from me within one working day &mdash; usually much sooner.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:24px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 10px;color:#64748b;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Your requested slot</p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="padding:6px 0;color:#64748b;font-size:14px;width:120px;">When</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.ukDateLabel)}</td></tr>
+                <tr><td style="padding:6px 0;color:#64748b;font-size:14px;">Time</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.ukTimeLabel)} UK (15 min)</td></tr>
+                ${data.stageLabel ? `<tr><td style="padding:6px 0;color:#64748b;font-size:14px;">Stage</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.stageLabel)}</td></tr>` : ""}
+                ${data.topic ? `<tr><td style="padding:6px 0;color:#64748b;font-size:14px;vertical-align:top;">Topic</td><td style="padding:6px 0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.topic)}</td></tr>` : ""}
+              </table>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 12px;color:#334155;font-size:15px;line-height:1.6;">
+            <strong style="color:#0f1729;">What happens next:</strong>
+          </p>
+          <ul style="margin:0 0 24px;padding-left:20px;color:#334155;font-size:15px;line-height:1.7;">
+            <li>I review your request to make sure it&rsquo;s something I can usefully help with.</li>
+            <li>If yes, you&rsquo;ll receive a calendar invite with the Google Meet link, and the slot is locked in.</li>
+            <li>If I&rsquo;m not the right fit, I&rsquo;ll let you know why &mdash; usually with a pointer to a better resource.</li>
+          </ul>
+          <p style="margin:0;color:#64748b;font-size:14px;line-height:1.6;">
+            Reply to this email if you want to add anything to your request.
+          </p>
+        </td></tr>
+        <tr><td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
+          <p style="margin:0;color:#64748b;font-size:13px;font-weight:500;">Alexander IP &mdash; Patent Drafting &amp; Office Correspondence</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`,
+    });
+  } catch (err) {
+    console.error("Booking request-received email failed:", err);
+  }
+}
+
+/**
+ * Sent to admin when a new pending intro-call request arrives.
+ * Distinct from `sendBookingNotificationToAdmin` (which was for the old
+ * auto-confirm flow) — this one calls out that approval is required.
+ */
+export async function sendBookingRequestNotificationToAdmin(data: {
+  leadName: string;
+  leadEmail: string;
+  stageLabel: string | null;
+  topic: string | null;
+  ukDateLabel: string;
+  ukTimeLabel: string;
+  leadId: string;
+}): Promise<void> {
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: `📞 NEW REQUEST — ${data.ukDateLabel} ${data.ukTimeLabel} — ${data.leadName}`,
+      html: `
+<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f1f5f9;padding:24px;">
+  <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h2 style="color:#0f1729;margin:0 0 8px;font-size:20px;">📞 New intro call request</h2>
+    <p style="color:#b45309;margin:0 0 20px;font-size:14px;background:#fef3c7;padding:10px 14px;border-radius:8px;border-left:3px solid #f59e0b;">
+      ⚠️ Pending your approval. No calendar event has been created yet and the lead has NOT been sent a Meet link.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;width:120px;">When</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;">${escapeHtml(data.ukDateLabel)} at ${escapeHtml(data.ukTimeLabel)} UK</td></tr>
+      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Lead</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.leadName)} &lt;${escapeHtml(data.leadEmail)}&gt;</td></tr>
+      ${data.stageLabel ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;">Stage</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">${escapeHtml(data.stageLabel)}</td></tr>` : ""}
+      ${data.topic ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #e2e8f0;vertical-align:top;">Topic</td><td style="padding:12px 16px;color:#0f1729;font-size:13px;border-top:1px solid #e2e8f0;white-space:pre-wrap;">${escapeHtml(data.topic)}</td></tr>` : ""}
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td align="center">
+      <a href="https://www.alexander-ip.com/admin/bookings" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:12px 32px;border-radius:8px;">
+        Review &amp; Decide &rarr;
+      </a>
+    </td></tr></table>
+    <p style="color:#94a3b8;margin:20px 0 0;font-size:12px;">Request ID: ${escapeHtml(data.leadId)}</p>
+  </div>
+</body></html>`,
+    });
+  } catch (err) {
+    console.error("Admin pending-request notification failed:", err);
+  }
+}
+
+/**
+ * Sent to the lead when admin rejects the intro-call request.
+ * The reason is shown back to them verbatim (after HTML-escaping).
+ */
+export async function sendBookingRejectedToLead(data: {
+  leadName: string;
+  leadEmail: string;
+  ukDateLabel: string;
+  ukTimeLabel: string;
+  reason: string;
+  hostEmail: string;
+}): Promise<void> {
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.leadEmail,
+      replyTo: data.hostEmail,
+      subject: `About your intro call request — Alexander IP`,
+      html: `
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+        <tr><td style="background-color:#0f1729;padding:32px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;">Alexander IP</h1>
+          <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;font-weight:500;">About your call request</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <p style="margin:0 0 16px;color:#0f1729;font-size:16px;line-height:1.6;">Hi ${escapeHtml(data.leadName)},</p>
+          <p style="margin:0 0 16px;color:#334155;font-size:15px;line-height:1.7;">
+            Thank you for requesting an intro call (${escapeHtml(data.ukDateLabel)} at ${escapeHtml(data.ukTimeLabel)} UK). Unfortunately, I&rsquo;m not going to be able to take this one. Here&rsquo;s why:
+          </p>
+          <div style="margin:0 0 20px;padding:16px 20px;background:#f8fafc;border-left:3px solid #2563eb;border-radius:6px;color:#0f1729;font-size:15px;line-height:1.7;white-space:pre-wrap;">${escapeHtml(data.reason)}</div>
+          <p style="margin:0 0 16px;color:#334155;font-size:15px;line-height:1.7;">
+            I want to be upfront rather than have us both spend 15 minutes finding this out on a call. If circumstances change and a future call would be a better fit, you&rsquo;re welcome to book again any time.
+          </p>
+          <p style="margin:0 0 0;color:#334155;font-size:15px;line-height:1.7;">
+            All the best,<br>
+            Alexander
+          </p>
+        </td></tr>
+        <tr><td style="padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;background-color:#f8fafc;">
+          <p style="margin:0;color:#64748b;font-size:12px;font-weight:500;">Alexander IP &mdash; Patent Drafting &amp; Office Correspondence</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`,
+    });
+  } catch (err) {
+    console.error("Booking rejection email failed:", err);
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, CheckCircle2, Calendar, Clock, ExternalLink } from "lucide-react";
+import { Loader2, CheckCircle2, Calendar, Clock } from "lucide-react";
 import Button from "@/components/ui/Button";
 
 interface Slot {
@@ -13,8 +13,6 @@ interface Slot {
 interface BookingResult {
   ukDateLabel: string;
   ukTimeLabel: string;
-  meetUrl: string | null;
-  hasCalendarEvent: boolean;
 }
 
 type Stage = "idea" | "prototype" | "filed" | "unsure";
@@ -174,11 +172,9 @@ export default function BookCallForm() {
         setResult({
           ukDateLabel: data.ukDateLabel,
           ukTimeLabel: data.ukTimeLabel,
-          meetUrl: data.meetUrl,
-          hasCalendarEvent: data.hasCalendarEvent,
         });
       } else if (res.status === 409) {
-        setSubmitError(data.error || "That slot was just taken. Please pick another.");
+        setSubmitError(data.error || "That slot was just requested. Please pick another.");
         // Drop this slot from the list and clear selection
         setSlots((prev) =>
           prev ? prev.filter((s) => s.startUtc !== selectedSlot.startUtc) : prev
@@ -194,7 +190,7 @@ export default function BookCallForm() {
     }
   }
 
-  /* ── Confirmation view ──────────────────────────────── */
+  /* ── Confirmation view (request received) ─────────────── */
   if (result) {
     const confirmedLocal =
       showLocalTimes && selectedSlot
@@ -202,45 +198,30 @@ export default function BookCallForm() {
         : null;
     return (
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-2xl mx-auto text-center">
-        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-5">
+          <CheckCircle2 className="w-8 h-8 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-navy mb-2">You&rsquo;re booked in</h2>
-        <p className="text-slate-600 mb-6">
-          {result.ukDateLabel} at <strong>{result.ukTimeLabel}</strong> UK
+        <h2 className="text-2xl font-bold text-navy mb-2">Request received</h2>
+        <p className="text-slate-600 mb-2">
+          Your requested slot: <strong>{result.ukDateLabel}</strong> at{" "}
+          <strong>{result.ukTimeLabel}</strong> UK
           {confirmedLocal && (
             <>
               {" "}/ <strong>{confirmedLocal}</strong> {visitorTzShort}
             </>
           )}
         </p>
-        {result.hasCalendarEvent ? (
-          <p className="text-sm text-slate-500 mb-6">
-            A Google Calendar invite with the Meet link has been sent to{" "}
-            <strong className="text-navy">{email}</strong>. Check your inbox
-            (and spam folder, just in case).
-          </p>
-        ) : (
-          <p className="text-sm text-slate-500 mb-6">
-            A confirmation email is on its way to{" "}
-            <strong className="text-navy">{email}</strong>. I&rsquo;ll send the
-            calendar invite with the Google Meet link shortly.
-          </p>
-        )}
-        {result.meetUrl && (
-          <a
-            href={result.meetUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
-          >
-            Join Google Meet
-            <ExternalLink className="w-4 h-4" />
-          </a>
-        )}
+        <p className="text-sm text-slate-500 mb-6">
+          I review every request personally to make sure I&rsquo;m the right fit.
+          You&rsquo;ll hear back from me within one working day at{" "}
+          <strong className="text-navy">{email}</strong>. If I can take the call,
+          you&rsquo;ll receive a calendar invite with the Google Meet link &mdash;
+          that&rsquo;s when the slot is locked in. If I&rsquo;m not the right fit,
+          I&rsquo;ll let you know why.
+        </p>
         <p className="text-xs text-slate-400 mt-8">
-          Need to reschedule? Reply to the confirmation email and I&rsquo;ll
-          sort it.
+          Need to add something to your request? Just reply to the confirmation
+          email and I&rsquo;ll pick it up.
         </p>
       </div>
     );
@@ -386,7 +367,7 @@ export default function BookCallForm() {
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <p className="text-xs text-slate-400 mt-1">
-                The Google Meet invite will be sent here.
+                I&rsquo;ll review your request and email you here.
               </p>
             </div>
             <div>
@@ -451,10 +432,10 @@ export default function BookCallForm() {
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Booking&hellip;
+                  Sending&hellip;
                 </>
               ) : (
-                "Confirm Booking"
+                "Request Call"
               )}
             </Button>
           </div>

@@ -148,23 +148,6 @@ const jurisdictions: Jurisdiction[] = [
     ],
   },
   {
-    id: "au",
-    name: "Australia & NZ",
-    color: "#1a56db",
-    hoverColor: "#1540a8",
-    countryCodes: ["036", "554"],
-    patents: [
-      // ── Granted ──
-      { number: "AU2023361441B2", label: "AU 2023361441 B2", title: "Valve Control System", url: patentUrl("AU2023361441B2") },
-      { number: "AU2020471661B2", label: "AU 2020471661 B2", title: "Bait Station", url: patentUrl("AU2020471661B2") },
-      { number: "NZ799057A", label: "NZ 799,057 A", title: "Bait Station", url: patentUrl("NZ799057A") },
-      // ── Published ──
-      { number: "AU2025202303A1", label: "AU 2025202303 A1", title: "Cat Gate System", url: patentUrl("AU2025202303A1") },
-      { number: "AU2024277082A1", label: "AU 2024277082 A1", title: "Exercise Handle", url: patentUrl("AU2024277082A1") },
-      { number: "AU2021331104A1", label: "AU 2021331104 A1", title: "Mood Detection Device", url: patentUrl("AU2021331104A1") },
-    ],
-  },
-  {
     id: "ca",
     name: "Canada",
     color: "#2563eb",
