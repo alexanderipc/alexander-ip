@@ -201,19 +201,16 @@ export async function createProject(formData: FormData) {
       firstName,
       title,
       estimatedDelivery,
-      guidance,
-      null // admin manual create has no legacy markdown welcome — only the new HTML one fires
+      guidance
     );
-    if (welcome.body) {
-      await adminClient.from("project_messages").insert({
-        project_id: project.id,
-        sender_id: adminUser.id,
-        body: welcome.body,
-        body_format: welcome.body_format,
-        attachments: welcome.attachments,
-        is_admin: true,
-      });
-    }
+    await adminClient.from("project_messages").insert({
+      project_id: project.id,
+      sender_id: adminUser.id,
+      body: welcome.body,
+      body_format: welcome.body_format,
+      attachments: welcome.attachments,
+      is_admin: true,
+    });
   } catch (welcomeErr) {
     console.error("Failed to post welcome message:", welcomeErr);
   }
