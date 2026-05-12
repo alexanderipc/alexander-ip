@@ -171,8 +171,16 @@ const jurisdictions: Jurisdiction[] = [
     hoverColor: PCT_GREEN_HOVER,
     countryCodes: [],
     patents: [
-      { number: "WO2024079441A1", label: "WO 2024/079441 A1", title: "Valve Control System", url: patentUrl("WO2024079441A1") },
+      // Newest first
+      { number: "WO2026030402A1", label: "WO 2026/030402 A1", title: "Sliding Hook System", url: patentUrl("WO2026030402A1") },
+      { number: "WO2025190823A1", label: "WO 2025/190823 A1", title: "Magnetic Interactive Toy System", url: patentUrl("WO2025190823A1") },
+      { number: "WO2025157381A1", label: "WO 2025/157381 A1", title: "Convertible Mobility Apparatus", url: patentUrl("WO2025157381A1") },
       { number: "WO2024240368A1", label: "WO 2024/240368 A1", title: "Exercise Handle", url: patentUrl("WO2024240368A1") },
+      { number: "WO2024156974A1", label: "WO 2024/156974 A1", title: "Modular Smart Frame System", url: patentUrl("WO2024156974A1") },
+      { number: "WO2024079441A1", label: "WO 2024/079441 A1", title: "Valve Control System", url: patentUrl("WO2024079441A1") },
+      { number: "WO2023152461A1", label: "WO 2023/152461 A1", title: "Two-Wheel Docking Module", url: patentUrl("WO2023152461A1") },
+      { number: "WO2023152460A1", label: "WO 2023/152460 A1", title: "Modular Docking & Energy System", url: patentUrl("WO2023152460A1") },
+      { number: "WO2022226634A1", label: "WO 2022/226634 A1", title: "Shaving Stencil Method", url: patentUrl("WO2022226634A1") },
       { number: "WO2022073056A1", label: "WO 2022/073056 A1", title: "Bait Station", url: patentUrl("WO2022073056A1") },
       { number: "BR112022018356A2", label: "BR 112022018356 A2", title: "Electronic Vaping Device", url: patentUrl("BR112022018356A2") },
     ],
