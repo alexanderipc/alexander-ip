@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import Markdown from "react-markdown";
+import MessageBody from "@/components/chat/MessageBody";
 import {
   getServiceLabel,
   getStatusLabel,
@@ -382,15 +382,21 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                       )}
                     </div>
                     {update.note && (
-                      <div className="prose prose-sm prose-slate max-w-none">
-                        <Markdown>{update.note}</Markdown>
-                      </div>
+                      <MessageBody
+                        body={update.note}
+                        bodyFormat={update.body_format === "html" ? "html" : "markdown"}
+                        proseClassName="prose-slate"
+                      />
                     )}
                     {update.internal_note && (
-                      <p className="text-sm text-amber-700 bg-amber-50 rounded px-2 py-1 mt-1">
+                      <div className="text-sm text-amber-700 bg-amber-50 rounded px-2 py-1 mt-1">
                         <span className="font-medium">Internal: </span>
-                        {update.internal_note}
-                      </p>
+                        <MessageBody
+                          body={update.internal_note}
+                          bodyFormat={update.body_format === "html" ? "html" : "markdown"}
+                          proseClassName="prose-sm inline prose-p:inline prose-p:m-0"
+                        />
+                      </div>
                     )}
                   </div>
                 ))}
