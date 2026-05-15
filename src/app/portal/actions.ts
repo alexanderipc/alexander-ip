@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { sendNewMessageEmail, sendMagicLinkEmail } from "@/lib/email";
 import { canAccessProject, getAccessibleProjectIds } from "@/lib/portal/access";
 import type { NotificationPreferences } from "@/lib/supabase/types";
@@ -216,9 +217,11 @@ export async function sendClientMessage(
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
-  // Notify admin via email in background (don't block the response)
+  // Notify admin via email after the response returns. `after()` registers
+  // the work with the runtime so Vercel keeps the function alive until it
+  // completes — fire-and-forget IIFE was being killed before the email sent.
   if (!project?.admin_notifications_muted) {
-    (async () => {
+    after(async () => {
       try {
         const { data: clientProfile } = await adminClient
           .from("profiles")
@@ -239,7 +242,7 @@ export async function sendClientMessage(
       } catch (err) {
         console.error("Failed to send message notification email:", err);
       }
-    })();
+    });
   }
 
   // No revalidatePath — the client appends `inserted` to local state for
