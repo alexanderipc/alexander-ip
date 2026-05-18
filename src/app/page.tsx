@@ -20,8 +20,8 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <ServicesOverview />
       <PackageBuilderSection />
+      <ServicesOverview />
       <MidPageCTA />
       <PatentMap />
       <WhoIsThisFor />

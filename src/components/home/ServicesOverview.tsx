@@ -6,7 +6,6 @@ import {
   Scale,
   Globe,
   ShieldCheck,
-  ArrowRight,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import LocalizedPrice from "@/components/ui/LocalizedPrice";
@@ -53,33 +52,17 @@ const serviceCards = [
 
 export default function ServicesOverview() {
   return (
-    <section className="pt-20 pb-6 bg-white">
+    <section className="pt-10 pb-6 bg-white">
       <Container>
-        <div className="text-center mb-6">
-          <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">
-            Services &amp; Pricing
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-3">
+            Or buy a service in isolation
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Every service has a clear, fixed fee &mdash; no hidden costs, no
-            hourly billing. Most clients start with a search, then move to
-            drafting.
+          <p className="text-base text-slate-600 max-w-2xl mx-auto">
+            If you just want one specific service &mdash; consultation, search,
+            drafting, correspondence, filing, or an infringement check &mdash;
+            go straight to it. Same fixed fees, no package required.
           </p>
-        </div>
-
-        {/* Typical journey hint */}
-        <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-10 flex-wrap">
-          <span className="bg-blue/10 text-blue-dark rounded-full px-3 py-1 font-medium">
-            Typical path:
-          </span>
-          <span>Search</span>
-          <ArrowRight className="w-3 h-3" />
-          <span>Draft</span>
-          <ArrowRight className="w-3 h-3" />
-          <span>File</span>
-          <ArrowRight className="w-3 h-3" />
-          <span>Correspond</span>
-          <ArrowRight className="w-3 h-3" />
-          <span>Grant</span>
         </div>
 
         {/* Compact service cards row */}
