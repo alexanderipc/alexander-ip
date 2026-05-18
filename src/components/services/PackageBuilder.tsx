@@ -104,10 +104,10 @@ const extras: Extra[] = [
 
 const timelines: Timeline[] = [
   { key: "standard", name: "Standard", days: 45, surchargeUsd: 0 },
-  { key: "30", name: "Express", days: 30, surchargeUsd: 610 },
-  { key: "21", name: "Rush", days: 21, surchargeUsd: 940 },
-  { key: "14", name: "Urgent", days: 14, surchargeUsd: 1480 },
-  { key: "7", name: "Emergency", days: 7, surchargeUsd: 2425 },
+  { key: "30", name: "Express", days: 30, surchargeUsd: 625 },
+  { key: "21", name: "Rush", days: 21, surchargeUsd: 950 },
+  { key: "14", name: "Urgent", days: 14, surchargeUsd: 1500 },
+  { key: "7", name: "Emergency", days: 7, surchargeUsd: 2475 },
 ];
 
 /* ── Flow line types & helpers ────────────────────────────── */
