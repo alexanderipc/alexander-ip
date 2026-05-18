@@ -218,7 +218,7 @@ export function getCurrencyFromBrowserLocale(): string {
 function roundToNice(amount: number): number {
   if (amount < 100) return Math.round(amount / 5) * 5;
   if (amount < 1000) return Math.round(amount / 5) * 5;
-  if (amount < 5000) return Math.round(amount / 25) * 25;
+  if (amount < 5000) return Math.round(amount / 5) * 5;
   return Math.round(amount / 500) * 500;
 }
 
