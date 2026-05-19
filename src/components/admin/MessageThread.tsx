@@ -8,6 +8,7 @@ import AttachmentUploader from "@/components/chat/AttachmentUploader";
 import AttachmentList from "@/components/chat/AttachmentList";
 import MessageBody from "@/components/chat/MessageBody";
 import type { MessageAttachment } from "@/components/chat/Attachment";
+import { sanitizeHtmlClient } from "@/lib/sanitize-html";
 
 interface Message {
   id: string;
@@ -71,7 +72,7 @@ export default function AdminMessageThread({
     const optimisticId = `optimistic-${Date.now()}`;
     const optimistic: Message = {
       id: optimisticId,
-      body: trimmed,
+      body: sanitizeHtmlClient(trimmed),
       body_format: "html",
       attachments: pendingAttachments,
       is_admin: true,

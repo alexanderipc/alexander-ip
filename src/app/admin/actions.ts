@@ -91,15 +91,16 @@ export async function createProject(formData: FormData) {
   // Find or create client
   let clientId: string;
 
-  // Check if client already exists
-  const { data: existingUsers } = await adminClient.auth.admin.listUsers();
-  const existingUser = existingUsers?.users?.find(
-    (u) => u.email === clientEmail
-  );
+  // Look up client by email in profiles table (avoids listUsers() pagination issues)
+  const { data: existingProfile } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("email", clientEmail)
+    .maybeSingle();
 
-  if (existingUser) {
-    clientId = existingUser.id;
-    // Update name/email if provided
+  if (existingProfile) {
+    clientId = existingProfile.id;
+    // Update name if provided
     const updates: Record<string, string> = { email: clientEmail };
     if (clientName) updates.name = clientName;
     await adminClient.from("profiles").update(updates).eq("id", clientId);
@@ -275,14 +276,16 @@ export async function advanceStatus(
 
   await adminClient.from("projects").update(updateData).eq("id", projectId);
 
-  // Create update record
+  // Create update record — sanitize HTML in notes for defence in depth
+  const cleanNote = note ? sanitizeMessageHtml(note) : null;
+  const cleanInternalNote = internalNote ? sanitizeMessageHtml(internalNote) : null;
   await adminClient.from("project_updates").insert({
     project_id: projectId,
     status_from: project.status,
     status_to: destinationStatus,
     note:
-      note || `Status updated to ${getStatusLabel(destinationStatus)}.`,
-    internal_note: internalNote || null,
+      cleanNote || `Status updated to ${getStatusLabel(destinationStatus)}.`,
+    internal_note: cleanInternalNote,
     notify_client: notifyClient,
   });
 
@@ -304,7 +307,7 @@ export async function advanceStatus(
           serviceType: project.service_type as ServiceType,
           newStatus: destinationStatus,
           statusLabel: getStatusLabel(destinationStatus),
-          note: note || null,
+          note: cleanNote || null,
           portalUrl: PORTAL_URL,
           unsubscribeUrl,
         });
@@ -594,6 +597,15 @@ export async function registerAdminUploadedDocument(
 ) {
   const { user } = await requireAdmin();
   const adminClient = createAdminClient();
+
+  // SECURITY: validate filePath belongs to this project and has no traversal
+  if (
+    filePath.includes("..") ||
+    filePath.startsWith("/") ||
+    !filePath.startsWith(projectId + "/")
+  ) {
+    throw new Error("Invalid file path");
+  }
 
   const { error: insertError } = await adminClient
     .from("project_documents")

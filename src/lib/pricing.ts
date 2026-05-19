@@ -113,7 +113,7 @@ export function getOfficeLabel(office: string, subOffice?: string | null): strin
 
 /* ── Exchange rates (update periodically) ───────────────── */
 /** Rates relative to USD (1 USD = X of target currency) */
-const rates: Record<string, number> = {
+export const exchangeRates: Record<string, number> = {
   GBP: 0.74,
   EUR: 0.96,
   USD: 1,
@@ -121,6 +121,8 @@ const rates: Record<string, number> = {
   AUD: 1.53,
   CHF: 0.88,
 };
+// Internal alias so existing code doesn't break
+const rates = exchangeRates;
 
 const symbols: Record<string, string> = {
   GBP: "£",

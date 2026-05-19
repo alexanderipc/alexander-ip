@@ -8,14 +8,65 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+/* ── Simple IP-based rate limiter ──────────────────────────── */
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 5; // max requests per window per IP
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// Periodically clean up stale entries to prevent memory leak
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  }
+}, 5 * 60_000);
+
+const MAX_MESSAGES = 20;
+const MAX_MESSAGE_LENGTH = 10_000;
+
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (isRateLimited(ip)) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }), {
+        status: 429,
+        headers: { "Content-Type": "application/json", "Retry-After": "60" },
+      });
+    }
+
     const { messages, portfolio, contextId } = await req.json();
     if (!messages?.length)
       return new Response(JSON.stringify({ error: "Messages required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
+
+    // Cap conversation length and individual message size
+    if (!Array.isArray(messages) || messages.length > MAX_MESSAGES) {
+      return new Response(JSON.stringify({ error: "Too many messages" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    for (const m of messages) {
+      if (typeof m.content !== "string" || m.content.length > MAX_MESSAGE_LENGTH) {
+        return new Response(JSON.stringify({ error: "Message too long" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Load rich context file if available
     const contextData = await loadContext(contextId || null);
@@ -65,7 +116,7 @@ ${JSON.stringify(portfolio, null, 2)}${contextSection}`;
       max_tokens: 4096,
       system: systemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({
-        role: m.role,
+        role: m.role as "user" | "assistant",
         content: m.content,
       })),
     });
@@ -103,7 +154,7 @@ ${JSON.stringify(portfolio, null, 2)}${contextSection}`;
     });
   } catch (err) {
     console.error("[Explorer] Chat error:", (err as Error).message);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    return new Response(JSON.stringify({ error: "An error occurred processing your request." }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

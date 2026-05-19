@@ -11,10 +11,12 @@ import {
   DEFAULT_CURRENCY,
 } from "@/lib/pricing";
 import { sendCheckoutErrorAlert } from "@/lib/email";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const limiter = createRateLimiter({ windowMs: 60_000, max: 3 });
 const BASE_URL = "https://www.alexander-ip.com";
 const HOLD_MINUTES = 30; // pending booking expires after this if no payment
 
@@ -37,6 +39,14 @@ interface BookConsultationRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (limiter.isLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         { error: "Payment is temporarily unavailable. Please try again shortly." },

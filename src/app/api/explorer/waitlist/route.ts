@@ -4,9 +4,20 @@ import {
   sendWaitlistConfirmationEmail,
   sendAdminWaitlistNotificationEmail,
 } from "@/lib/email";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 3 });
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    if (limiter.isLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const { name, email } = await req.json();
 
     if (!name?.trim() || !email?.trim()) {

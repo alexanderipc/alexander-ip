@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Stripe signature verification failed:", message);
     return NextResponse.json(
-      { error: `Webhook signature verification failed: ${message}` },
+      { error: "Webhook signature verification failed" },
       { status: 400 }
     );
   }
@@ -276,9 +276,9 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
     console.error("Webhook processing error:", errMsg, err);
-    // Return 500 so Stripe retries — include message for diagnostics
+    // Return 500 so Stripe retries — generic message only (details in server logs)
     return NextResponse.json(
-      { error: `Processing failed: ${errMsg}` },
+      { error: "Processing failed" },
       { status: 500 }
     );
   }
@@ -876,6 +876,19 @@ async function handleOfferPayment(
   // SINGLE PAYMENT (installments <= 1) — original flow, unchanged
   // ═══════════════════════════════════════════════════════════════
   if (!isInstallmentPlan) {
+    // Idempotency: check if a project already exists for this payment
+    if (paymentIntentId) {
+      const { data: existingProject } = await adminClient
+        .from("projects")
+        .select("id")
+        .eq("stripe_payment_id", paymentIntentId)
+        .maybeSingle();
+      if (existingProject) {
+        console.log(`[webhook] Project already exists for payment ${paymentIntentId}, skipping offer ${offerId}`);
+        return;
+      }
+    }
+
     // 4. Calculate delivery date
     const serviceType = (offer.service_type || "custom") as ServiceType;
     const timelineDays =
@@ -976,16 +989,45 @@ async function handleOfferPayment(
     stripe_session_id: session.id,
   });
 
-  // Increment installments_paid
-  const newPaidCount = (offer.installments_paid || 0) + 1;
+  // Determine installment position before the atomic update
   const isFirstInstallment = installmentNumber === 1;
+
+  // Atomically increment installments_paid to avoid race conditions on concurrent webhooks.
+  // We use an RPC-style raw update with a SQL expression via .rpc or a two-step approach:
+  // Update where id matches, setting installments_paid = COALESCE(installments_paid, 0) + 1
+  const { data: updatedOffer, error: incrementError } = await adminClient
+    .from("offers")
+    .update({
+      installments_paid: (offer.installments_paid || 0) + 1,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", offerId)
+    .eq("installments_paid", offer.installments_paid || 0) // optimistic lock
+    .select("installments_paid")
+    .maybeSingle();
+
+  if (incrementError || !updatedOffer) {
+    // Optimistic lock failed — another webhook already incremented this.
+    // Re-read the offer to get current state.
+    console.warn(`[webhook] Optimistic lock failed for offer ${offerId} installment ${installmentNumber}, re-reading...`);
+    const { data: freshOffer } = await adminClient
+      .from("offers")
+      .select("installments_paid, project_id, status")
+      .eq("id", offerId)
+      .single();
+    if (freshOffer?.status === "accepted") {
+      console.log(`[webhook] Offer ${offerId} already accepted, skipping duplicate installment`);
+      return;
+    }
+    // If not accepted yet, this installment's payment was still recorded above — just skip the double-update
+    return;
+  }
+
+  const newPaidCount = updatedOffer.installments_paid;
   const isFinalInstallment = newPaidCount >= totalInstallments;
 
-  // Update offer: increment paid count, optionally mark accepted
-  const offerUpdate: Record<string, unknown> = {
-    installments_paid: newPaidCount,
-    updated_at: new Date().toISOString(),
-  };
+  // Build remaining offer update fields (the increment already happened above)
+  const offerUpdate: Record<string, unknown> = {};
   if (isFinalInstallment) {
     offerUpdate.status = "accepted";
     offerUpdate.stripe_payment_id = paymentIntentId; // last payment ID

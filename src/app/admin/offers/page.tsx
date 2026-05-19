@@ -17,7 +17,25 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeof Clo
 };
 
 export default async function OffersPage() {
+  // Defence-in-depth: verify admin auth even though the layout also checks.
+  // Prevents data exposure if the page is ever rendered outside the admin layout.
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    const { redirect } = await import("next/navigation");
+    return redirect("/auth/login");
+  }
   const adminClient = createAdminClient();
+  const { data: profile } = await adminClient
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .maybeSingle();
+  if (profile?.role !== "admin") {
+    const { redirect } = await import("next/navigation");
+    redirect("/portal");
+  }
 
   const { data: offers } = await adminClient
     .from("offers")

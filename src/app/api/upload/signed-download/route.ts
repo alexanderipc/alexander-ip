@@ -29,9 +29,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing filePath" }, { status: 400 });
     }
 
+    // SECURITY: reject path traversal and validate expected format
+    if (filePath.includes("..") || filePath.startsWith("/")) {
+      return NextResponse.json({ error: "Invalid filePath" }, { status: 400 });
+    }
+
     // Path convention: {projectId}/{timestamp}-{filename}
-    const projectId = filePath.split("/")[0];
-    if (!projectId) {
+    const segments = filePath.split("/");
+    const projectId = segments[0];
+    // Must be exactly 2 segments: projectId/filename
+    if (segments.length !== 2 || !projectId || !segments[1]) {
+      return NextResponse.json({ error: "Invalid filePath" }, { status: 400 });
+    }
+
+    // projectId must look like a UUID
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidPattern.test(projectId)) {
       return NextResponse.json({ error: "Invalid filePath" }, { status: 400 });
     }
 

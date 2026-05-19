@@ -246,15 +246,16 @@ export async function generateInvoicePdf(
     let totalNoVat = 0;
 
     for (const item of data.lineItems) {
-      const lineTotal = item.quantity * item.unitPrice;
-      const lineVat = item.vatRate ? lineTotal * item.vatRate : 0;
+      // Use rounded penny arithmetic to avoid floating-point errors on tax invoices
+      const lineTotal = Math.round(item.quantity * item.unitPrice * 100) / 100;
+      const lineVat = item.vatRate ? Math.round(lineTotal * item.vatRate * 100) / 100 : 0;
 
       if (item.vatRate) {
-        totalVat += lineVat;
+        totalVat = Math.round((totalVat + lineVat) * 100) / 100;
       } else {
-        totalNoVat += lineTotal;
+        totalNoVat = Math.round((totalNoVat + lineTotal) * 100) / 100;
       }
-      subtotal += lineTotal;
+      subtotal = Math.round((subtotal + lineTotal) * 100) / 100;
 
       doc.fontSize(9).font("Helvetica").fillColor(NAVY);
       doc.text(item.description, colDesc + 8, rowY, {
@@ -323,7 +324,7 @@ export async function generateInvoicePdf(
     }
 
     // Grand total line
-    const grandTotal = subtotal + totalVat;
+    const grandTotal = Math.round((subtotal + totalVat) * 100) / 100;
     doc
       .moveTo(totalsLabelX, tY)
       .lineTo(totalsLabelX + contentWidth * 0.38, tY)

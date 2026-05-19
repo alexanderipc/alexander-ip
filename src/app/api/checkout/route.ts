@@ -6,6 +6,9 @@ import {
   DEFAULT_CURRENCY,
 } from "@/lib/pricing";
 import { sendCheckoutErrorAlert } from "@/lib/email";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 5 });
 
 const serviceConfig: Record<string, { name: string; description: string }> = {
   consultation: {
@@ -82,6 +85,14 @@ export async function POST(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let body: any = {};
   try {
+    const ip = getClientIp(request);
+    if (limiter.isLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         { error: "Stripe is not configured." },
@@ -110,10 +121,11 @@ export async function POST(request: NextRequest) {
     let productDescription: string;
 
     if (service === "custom") {
-      // Custom project: client provides the amount
-      if (!customAmount || typeof customAmount !== "number" || customAmount < 50) {
+      // Custom project: client provides the amount (in smallest currency unit)
+      // Min $0.50 (50 cents), max $50,000 (5,000,000 cents)
+      if (!customAmount || typeof customAmount !== "number" || customAmount < 50 || customAmount > 5_000_000) {
         return NextResponse.json(
-          { error: "Invalid amount. Minimum is 0.50." },
+          { error: "Invalid amount. Must be between 0.50 and 50,000." },
           { status: 400 }
         );
       }

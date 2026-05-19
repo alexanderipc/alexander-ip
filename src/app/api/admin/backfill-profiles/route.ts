@@ -147,7 +147,7 @@ export async function GET() {
   } catch (err) {
     console.error("[BackfillProfiles] Error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal error" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }

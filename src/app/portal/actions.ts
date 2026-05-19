@@ -118,6 +118,15 @@ export async function registerUploadedDocument(
   const { user } = await requireClient();
   const adminClient = createAdminClient();
 
+  // SECURITY: validate filePath belongs to this project and has no traversal
+  if (
+    filePath.includes("..") ||
+    filePath.startsWith("/") ||
+    !filePath.startsWith(projectId + "/")
+  ) {
+    throw new Error("Invalid file path");
+  }
+
   const hasAccess = await canAccessProject(user.id, projectId);
   if (!hasAccess) throw new Error("Project not found");
 
@@ -426,11 +435,24 @@ export async function toggleClientNotificationMute(projectId: string) {
   const { user } = await requireClient();
   const adminClient = createAdminClient();
 
-  // Verify client can access this project
-  const hasAccess = await canAccessProject(user.id, projectId);
-  if (!hasAccess) throw new Error("Project not found");
-
+  // Only project owners (not team members) can toggle notification mute
   const { data: project } = await adminClient
+    .from("projects")
+    .select("client_id")
+    .eq("id", projectId)
+    .single();
+
+  const { data: membership } = await adminClient
+    .from("project_members")
+    .select("role")
+    .eq("project_id", projectId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const isOwner = project?.client_id === user.id || membership?.role === "owner";
+  if (!isOwner) throw new Error("Only project owners can change notification settings");
+
+  const { data: muteState } = await adminClient
     .from("projects")
     .select("client_notifications_muted")
     .eq("id", projectId)
@@ -438,7 +460,7 @@ export async function toggleClientNotificationMute(projectId: string) {
 
   const { error: updateError } = await adminClient
     .from("projects")
-    .update({ client_notifications_muted: !project?.client_notifications_muted })
+    .update({ client_notifications_muted: !muteState?.client_notifications_muted })
     .eq("id", projectId);
 
   if (updateError) {

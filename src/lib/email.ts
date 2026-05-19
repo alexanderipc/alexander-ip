@@ -354,13 +354,13 @@ function documentUploadedHtml(data: DocumentEmailData): string {
             <td style="padding:36px 32px 40px;">
               <h2 style="margin:0 0 12px;color:#0f1729;font-size:22px;font-weight:700;">New document available</h2>
               <p style="margin:0 0 28px;color:#334155;font-size:16px;line-height:1.6;">
-                A new document has been uploaded to your project <strong>${data.title}</strong>.
+                A new document has been uploaded to your project <strong>${escapeHtml(data.title)}</strong>.
               </p>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:28px;">
                 <tr>
                   <td style="padding:16px 24px;">
-                    <p style="margin:0;color:#0f1729;font-size:14px;font-weight:600;">${data.filename}</p>
+                    <p style="margin:0;color:#0f1729;font-size:14px;font-weight:600;">${escapeHtml(data.filename)}</p>
                   </td>
                 </tr>
               </table>

@@ -5,8 +5,10 @@ import {
   getOfficeLabel,
   convertCurrencySmallest,
 } from "@/lib/pricing";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 const BASE_URL = "https://www.alexander-ip.com";
+const limiter = createRateLimiter({ windowMs: 60_000, max: 5 });
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: "$",
@@ -16,6 +18,14 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (limiter.isLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         { error: "Stripe is not configured." },

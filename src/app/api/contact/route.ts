@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const limiter = createRateLimiter({ windowMs: 60_000, max: 5 });
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (limiter.isLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const formData = await request.formData();
 
     const name = formData.get("name") as string;

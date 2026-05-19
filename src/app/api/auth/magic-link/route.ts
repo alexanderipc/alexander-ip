@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMagicLinkEmail } from "@/lib/email";
+import { createRateLimiter, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 3 });
 
 /**
  * POST /api/auth/magic-link
  * Generates a magic link via Supabase Admin API and sends it via Resend.
  * Bypasses Supabase's built-in SMTP entirely.
- *
- * Flow:
- * 1. Admin API generates a hashed_token (no email sent by Supabase)
- * 2. We construct a verify URL: /auth/verify?token_hash=xxx&type=magiclink
- * 3. Resend sends the branded email with this link
- * 4. User clicks → /auth/verify page calls verifyOtp() → session created
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (limiter.isLimited(ip)) return rateLimitResponse();
+
     const { email } = await request.json();
 
     if (!email || typeof email !== "string") {

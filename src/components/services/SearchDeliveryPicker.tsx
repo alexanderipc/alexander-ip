@@ -8,6 +8,7 @@ import {
   getCurrencyFromBrowserLocale,
   convertPrice,
   getDisplayPrice,
+  exchangeRates,
 } from "@/lib/pricing";
 
 /* ── Types ──────────────────────────────────────────────── */
@@ -119,9 +120,9 @@ export default function SearchDeliveryPicker() {
         // Rush/Express: use custom checkout with multiplied price
         const total = getTotal(tierName);
         const currencyMap: Record<string, { code: string; rate: number }> = {
-          USD: { code: "usd", rate: 1 },
-          GBP: { code: "gbp", rate: 0.74 },
-          EUR: { code: "eur", rate: 0.96 },
+          USD: { code: "usd", rate: exchangeRates.USD },
+          GBP: { code: "gbp", rate: exchangeRates.GBP },
+          EUR: { code: "eur", rate: exchangeRates.EUR },
         };
         const curr = currencyMap[currency] || currencyMap.USD;
         const amountInSmallestUnit = Math.round(total * curr.rate * 100);

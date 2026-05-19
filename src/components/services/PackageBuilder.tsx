@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import {
   getCurrencyFromBrowserLocale,
   convertPrice,
+  exchangeRates,
 } from "@/lib/pricing";
 
 /* ── Data ────────────────────────────────────────────────── */
@@ -441,11 +442,11 @@ export default function PackageBuilder() {
           if (tl) parts.push(`${tl.days}-day delivery`);
         }
 
-        /* Convert USD total to the currency's smallest unit */
+        /* Convert USD total to the currency's smallest unit — rates from single source of truth */
         const currencyMap: Record<string, { code: string; rate: number }> = {
-          USD: { code: "usd", rate: 1 },
-          GBP: { code: "gbp", rate: 0.74 },
-          EUR: { code: "eur", rate: 0.96 },
+          USD: { code: "usd", rate: exchangeRates.USD },
+          GBP: { code: "gbp", rate: exchangeRates.GBP },
+          EUR: { code: "eur", rate: exchangeRates.EUR },
         };
         const curr = currencyMap[currency] || currencyMap.USD;
         const amountInSmallestUnit = Math.round(total * curr.rate * 100);

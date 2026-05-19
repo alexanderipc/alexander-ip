@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendQuoteEmail, sendAdminQuoteRequestEmail } from "@/lib/email";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const limiter = createRateLimiter({ windowMs: 60_000, max: 3 });
 
 interface QuoteRequest {
   email?: string;
@@ -17,6 +19,14 @@ interface QuoteRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (limiter.isLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = (await request.json()) as QuoteRequest;
 
     const email = (body.email || "").trim().toLowerCase();

@@ -5,11 +5,13 @@ import {
   sendBookingRequestReceivedToLead,
   sendBookingRequestNotificationToAdmin,
 } from "@/lib/email";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const HOST_EMAIL_FALLBACK = "alexanderip.contact@gmail.com";
+const limiter = createRateLimiter({ windowMs: 60_000, max: 3 });
 
 interface BookCallRequest {
   email?: string;
@@ -31,6 +33,14 @@ const STAGE_LABELS: Record<Stage, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (limiter.isLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = (await request.json()) as BookCallRequest;
 
     const email = (body.email || "").trim().toLowerCase();

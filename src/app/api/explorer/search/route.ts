@@ -104,8 +104,9 @@ export async function POST(req: NextRequest) {
       { status: 404 }
     );
   } catch (err) {
+    console.error("[Explorer] Search error:", (err as Error).message);
     return NextResponse.json(
-      { error: (err as Error).message },
+      { error: "An error occurred during search." },
       { status: 500 }
     );
   }
