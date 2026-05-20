@@ -4,8 +4,10 @@
  */
 import crypto from "crypto";
 
-const SECRET = process.env.UNSUBSCRIBE_SECRET!;
-// Legacy fallback for tokens generated before UNSUBSCRIBE_SECRET was set
+// Prefer dedicated secret; fall back to service role key so the site keeps
+// working until UNSUBSCRIBE_SECRET is added to Vercel env vars.
+const SECRET = process.env.UNSUBSCRIBE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Legacy fallback for tokens generated before the timestamp format was added
 const LEGACY_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
